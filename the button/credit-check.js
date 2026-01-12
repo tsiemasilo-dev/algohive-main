@@ -41,6 +41,10 @@
   const governmentEmployerInput = document.getElementById('government-employer-name');
   const privateEmployerInput = document.getElementById('private-employer-name');
   const privateEmployerFeedback = document.getElementById('private-employer-feedback');
+  const incomeConsistencyInput = document.getElementById('income-consistency');
+  const avgMonthlyBalanceInput = document.getElementById('avg-monthly-balance');
+  const overdraftCountInput = document.getElementById('overdraft-count');
+  const gamblingTransactionsInput = document.getElementById('gambling-transactions');
   const employerOptionsDataList = document.getElementById('listed-employer-options');
   const retdataCard = document.getElementById('retdata-download-card');
   const retdataButton = document.getElementById('download-retdata-btn');
@@ -585,6 +589,39 @@
     const derivedDob = parseDobFromId(identity);
     if (derivedDob) {
       overrides.date_of_birth = derivedDob;
+    }
+
+    const bankStatementCashflow = {};
+    const incomeConsistencyRaw = incomeConsistencyInput?.value.trim();
+    if (incomeConsistencyRaw !== '' && incomeConsistencyRaw !== undefined) {
+      const incomeConsistency = parseFloat(incomeConsistencyRaw);
+      if (Number.isFinite(incomeConsistency)) {
+        bankStatementCashflow.income_consistency = Math.max(0, Math.min(100, incomeConsistency));
+      }
+    }
+    const avgMonthlyBalanceRaw = avgMonthlyBalanceInput?.value.trim();
+    if (avgMonthlyBalanceRaw !== '' && avgMonthlyBalanceRaw !== undefined) {
+      const avgMonthlyBalance = parseFloat(avgMonthlyBalanceRaw);
+      if (Number.isFinite(avgMonthlyBalance)) {
+        bankStatementCashflow.avg_monthly_balance = Math.max(0, avgMonthlyBalance);
+      }
+    }
+    const overdraftCountRaw = overdraftCountInput?.value.trim();
+    if (overdraftCountRaw !== '' && overdraftCountRaw !== undefined) {
+      const overdraftCount = parseInt(overdraftCountRaw, 10);
+      if (Number.isFinite(overdraftCount)) {
+        bankStatementCashflow.overdraft_count = Math.max(0, overdraftCount);
+      }
+    }
+    const gamblingTransactionsRaw = gamblingTransactionsInput?.value.trim();
+    if (gamblingTransactionsRaw !== '' && gamblingTransactionsRaw !== undefined) {
+      const gamblingTransactions = parseInt(gamblingTransactionsRaw, 10);
+      if (Number.isFinite(gamblingTransactions)) {
+        bankStatementCashflow.gambling_transactions = Math.max(0, gamblingTransactions);
+      }
+    }
+    if (Object.keys(bankStatementCashflow).length > 0) {
+      overrides.bank_statement_cashflow = bankStatementCashflow;
     }
 
     return { userData: overrides };

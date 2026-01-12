@@ -41,10 +41,11 @@
   const governmentEmployerInput = document.getElementById('government-employer-name');
   const privateEmployerInput = document.getElementById('private-employer-name');
   const privateEmployerFeedback = document.getElementById('private-employer-feedback');
-  const incomeConsistencyInput = document.getElementById('income-consistency');
-  const avgMonthlyBalanceInput = document.getElementById('avg-monthly-balance');
-  const overdraftCountInput = document.getElementById('overdraft-count');
-  const gamblingTransactionsInput = document.getElementById('gambling-transactions');
+  const linkBankBtn = document.getElementById('link-bank-btn');
+  const relinkBankBtn = document.getElementById('relink-bank-btn');
+  const bankLinkStatus = document.getElementById('bank-link-status');
+  const bankLinkIcon = document.getElementById('bank-link-icon');
+  const bankLinkText = document.getElementById('bank-link-text');
   const employerOptionsDataList = document.getElementById('listed-employer-options');
   const retdataCard = document.getElementById('retdata-download-card');
   const retdataButton = document.getElementById('download-retdata-btn');
@@ -122,6 +123,94 @@
   let loaderTimer = null;
   let loaderProgress = 0;
   let consoleCollapsed = true;
+  const bankLinkState = {
+    userId: null,
+    linked: false
+  };
+
+  function generateUserId() {
+    const identity = identityInput?.value.trim();
+    if (identity && identity.length === 13) {
+      return `user_${identity}`;
+    }
+    return `user_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  }
+
+  function updateBankLinkUI(linked) {
+    bankLinkState.linked = linked;
+    if (linked) {
+      if (bankLinkIcon) {
+        bankLinkIcon.style.display = 'inline';
+      }
+      if (bankLinkText) {
+        bankLinkText.textContent = 'Bank account linked';
+        bankLinkText.style.color = 'var(--success)';
+      }
+      if (linkBankBtn) {
+        linkBankBtn.classList.add('hidden');
+      }
+      if (relinkBankBtn) {
+        relinkBankBtn.classList.remove('hidden');
+      }
+    } else {
+      if (bankLinkIcon) {
+        bankLinkIcon.style.display = 'none';
+      }
+      if (bankLinkText) {
+        bankLinkText.textContent = 'Bank account not linked';
+        bankLinkText.style.color = 'var(--text-muted)';
+      }
+      if (linkBankBtn) {
+        linkBankBtn.classList.remove('hidden');
+      }
+      if (relinkBankBtn) {
+        relinkBankBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  async function checkBankLinkStatus(userId) {
+    try {
+      const response = await fetch(`/api/stitch/linked/${encodeURIComponent(userId)}`);
+      const data = await response.json();
+      return data.linked === true;
+    } catch (error) {
+      console.warn('Failed to check bank link status:', error);
+      return false;
+    }
+  }
+
+  async function initiateBankLink(userId) {
+    try {
+      const response = await fetch(`/api/stitch/link/${encodeURIComponent(userId)}`);
+      const data = await response.json();
+      if (data.success && data.authUrl) {
+        window.location.href = data.authUrl;
+      } else {
+        setIntakeError(data.error || 'Failed to initiate bank linking');
+      }
+    } catch (error) {
+      console.error('Bank link error:', error);
+      setIntakeError('Failed to connect to bank linking service');
+    }
+  }
+
+  function checkUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const stitchLinked = params.get('stitch_linked');
+    const stitchError = params.get('stitch_error');
+    const userId = params.get('userId');
+
+    if (stitchLinked === 'true' && userId) {
+      bankLinkState.userId = userId;
+      bankLinkState.linked = true;
+      updateBankLinkUI(true);
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (stitchError) {
+      setIntakeError(`Bank linking failed: ${stitchError}`);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }
 
   function revokeRetdataDownloadUrl() {
     if (retdataDownloadUrl) {
@@ -591,37 +680,9 @@
       overrides.date_of_birth = derivedDob;
     }
 
-    const bankStatementCashflow = {};
-    const incomeConsistencyRaw = incomeConsistencyInput?.value.trim();
-    if (incomeConsistencyRaw !== '' && incomeConsistencyRaw !== undefined) {
-      const incomeConsistency = parseFloat(incomeConsistencyRaw);
-      if (Number.isFinite(incomeConsistency)) {
-        bankStatementCashflow.income_consistency = Math.max(0, Math.min(100, incomeConsistency));
-      }
-    }
-    const avgMonthlyBalanceRaw = avgMonthlyBalanceInput?.value.trim();
-    if (avgMonthlyBalanceRaw !== '' && avgMonthlyBalanceRaw !== undefined) {
-      const avgMonthlyBalance = parseFloat(avgMonthlyBalanceRaw);
-      if (Number.isFinite(avgMonthlyBalance)) {
-        bankStatementCashflow.avg_monthly_balance = Math.max(0, avgMonthlyBalance);
-      }
-    }
-    const overdraftCountRaw = overdraftCountInput?.value.trim();
-    if (overdraftCountRaw !== '' && overdraftCountRaw !== undefined) {
-      const overdraftCount = parseInt(overdraftCountRaw, 10);
-      if (Number.isFinite(overdraftCount)) {
-        bankStatementCashflow.overdraft_count = Math.max(0, overdraftCount);
-      }
-    }
-    const gamblingTransactionsRaw = gamblingTransactionsInput?.value.trim();
-    if (gamblingTransactionsRaw !== '' && gamblingTransactionsRaw !== undefined) {
-      const gamblingTransactions = parseInt(gamblingTransactionsRaw, 10);
-      if (Number.isFinite(gamblingTransactions)) {
-        bankStatementCashflow.gambling_transactions = Math.max(0, gamblingTransactions);
-      }
-    }
-    if (Object.keys(bankStatementCashflow).length > 0) {
-      overrides.bank_statement_cashflow = bankStatementCashflow;
+    if (bankLinkState.userId && bankLinkState.linked) {
+      overrides.user_id = bankLinkState.userId;
+      overrides.bank_linked = true;
     }
 
     return { userData: overrides };
@@ -1188,6 +1249,20 @@
     document.body.removeChild(tempLink);
   });
   window.addEventListener('beforeunload', revokeRetdataDownloadUrl);
+
+  linkBankBtn?.addEventListener('click', () => {
+    const userId = bankLinkState.userId || generateUserId();
+    bankLinkState.userId = userId;
+    initiateBankLink(userId);
+  });
+
+  relinkBankBtn?.addEventListener('click', () => {
+    const userId = bankLinkState.userId || generateUserId();
+    bankLinkState.userId = userId;
+    initiateBankLink(userId);
+  });
+
+  checkUrlParams();
   returnToIntake();
   detectMockMode();
   loadEmploymentDirectory();

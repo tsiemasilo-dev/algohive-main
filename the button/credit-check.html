@@ -916,26 +916,19 @@
 
             <div class="full-width" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
               <p style="font-size: 0.9rem; font-weight: 600; color: var(--purple-dark); margin: 0 0 1rem;">Bank Statement Cashflow Analysis (10%)</p>
-            </div>
-            <div>
-              <label for="income-consistency">Income Consistency (%)</label>
-              <input id="income-consistency" type="number" placeholder="85" autocomplete="off" min="0" max="100" step="1">
-              <p class="helper-text">How regularly income is deposited (0-100%)</p>
-            </div>
-            <div>
-              <label for="avg-monthly-balance">Average Monthly Balance (R)</label>
-              <input id="avg-monthly-balance" type="number" placeholder="7500" autocomplete="off" min="0" step="0.01">
-              <p class="helper-text">Average account balance over statement period</p>
-            </div>
-            <div>
-              <label for="overdraft-count">Overdraft Count</label>
-              <input id="overdraft-count" type="number" placeholder="0" autocomplete="off" min="0" step="1">
-              <p class="helper-text">Number of overdrafts in statement period</p>
-            </div>
-            <div>
-              <label for="gambling-transactions">Gambling Transactions</label>
-              <input id="gambling-transactions" type="number" placeholder="0" autocomplete="off" min="0" step="1">
-              <p class="helper-text">Number of gambling-related transactions</p>
+              <div id="bank-link-status" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                <span id="bank-link-icon" style="display: none; color: var(--success);"><i class="fas fa-check-circle"></i></span>
+                <span id="bank-link-text" style="font-size: 0.9rem; color: var(--text-muted);">Bank account not linked</span>
+              </div>
+              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <button type="button" class="primary-btn" id="link-bank-btn" style="padding: 0.65rem 1.4rem;">
+                  <i class="fas fa-university" style="margin-right: 0.5rem;"></i>Link Bank Account
+                </button>
+                <button type="button" class="ghost-btn hidden" id="relink-bank-btn" style="padding: 0.65rem 1.4rem;">
+                  <i class="fas fa-sync-alt" style="margin-right: 0.5rem;"></i>Re-link Account
+                </button>
+              </div>
+              <p class="helper-text" style="margin-top: 0.75rem;">Securely link your bank account via Stitch to automatically analyze income consistency, balances, and transaction patterns.</p>
             </div>
           </div>
         </div>

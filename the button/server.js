@@ -528,6 +528,24 @@ app.post('/api/credit-check', async (req, res) => {
     const deviceFingerprint = extractClientDeviceMetadata(req);
     const overrides = req.body?.userData || {};
     const applicationId = req.body?.applicationId || `APP-${Date.now()}`;
+
+    if (overrides.bank_linked && overrides.user_id) {
+      try {
+        const bankAnalysis = await stitchService.performBankStatementAnalysis(overrides.user_id);
+        if (bankAnalysis.success && bankAnalysis.analysis) {
+          overrides.bank_statement_cashflow = {
+            income_consistency: bankAnalysis.analysis.income_consistency,
+            avg_monthly_income: bankAnalysis.analysis.avg_monthly_income,
+            avg_monthly_balance: bankAnalysis.analysis.avg_monthly_balance,
+            overdraft_count: bankAnalysis.analysis.overdraft_count,
+            gambling_transactions: bankAnalysis.analysis.gambling_transactions
+          };
+        }
+      } catch (stitchError) {
+        console.warn('Failed to fetch bank data from Stitch:', stitchError.message);
+      }
+    }
+
     const userData = buildUserData({ ...overrides, client_ref: applicationId });
 
     // Experian expects YYYYMMDD with no separators

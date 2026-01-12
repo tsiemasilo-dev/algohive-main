@@ -18,6 +18,7 @@ const EMPLOYMENT_CATEGORY_WEIGHT = 5; // percent
 const INCOME_STABILITY_WEIGHT = 10; // percent
 const ALGOLEND_REPAYMENT_WEIGHT = 3; // percent
 const AGL_RETRIEVAL_WEIGHT = 5; // percent
+const BANK_STATEMENT_CASHFLOW_WEIGHT = 10; // percent
 const TOTAL_LOAN_ENGINE_WEIGHT = CREDIT_SCORE_WEIGHT
   + CREDIT_UTILIZATION_WEIGHT
   + ADVERSE_LISTINGS_WEIGHT
@@ -28,7 +29,8 @@ const TOTAL_LOAN_ENGINE_WEIGHT = CREDIT_SCORE_WEIGHT
   + EMPLOYMENT_CATEGORY_WEIGHT
   + INCOME_STABILITY_WEIGHT
   + ALGOLEND_REPAYMENT_WEIGHT
-  + AGL_RETRIEVAL_WEIGHT;
+  + AGL_RETRIEVAL_WEIGHT
+  + BANK_STATEMENT_CASHFLOW_WEIGHT;
 
 function clampToRange(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -386,6 +388,99 @@ function computeAglRetrievalContribution() {
   };
 }
 
+function computeBankStatementCashflowContribution(cashflowData = {}) {
+  const avgMonthlyIncome = cashflowData.avg_monthly_income || null;
+  const incomeConsistency = cashflowData.income_consistency || null;
+  const avgMonthlyBalance = cashflowData.avg_monthly_balance || null;
+  const overdraftCount = cashflowData.overdraft_count ?? null;
+  const gamblingTransactions = cashflowData.gambling_transactions ?? null;
+
+  let valuePercent = 0;
+  let analysisStatus = 'NOT_AVAILABLE';
+  const factors = [];
+
+  if (avgMonthlyIncome !== null || incomeConsistency !== null || avgMonthlyBalance !== null) {
+    analysisStatus = 'ANALYZED';
+
+    if (incomeConsistency !== null) {
+      if (incomeConsistency >= 90) {
+        valuePercent += 30;
+        factors.push('Excellent income consistency (90%+)');
+      } else if (incomeConsistency >= 70) {
+        valuePercent += 20;
+        factors.push('Good income consistency (70-89%)');
+      } else if (incomeConsistency >= 50) {
+        valuePercent += 10;
+        factors.push('Moderate income consistency (50-69%)');
+      } else {
+        factors.push('Poor income consistency (<50%)');
+      }
+    }
+
+    if (avgMonthlyBalance !== null) {
+      if (avgMonthlyBalance >= 10000) {
+        valuePercent += 25;
+        factors.push('Strong average balance (R10,000+)');
+      } else if (avgMonthlyBalance >= 5000) {
+        valuePercent += 20;
+        factors.push('Good average balance (R5,000-R9,999)');
+      } else if (avgMonthlyBalance >= 1000) {
+        valuePercent += 10;
+        factors.push('Moderate average balance (R1,000-R4,999)');
+      } else {
+        factors.push('Low average balance (<R1,000)');
+      }
+    }
+
+    if (overdraftCount !== null) {
+      if (overdraftCount === 0) {
+        valuePercent += 25;
+        factors.push('No overdrafts');
+      } else if (overdraftCount <= 2) {
+        valuePercent += 15;
+        factors.push('Minimal overdrafts (1-2)');
+      } else if (overdraftCount <= 5) {
+        valuePercent += 5;
+        factors.push('Some overdrafts (3-5)');
+      } else {
+        factors.push('Frequent overdrafts (6+)');
+      }
+    }
+
+    if (gamblingTransactions !== null) {
+      if (gamblingTransactions === 0) {
+        valuePercent += 20;
+        factors.push('No gambling transactions');
+      } else if (gamblingTransactions <= 3) {
+        valuePercent += 10;
+        factors.push('Minimal gambling activity (1-3)');
+      } else {
+        factors.push('Significant gambling activity (4+)');
+      }
+    }
+
+    valuePercent = Math.min(valuePercent, 100);
+  } else {
+    analysisStatus = 'PENDING';
+    factors.push('Awaiting bank statement upload');
+  }
+
+  const contributionPercent = valuePercent * (BANK_STATEMENT_CASHFLOW_WEIGHT / 100);
+
+  return {
+    avgMonthlyIncome,
+    incomeConsistency,
+    avgMonthlyBalance,
+    overdraftCount,
+    gamblingTransactions,
+    analysisStatus,
+    factors,
+    valuePercent,
+    weightPercent: BANK_STATEMENT_CASHFLOW_WEIGHT,
+    contributionPercent
+  };
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -471,6 +566,7 @@ app.post('/api/credit-check', async (req, res) => {
     const incomeStabilityBreakdown = computeIncomeStabilityContribution(overrides);
     const algolendRepaymentBreakdown = computeAlgolendRepaymentContribution(overrides.algolend_is_new_borrower);
     const aglRetrievalBreakdown = computeAglRetrievalContribution();
+    const bankStatementCashflowBreakdown = computeBankStatementCashflowContribution(overrides.bank_statement_cashflow || {});
     
     const breakdown = {
       creditScore: creditScoreBreakdown,
@@ -483,7 +579,8 @@ app.post('/api/credit-check', async (req, res) => {
       employmentCategory: employmentCategoryBreakdown,
       incomeStability: incomeStabilityBreakdown,
       algolendRepayment: algolendRepaymentBreakdown,
-      aglRetrieval: aglRetrievalBreakdown
+      aglRetrieval: aglRetrievalBreakdown,
+      bankStatementCashflow: bankStatementCashflowBreakdown
     };
     const loanEngineScore = Object.values(breakdown).reduce((total, metric) => {
       return total + (metric?.contributionPercent || 0);

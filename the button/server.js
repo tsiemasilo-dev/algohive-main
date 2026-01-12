@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const { performCreditCheck } = require('./creditCheckService');
+const stitchService = require('./stitchService');
 
 const CREDIT_SCORE_MIN = 300;
 const CREDIT_SCORE_MAX = 850;
@@ -616,7 +617,85 @@ app.post('/api/credit-check', async (req, res) => {
   }
 });
 
+app.get('/api/stitch/status', (_req, res) => {
+  const configured = stitchService.isStitchConfigured();
+  res.json({ 
+    configured,
+    message: configured ? 'Stitch is configured' : 'Stitch credentials not set'
+  });
+});
+
+app.get('/api/stitch/link/:userId', (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID required' });
+    }
+
+    if (!stitchService.isStitchConfigured()) {
+      return res.status(503).json({ 
+        success: false, 
+        error: 'Bank linking not available. Stitch credentials not configured.' 
+      });
+    }
+
+    const { url, state } = stitchService.generateAuthUrl(userId);
+    res.json({ success: true, authUrl: url, state });
+  } catch (error) {
+    console.error('Stitch link error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/stitch/callback', async (req, res) => {
+  try {
+    const { code, state, error: authError } = req.query;
+
+    if (authError) {
+      return res.redirect(`/?stitch_error=${encodeURIComponent(authError)}`);
+    }
+
+    if (!code || !state) {
+      return res.redirect('/?stitch_error=missing_params');
+    }
+
+    const userId = state.split('_')[0];
+    const tokenData = await stitchService.exchangeCodeForToken(code);
+    stitchService.storeUserToken(userId, tokenData);
+
+    res.redirect(`/?stitch_linked=true&userId=${encodeURIComponent(userId)}`);
+  } catch (error) {
+    console.error('Stitch callback error:', error);
+    res.redirect(`/?stitch_error=${encodeURIComponent(error.message)}`);
+  }
+});
+
+app.get('/api/stitch/analyze/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID required' });
+    }
+
+    const result = await stitchService.performBankStatementAnalysis(userId);
+    res.json(result);
+  } catch (error) {
+    console.error('Stitch analysis error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/stitch/linked/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const tokenData = stitchService.getUserToken(userId);
+  res.json({ 
+    linked: !!tokenData?.accessToken,
+    userId 
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Credit check server listening on http://localhost:${PORT}`);
   console.log(`   Mock mode: ${process.env.EXPERIAN_MOCK === 'true' ? 'ON' : 'OFF'}`);
+  console.log(`   Stitch configured: ${stitchService.isStitchConfigured() ? 'YES' : 'NO'}`);
 });

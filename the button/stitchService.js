@@ -12,6 +12,7 @@ const STITCH_CONFIG = {
 };
 
 const userTokens = new Map();
+const pendingStates = new Map();
 
 async function getClientToken() {
   if (!STITCH_CONFIG.clientId || !STITCH_CONFIG.clientSecret) {
@@ -35,7 +36,16 @@ function generateAuthUrl(userId, state = null) {
     throw new Error('Stitch client ID not configured');
   }
 
-  const stateValue = state || `${userId}_${crypto.randomBytes(16).toString('hex')}`;
+  const stateValue = state || `${userId}__STITCH__${crypto.randomBytes(16).toString('hex')}`;
+  
+  const now = Date.now();
+  const expiryTime = 10 * 60 * 1000; // 10 minutes
+  
+  pendingStates.set(stateValue, {
+    userId,
+    createdAt: now,
+    expiresAt: now + expiryTime
+  });
   
   const params = new URLSearchParams({
     client_id: STITCH_CONFIG.clientId,
@@ -357,6 +367,29 @@ async function performBankStatementAnalysis(userId) {
   }
 }
 
+function validateAndConsumeState(state) {
+  if (!state) {
+    throw new Error('State parameter missing');
+  }
+
+  const stateData = pendingStates.get(state);
+  
+  if (!stateData) {
+    throw new Error('Invalid state: state not found');
+  }
+
+  const now = Date.now();
+  if (now > stateData.expiresAt) {
+    pendingStates.delete(state);
+    throw new Error('Invalid state: state expired');
+  }
+
+  const userId = stateData.userId;
+  pendingStates.delete(state);
+  
+  return userId;
+}
+
 function isStitchConfigured() {
   return !!(STITCH_CONFIG.clientId && STITCH_CONFIG.clientSecret);
 }
@@ -372,5 +405,6 @@ module.exports = {
   getTransactions,
   analyzeTransactions,
   performBankStatementAnalysis,
+  validateAndConsumeState,
   STITCH_CONFIG
 };

@@ -23,6 +23,23 @@ Preferred communication style: Simple, everyday language.
 - **File Compression**: `adm-zip` for handling compressed credit report data
 - **Mock Mode**: Environment-configurable mock mode for development (`EXPERIAN_MOCK=true`)
 
+### Bank Statement Analysis (Stitch Money Integration)
+- **Service**: Stitch Money Open Banking API for automated bank account linking
+- **Authentication**: OAuth 2.0 flow with secure server-side state validation
+- **API Type**: GraphQL queries for bank accounts and transactions
+- **Analysis Features**:
+  - Automatic income consistency calculation (coefficient of variation)
+  - 3-month average balance tracking
+  - Overdraft detection and counting
+  - Gambling transaction identification (betway, hollywoodbets, etc.)
+- **Service File**: `stitchService.js` handles all Stitch API interactions
+- **Endpoints**:
+  - `GET /api/stitch/status` - Check if Stitch is configured
+  - `GET /api/stitch/link/:userId` - Generate OAuth authorization URL
+  - `GET /api/stitch/callback` - Handle OAuth callback with state validation
+  - `GET /api/stitch/analyze/:userId` - Perform bank statement analysis
+  - `GET /api/stitch/linked/:userId` - Check if user has linked bank
+
 ### Loan Engine Scoring System
 The server implements a weighted scoring algorithm with these components:
 | Factor | Weight |
@@ -75,6 +92,7 @@ The server implements a weighted scoring algorithm with these components:
 - Google Fonts (Space Grotesk)
 
 ### Environment Variables Required
+**Experian API:**
 - `EXPERIAN_URL` - Experian API endpoint
 - `EXPERIAN_USERNAME` - API authentication
 - `EXPERIAN_PASSWORD` - API authentication
@@ -82,3 +100,8 @@ The server implements a weighted scoring algorithm with these components:
 - `EXPERIAN_ORIGIN` - Client identifier
 - `EXPERIAN_ORIGIN_VERSION` - Client version
 - `EXPERIAN_MOCK` - Enable mock mode for development
+
+**Stitch Money API:**
+- `STITCH_CLIENT_ID` - Stitch OAuth client ID
+- `STITCH_CLIENT_SECRET` - Stitch OAuth client secret
+- `STITCH_REDIRECT_URI` - OAuth callback URL (optional, defaults to app domain)

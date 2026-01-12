@@ -677,7 +677,13 @@ app.get('/api/stitch/callback', async (req, res) => {
       return res.redirect('/?stitch_error=missing_params');
     }
 
-    const userId = state.split('_')[0];
+    let userId;
+    try {
+      userId = stitchService.validateAndConsumeState(state);
+    } catch (validationError) {
+      return res.redirect(`/?stitch_error=${encodeURIComponent(validationError.message)}`);
+    }
+
     const tokenData = await stitchService.exchangeCodeForToken(code);
     stitchService.storeUserToken(userId, tokenData);
 

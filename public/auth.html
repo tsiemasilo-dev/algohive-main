@@ -105,6 +105,101 @@
     body[data-app="money"] .brand-hive { display: none; opacity: 0; }
     body[data-app="money"] .brand-money { display: flex; opacity: 1; }
 
+    /* --- PASSWORD STRENGTH BAR --- */
+    .password-strength-container {
+      margin-top: 0.5rem;
+    }
+    .password-strength-bar {
+      height: 6px;
+      border-radius: 3px;
+      background: #e5e7eb;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .password-strength-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+      width: 0%;
+    }
+    .password-strength-fill.weak { background: #ef4444; width: 25%; }
+    .password-strength-fill.medium { background: #f59e0b; width: 50%; }
+    .password-strength-fill.strong { background: #22c55e; width: 75%; }
+    .password-strength-fill.very-strong { background: #10b981; width: 100%; }
+    .password-strength-text {
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .password-strength-text.weak { color: #ef4444; }
+    .password-strength-text.medium { color: #f59e0b; }
+    .password-strength-text.strong { color: #22c55e; }
+    .password-strength-text.very-strong { color: #10b981; }
+    
+    /* Money theme password strength colors - all purple spectrum */
+    .theme-money .password-strength-fill.weak { background: #ddd6fe; }
+    .theme-money .password-strength-fill.medium { background: #a78bfa; }
+    .theme-money .password-strength-fill.strong { background: var(--money-primary); }
+    .theme-money .password-strength-fill.very-strong { background: #6d28d9; }
+    .theme-money .password-strength-text.weak { color: #c4b5fd; }
+    .theme-money .password-strength-text.medium { color: #a78bfa; }
+    .theme-money .password-strength-text.strong { color: var(--money-primary); }
+    .theme-money .password-strength-text.very-strong { color: #6d28d9; }
+    .theme-money .password-requirements li.valid { color: var(--money-primary); }
+    .theme-money .password-requirements li.valid .check-icon { background: var(--money-primary); border-color: var(--money-primary); }
+    .password-requirements {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      border: 1px solid #e2e8f0;
+    }
+    .password-requirements p {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .password-requirements ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.25rem 0.5rem;
+    }
+    .password-requirements li {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s ease;
+    }
+    .password-requirements li.valid {
+      color: #22c55e;
+    }
+    .password-requirements li .check-icon {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      transition: all 0.2s ease;
+    }
+    .password-requirements li.valid .check-icon {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: white;
+    }
+
     /* --- TEXT COLORS --- */
     .text-hive { color: var(--olive); }
     .text-hive-hover:hover { color: var(--olive-700); }
@@ -252,7 +347,23 @@
                     </div>
                     <div class="space-y-2">
                       <label class="text-sm font-medium text-slate-700">Password</label>
-                      <input id="hive-signup-password" name="password" type="password" placeholder="At least 6 characters" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <input id="hive-signup-password" name="password" type="password" placeholder="Create a strong password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <div class="password-strength-container" id="hive-password-strength">
+                        <div class="password-strength-bar">
+                          <div class="password-strength-fill" id="hive-strength-fill"></div>
+                        </div>
+                        <div class="password-strength-text" id="hive-strength-text"></div>
+                      </div>
+                      <div class="password-requirements" id="hive-password-requirements">
+                        <p>Password must have:</p>
+                        <ul>
+                          <li id="hive-req-length"><span class="check-icon"></span>8+ characters</li>
+                          <li id="hive-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                          <li id="hive-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                          <li id="hive-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                          <li id="hive-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+                        </ul>
+                      </div>
                     </div>
                     <div class="space-y-2">
                       <label class="text-sm font-medium text-slate-700">Confirm password</label>
@@ -339,7 +450,23 @@
                   </div>
                   <div class="space-y-2">
                     <label class="text-sm font-medium text-slate-700">Password</label>
-                    <input id="money-signup-password" name="password" type="password" placeholder="Create a password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <input id="money-signup-password" name="password" type="password" placeholder="Create a strong password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <div class="password-strength-container" id="money-password-strength">
+                      <div class="password-strength-bar">
+                        <div class="password-strength-fill" id="money-strength-fill"></div>
+                      </div>
+                      <div class="password-strength-text" id="money-strength-text"></div>
+                    </div>
+                    <div class="password-requirements" id="money-password-requirements">
+                      <p>Password must have:</p>
+                      <ul>
+                        <li id="money-req-length"><span class="check-icon"></span>8+ characters</li>
+                        <li id="money-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                        <li id="money-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                        <li id="money-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                        <li id="money-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+                      </ul>
+                    </div>
                   </div>
                   <div class="space-y-2">
                     <label class="text-sm font-medium text-slate-700">Confirm password</label>
@@ -749,6 +876,75 @@
     updateLiveNote(savedType);
 
 
+    // --- PASSWORD STRENGTH VALIDATION ---
+    const PASSWORD_REGEX = {
+        length: /.{8,}/,
+        upper: /[A-Z]/,
+        lower: /[a-z]/,
+        number: /[0-9]/,
+        special: /[!@#$%^&*()\-_+={}[\]|;:,.?\/]/
+    };
+
+    function validatePassword(password) {
+        return {
+            length: PASSWORD_REGEX.length.test(password),
+            upper: PASSWORD_REGEX.upper.test(password),
+            lower: PASSWORD_REGEX.lower.test(password),
+            number: PASSWORD_REGEX.number.test(password),
+            special: PASSWORD_REGEX.special.test(password)
+        };
+    }
+
+    function isPasswordValid(password) {
+        const checks = validatePassword(password);
+        return checks.length && checks.upper && checks.lower && checks.number && checks.special;
+    }
+
+    function getPasswordStrength(password) {
+        if (!password) return { level: '', label: '', score: 0 };
+        const checks = validatePassword(password);
+        const passed = Object.values(checks).filter(Boolean).length;
+        
+        if (passed <= 2) return { level: 'weak', label: 'Weak', score: 1 };
+        if (passed === 3) return { level: 'medium', label: 'Medium', score: 2 };
+        if (passed === 4) return { level: 'strong', label: 'Strong', score: 3 };
+        return { level: 'very-strong', label: 'Very Strong', score: 4 };
+    }
+
+    function updatePasswordUI(prefix, password) {
+        const checks = validatePassword(password);
+        const strength = getPasswordStrength(password);
+        
+        const fillEl = document.getElementById(`${prefix}-strength-fill`);
+        const textEl = document.getElementById(`${prefix}-strength-text`);
+        
+        if (fillEl) {
+            fillEl.className = 'password-strength-fill';
+            if (strength.level) fillEl.classList.add(strength.level);
+        }
+        
+        if (textEl) {
+            textEl.className = 'password-strength-text';
+            if (strength.level) {
+                textEl.classList.add(strength.level);
+                textEl.innerHTML = `<span>${strength.label}</span><span>${strength.score}/4</span>`;
+            } else {
+                textEl.innerHTML = '';
+            }
+        }
+        
+        ['length', 'upper', 'lower', 'number', 'special'].forEach(key => {
+            const el = document.getElementById(`${prefix}-req-${key}`);
+            if (el) {
+                el.classList.toggle('valid', checks[key]);
+                const icon = el.querySelector('.check-icon');
+                if (icon) icon.innerHTML = checks[key] ? '&#10003;' : '';
+            }
+        });
+        
+        return checks;
+    }
+
     // --- GENERIC AUTH HANDLERS ---
     // UPDATED: Added 'redirectUrl' parameter
     function setupAuthLogic(prefix, fixedAccountType = null, redirectUrl = "/home.html") {
@@ -777,7 +973,9 @@
 
             const toggle = () => {
                 validate();
-                upBtn.disabled = !agree.checked || !pass.value || !confirm.value || (pass.value !== confirm.value);
+                updatePasswordUI(prefix, pass.value);
+                const passwordValid = isPasswordValid(pass.value);
+                upBtn.disabled = !agree.checked || !pass.value || !confirm.value || (pass.value !== confirm.value) || !passwordValid;
             };
 
             pass.addEventListener("input", toggle);
@@ -796,8 +994,64 @@
                 btn.disabled = true; btn.textContent = "Logging in...";
                 
                 try {
-                    const { user, error } = await signIn(loginForm.email.value.trim(), loginForm.password.value);
+                    const passwordValue = loginForm.password.value;
+                    const { user, error } = await signIn(loginForm.email.value.trim(), passwordValue);
                     if (error) throw error;
+                    
+                    // Check if password is weak - sign out and redirect to password reset
+                    if (!isPasswordValid(passwordValue)) {
+                        btn.disabled = true; btn.textContent = "Updating security...";
+                        
+                        // Sign out immediately and wait for completion
+                        try {
+                            await supabase.auth.signOut();
+                        } catch (signOutErr) {
+                            console.error("Sign out error:", signOutErr);
+                        }
+                        
+                        // Verify session is cleared
+                        const { data: { session: currentSession } } = await supabase.auth.getSession();
+                        if (currentSession) {
+                            // Force clear if still present
+                            localStorage.removeItem('sb-aazofjsssobejhkyyiqv-auth-token');
+                            sessionStorage.clear();
+                        }
+                        
+                        // Show the forgot password panel and trigger reset email
+                        const fWrap = document.getElementById(`${prefix}-forgot-wrap`);
+                        const fForm = document.getElementById(`${prefix}-forgot-form`);
+                        const userEmail = loginForm.email.value.trim();
+                        
+                        if (fWrap && fForm) {
+                            // Hide login panel, show forgot password panel
+                            document.getElementById(`${prefix}-panel-in`).classList.add('hidden');
+                            fForm.email.value = userEmail;
+                            fWrap.classList.remove('hidden');
+                            
+                            showMsg(`${prefix}-msg`, "Your password doesn't meet our updated security requirements. Sending reset link...", "error");
+                            
+                            // Auto-trigger password reset with proper error handling
+                            try {
+                                const { error: resetError } = await supabase.auth.resetPasswordForEmail(userEmail, { 
+                                    redirectTo: window.location.origin + "/reset" 
+                                });
+                                
+                                if (resetError) {
+                                    showMsg(`${prefix}-msg`, "Could not send reset email. Please click 'Send reset link' to try again.", "error");
+                                } else {
+                                    showMsg(`${prefix}-msg`, "Password reset link sent to your email. Please check your inbox and create a stronger password.", "success");
+                                }
+                            } catch (resetErr) {
+                                console.error("Reset error:", resetErr);
+                                showMsg(`${prefix}-msg`, "Could not send reset email automatically. Please click 'Send reset link' to try again.", "error");
+                            }
+                        } else {
+                            showMsg(`${prefix}-msg`, "Your password doesn't meet our security requirements. Please use 'Forgot password?' to reset it.", "error");
+                        }
+                        
+                        btn.disabled = false; btn.textContent = ogText;
+                        return;
+                    }
                     
                     showMsg(`${prefix}-msg`, "Success. Redirecting...", "success");
                     // Determine account type: Fixed (Money=live) or Dynamic (Hive=pill)
@@ -817,13 +1071,21 @@
             signupForm.onsubmit = async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById(`${prefix}-signup-btn`);
+                
+                // Final password validation before submit
+                const passwordValue = signupForm.password.value;
+                if (!isPasswordValid(passwordValue)) {
+                    showMsg(`${prefix}-msg`, "Please ensure your password meets all the requirements.", "error");
+                    return;
+                }
+                
                 btn.disabled = true; btn.textContent = "Creating...";
                 
                 try {
                     const accType = fixedAccountType || localStorage.getItem("ah_account_type") || "live";
                     
                     // --- CHANGED: Removed destructing {data} to avoid undefined error
-                    const data = await signUp(signupForm.email.value.trim(), signupForm.password.value, { account_type: accType });
+                    const data = await signUp(signupForm.email.value.trim(), passwordValue, { account_type: accType });
                     
                     if (!data.session) {
                          showMsg(`${prefix}-msg`, "Account created. Please confirm your email.", "success");

@@ -5,6 +5,17 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIs
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function validatePassword(password) {
+  const checks = {
+    length: /.{8,}/.test(password),
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[!@#$%^&*()\-_+={}[\]|;:,.?\/]/.test(password)
+  };
+  return checks.length && checks.upper && checks.lower && checks.number && checks.special;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -20,6 +31,12 @@ module.exports = async function handler(req, res) {
 
   const { email, password, metadata = {} } = body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+
+  if (!validatePassword(password)) {
+    return res.status(400).json({ 
+      error: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character'
+    });
+  }
 
   const redirectHost = req.headers.origin || `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
   const emailRedirectTo = `${redirectHost}/auth.html?confirmed=1`;

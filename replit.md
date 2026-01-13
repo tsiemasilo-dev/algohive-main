@@ -144,6 +144,16 @@ node server.js
 - `POST /api/samsub/kyc/websdk-link` - Get Sumsub WebSDK link
 - `GET /api/samsub/kyc/status/:applicantId` - Get KYC status
 
+## Password Security Requirements
+The application enforces strong password requirements:
+- Minimum 8 characters
+- At least one uppercase letter (A-Z)
+- At least one lowercase letter (a-z)
+- At least one number (0-9)
+- At least one special character (!@#$%^&*()-_+={}[]|;:,.?/)
+
+The signup page displays a password strength indicator (Weak/Medium/Strong/Very Strong) with a visual progress bar. Users with existing weak passwords are prompted to update when logging in.
+
 ## Environment Variables (Optional)
 The app has hardcoded defaults but can be configured via:
 - `SUPABASE_URL` - Supabase project URL

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KYC Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+    }
+    
+    .btn-olive {
+      background: #7e8d52;
+      color: #fff;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-olive:hover {
+      filter: brightness(0.92);
+    }
+    
+    .btn-olive:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="bg-slate-50 p-6">
+  
+  <!-- Form Section -->
+  <div id="formSection" class="max-w-md mx-auto bg-white rounded-xl shadow-lg p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-slate-900">
+        <i class="fa-solid fa-id-card text-amber-600 mr-2"></i>
+        KYC Verification
+      </h2>
+      <button onclick="window.close()" class="text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <div class="text-sm text-slate-700 mb-6">
+      <p class="mb-3">Start your KYC (Know Your Customer) verification process.</p>
+      <p class="text-slate-600 mb-2">This secure verification takes approximately 3-5 minutes and requires:</p>
+      <ul class="list-disc ml-5 space-y-1 text-slate-600">
+        <li>Valid government-issued ID</li>
+        <li>Proof of address</li>
+        <li>Selfie verification</li>
+      </ul>
+    </div>
+
+    <form id="kycForm" class="space-y-4">
+      <div>
+        <label for="userId" class="block text-sm font-medium text-slate-700 mb-1">User ID</label>
+        <input type="text" id="userId" name="userId" required readonly
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+          placeholder="Loading...">
+      </div>
+
+      <div>
+        <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+        <input type="email" id="email" name="email" required readonly
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500"
+          placeholder="Loading...">
+      </div>
+
+      <div>
+        <label for="phone" class="block text-sm font-medium text-slate-700 mb-1">Phone Number (Optional)</label>
+        <input type="tel" id="phone" name="phone"
+          class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          placeholder="+27 123 456 789">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="window.close()" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+          Cancel
+        </button>
+        <button type="submit" id="submitBtn" class="btn-olive px-4 py-2 rounded-lg font-semibold inline-flex items-center gap-2">
+          <i class="fa-solid fa-shield-check"></i>
+          Start Verification
+        </button>
+      </div>
+    </form>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="hidden mt-4 p-4 rounded-lg text-sm"></div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingSection" class="hidden max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 text-center">
+    <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
+    <p class="mt-4 text-slate-600">Creating verification session...</p>
+  </div>
+
+  <!-- iFrame Section -->
+  <div id="iframeSection" class="hidden max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-4">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-900">Complete Your Verification</h3>
+      <button onclick="closeVerification()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg">
+        <i class="fa-solid fa-times mr-2"></i>Close
+      </button>
+    </div>
+    <iframe id="verificationFrame" 
+      sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
+      class="w-full h-[80vh] border-0 rounded-lg"></iframe>
+    
+    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <p class="text-sm text-blue-800">
+        <i class="fa-solid fa-info-circle mr-2"></i>
+        Complete the verification process in the frame above. This window will close automatically when done.
+      </p>
+    </div>
+  </div>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    // Import Supabase config from existing setup
+    let supabase;
+    try {
+      const { supabase: sb } = await import('/js/supabase.js');
+      supabase = sb;
+      console.log('✅ Supabase imported from existing config');
+    } catch (e) {
+      console.warn('⚠️  Could not import Supabase config:', e);
+      // Fallback - will fail gracefully in loadUserData
+    }
+
+    // API Configuration - Vercel serverless functions
+    const API_BASE_URL = '/api/kyc';
+
+    let pollingInterval = null;
+
+    // Load user data on page load
+    async function loadUserData() {
+      try {
+        console.log('🔵 Loading user data...');
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error) throw error;
+        if (!user) {
+          showStatus('Please log in first.', 'error');
+          setTimeout(() => window.close(), 2000);
+          return;
+        }
+
+        console.log('✅ User loaded:', user.id);
+        document.getElementById('userId').value = user.id;
+        document.getElementById('email').value = user.email || '';
+
+        // Try to get phone from profile
+        const { data: profile } = await supabase.from('profiles')
+          .select('phone')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (profile?.phone) {
+          document.getElementById('phone').value = profile.phone;
+        }
+      } catch (error) {
+        console.error('❌ Error loading user:', error);
+        showStatus('Error loading user data: ' + error.message, 'error');
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type = 'info') {
+      const statusEl = document.getElementById('statusMessage');
+      statusEl.style.whiteSpace = 'pre-wrap';
+      statusEl.textContent = message;
+      statusEl.className = 'mt-4 p-4 rounded-lg text-sm ';
+      
+      if (type === 'error') {
+        statusEl.className += 'bg-rose-100 text-rose-900 border border-rose-200';
+      } else if (type === 'success') {
+        statusEl.className += 'bg-emerald-100 text-emerald-900 border border-emerald-200';
+      } else {
+        statusEl.className += 'bg-blue-100 text-blue-900 border border-blue-200';
+      }
+      
+      statusEl.classList.remove('hidden');
+    }
+
+    // Handle form submission
+    document.getElementById('kycForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      console.log('🔵 Form submitted');
+
+      const submitBtn = document.getElementById('submitBtn');
+      const formSection = document.getElementById('formSection');
+      const loadingSection = document.getElementById('loadingSection');
+
+      const userId = document.getElementById('userId').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+
+      // Show loading
+      formSection.classList.add('hidden');
+      loadingSection.classList.remove('hidden');
+
+      try {
+        console.log('🔵 Calling API:', `${API_BASE_URL}/create-session`);
+        
+        const response = await fetch(`${API_BASE_URL}/create-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, email, phone: phone || undefined })
+        });
+
+        const data = await response.json();
+        console.log('📊 API Response:', data);
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create verification session');
+        }
+
+        // Handle TEST MODE
+        if (data.mode === 'TEST') {
+          console.log('⚠️  Running in TEST MODE');
+          loadingSection.classList.add('hidden');
+          formSection.classList.remove('hidden');
+          
+          showStatus(
+            `✅ Server communication successful! (Test Mode)\n\n` +
+            `Session ID: ${data.sessionId}\n` +
+            `Message: ${data.message}\n\n` +
+            `Configure DIDIT_API_KEY and DIDIT_WORKFLOW_ID in Vercel environment variables for production KYC.`,
+            'success'
+          );
+          
+          // Optionally close after showing success
+          setTimeout(() => {
+            if (confirm('Server test successful! Close this window?')) {
+              window.close();
+            }
+          }, 2000);
+          return;
+        }
+
+        // Handle PRODUCTION MODE with real Didit API
+        console.log('✅ Session created:', data.sessionId);
+
+        // Show iframe with verification URL
+        const iframe = document.getElementById('verificationFrame');
+        const iframeSection = document.getElementById('iframeSection');
+
+        iframe.src = data.sessionUrl || data.verification_url;
+        loadingSection.classList.add('hidden');
+        iframeSection.classList.remove('hidden');
+
+        // Start polling for status
+        startPolling(data.sessionId || data.session_id);
+
+      } catch (error) {
+        console.error('❌ Error:', error);
+        loadingSection.classList.add('hidden');
+        formSection.classList.remove('hidden');
+        showStatus(error.message, 'error');
+      }
+    });
+
+    // Poll for verification status
+    function startPolling(sessionId) {
+      console.log('🔄 Starting status polling for:', sessionId);
+      
+      pollingInterval = setInterval(async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/session/${sessionId}`);
+          const data = await response.json();
+          
+          console.log('📊 Status:', data);
+
+          // Check if verification is complete
+          if (data.status === 'Approved' || data.status === 'approved') {
+            clearInterval(pollingInterval);
+            console.log('✅ Verification verified!');
+            
+            // Update Supabase
+            const userId = document.getElementById('userId').value;
+            await supabase.from('profiles')
+              .update({ 
+                kyc_status: 'verified',
+                kyc_approved_at: new Date().toISOString()
+              })
+              .eq('id', userId);
+            
+            // Notify parent window to refresh gates
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'KYC_APPROVED' }, '*');
+            }
+            
+            alert('✅ KYC Verification Approved! You can now access all features.');
+            window.close();
+          } else if (data.status === 'Rejected' || data.status === 'rejected' || data.status === 'Declined') {
+            clearInterval(pollingInterval);
+            console.log('❌ Verification rejected');
+            alert('❌ Verification was rejected. Please contact support.');
+            window.close();
+          }
+        } catch (error) {
+          console.error('❌ Polling error:', error);
+        }
+      }, 3000); // Poll every 3 seconds
+    }
+
+    // Close verification iframe
+    window.closeVerification = function() {
+      if (confirm('Are you sure you want to close? You can restart verification anytime.')) {
+        if (pollingInterval) clearInterval(pollingInterval);
+        window.close();
+      }
+    };
+
+    // Load user data when page loads
+    loadUserData();
+
+    // Cleanup on window close
+    window.addEventListener('beforeunload', () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+    });
+  </script>
+</body>
+</html>

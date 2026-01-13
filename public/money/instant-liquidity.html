@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AlgoMoney — Instant Liquidity</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --primary: #582c89;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --line: #e5e7ef;
+    }
+
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Lock body scroll */
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- LAYOUT GRID --- */
+    #layout { 
+        display: grid; 
+        grid-template-columns: 1fr; 
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+    @media (min-width: 768px) { #layout { grid-template-columns: 280px 1fr; } }
+
+    /* --- SIDEBAR (Exact from Home.html) --- */
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 280px;
+      position: fixed;
+      top: 0; bottom: 0; z-index: 50;
+      background: #fff;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+    }
+    @media (min-width: 768px) {
+      #ah-sidebar { position: sticky; height: 100%; transform: translateX(0); z-index: auto; }
+    }
+    #ah-sidebar.is-open { transform: translateX(0); }
+    #ah-overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); }
+
+    /* Brand switcher */
+    #ah-brand-switcher { position: relative; }
+    #ah-brand-switcher summary { list-style: none; }
+    #ah-brand-switcher summary::-webkit-details-marker { display: none; }
+
+    .brand-toggle {
+      margin: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff);
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4);
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    #ah-brand-switcher[open] .brand-toggle {
+      border-color: #cbd5e1; background: #fff;
+      box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55);
+    }
+    .brand-marker {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: #111827; display: grid; place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .brand-menu {
+      position: absolute; left: 12px; right: 12px; top: calc(100% - 6px);
+      border: 1px solid #e2e8f0; border-radius: 16px; background: #fff;
+      box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5);
+      padding: 12px; display: grid; gap: 8px; z-index: 10;
+    }
+    .brand-menu-header {
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+      font-weight: 700; color: #475569; padding: 4px 4px 2px;
+    }
+    .brand-option {
+      display: flex; flex-direction: row; align-items: center; gap: 12px;
+      padding: 12px; border-radius: 12px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .brand-option:hover { background: linear-gradient(135deg, #000000, #7c3aed); color: white; }
+    .brand-option img {
+      width: 38px; height: 38px; border-radius: 10px; object-fit: contain;
+      background: #fff; border: 1px solid #e2e8f0; padding: 6px;
+    }
+
+    /* --- SCROLLING CONTAINER (Fixed) --- */
+    main {
+        overflow: hidden; /* Prevent main itself from scrolling */
+        display: flex;
+        flex-direction: column;
+    }
+    #main-scroll-container {
+        flex: 1; /* Take remaining space */
+        overflow-y: auto; /* Enable scroll here */
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 120px; /* Space for bottom nav on mobile */
+    }
+    @media (min-width: 768px) { #main-scroll-container { padding-bottom: 40px; } }
+
+    /* --- CARDS & PANELS --- */
+    .card-surface {
+        background: var(--surface);
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        border-radius: 24px;
+    }
+    
+    .meter-card {
+        background: linear-gradient(160deg, #f7f8ff 0%, #eef2ff 30%, #f6f6ff 100%);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .calc-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* Buttons */
+    .pill-btn {
+        background: var(--primary); color: white;
+        padding: 0 20px; height: 44px; border-radius: 12px;
+        font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(88, 44, 137, 0.2);
+    }
+    .pill-btn:active { transform: scale(0.97); }
+    
+    .meter-tab-active {
+        background: linear-gradient(120deg, #4c1d95, #6d28d9);
+        color: #fff;
+        box-shadow: 0 2px 4px rgba(76, 29, 149, 0.2);
+    }
+
+    /* Search Input */
+    .search-input-wrapper {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        display: flex; align-items: center;
+        transition: all 0.2s;
+        height: 44px;
+        padding: 0 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .search-input-wrapper:focus-within {
+        border-color: #cbd5e1;
+        box-shadow: 0 0 0 3px rgba(226, 232, 240, 0.4);
+    }
+    .search-input {
+        background: transparent; border: none; outline: none;
+        width: 100%; font-size: 13px; font-weight: 500; color: #0f172a;
+    }
+    
+    .card-search-input {
+        background: white; border: 1px solid #e2e8f0; border-radius: 999px;
+        padding: 4px 12px 4px 32px; font-size: 12px; font-weight: 500; width: 140px;
+        transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .card-search-input:focus { outline: none; border-color: var(--primary); width: 160px; box-shadow: 0 0 0 3px rgba(88, 44, 137, 0.1); }
+
+    /* --- INPUTS --- */
+    .ios-input-group {
+        background: #f8fafc; border-radius: 16px; padding: 14px 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        border: 1px solid transparent; transition: all 0.2s;
+    }
+    .ios-input-group:focus-within { background: #fff; border-color: #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+
+    input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
+        background: white; border: 1px solid rgba(0,0,0,0.05); 
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        margin-top: -9px; transition: transform 0.1s;
+    }
+
+    /* --- ANIMATIONS --- */
+    .hidden-view { display: none !important; opacity: 0; pointer-events: none; }
+    #detail-view { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s; }
+    .arc-path { transition: stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    
+    .animate-in { animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Detail View Buttons */
+    .btn-premium {
+      background: linear-gradient(135deg, #57169f, #4c1d95);
+      color: white; border: none;
+      box-shadow: 0 8px 20px -5px rgba(87, 22, 159, 0.4);
+      transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+    }
+    .btn-premium:active { transform: scale(0.98); }
+    .btn-premium:disabled { background: #e2e8f0; color: #94a3b8; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
+
+    .btn-premium-outline {
+        background-color: white; color: var(--primary);
+        border: 1px solid rgba(88, 44, 137, 0.15);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-premium-outline:hover { background-color: #fcfaff; }
+    
+    /* Modals */
+    .modal-backdrop { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+    .animate-popIn { animation: popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275); }
+    @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .animate-slideUp { animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+</head>
+<body class="bg-[var(--bg)] text-slate-900">
+
+  <div id="layout">
+    <div id="ah-overlay" class="hidden md:hidden"></div>
+
+    <aside id="ah-sidebar" data-collapsed="false">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoMoney</div>
+            <div class="text-[11px] text-slate-500 label">Workspace</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch workspace</div>
+          <a href="/demo/dashboard.html" class="brand-option">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Markets Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoHive Markets</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Main</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Accounts</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Services</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-purple-50 text-purple-700 font-semibold" href="#">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-send-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Instant Liquidity</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Cards</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a class="h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0 flex items-center justify-center text-slate-600 transition-colors" href="#">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      </div>
+    </aside>
+
+    <main class="relative flex-1 min-w-0 bg-[var(--bg)] flex flex-col h-full overflow-hidden">
+      
+      <div class="md:hidden px-5 pt-6 pb-2 flex justify-between items-center z-20 bg-[var(--bg)]/95 backdrop-blur-sm border-b border-slate-200/50">
+         <button id="mobile-menu-btn" class="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
+            <i class="fa-solid fa-bars"></i>
+         </button>
+         <h1 class="text-sm font-bold text-slate-900">Instant Liquidity</h1>
+         <div class="w-10"></div>
+      </div>
+
+      <div id="main-scroll-container">
+        <div class="pt-6 pb-24 md:pt-8 md:pb-12 px-5 md:px-8 max-w-7xl mx-auto space-y-8 animate-popIn">
+            
+            <div class="hidden md:grid grid-cols-2 gap-6 items-stretch min-h-[300px]">
+                
+                <aside class="meter-card rounded-2xl shadow-sm border border-slate-100 p-5 space-y-6 flex flex-col justify-between">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Total Available Liquidity</p>
+                            <p class="text-xs text-slate-500">Across all portfolios</p>
+                        </div>
+                        <button id="pledge-history-btn-desktop" class="text-[13px] font-semibold text-sky-700 hover:text-sky-800 transition-colors">
+                            Pledge History
+                        </button>
+                    </div>
+
+                    <div class="relative w-full flex justify-center py-2">
+                        <svg viewBox="0 0 400 220" class="w-full h-40 overflow-visible">
+                            <defs>
+                                <linearGradient id="meterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#22c55e"/>
+                                    <stop offset="100%" stop-color="#4ade80"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M40 170 A160 160 0 0 1 360 170" fill="none" stroke="#e5e7eb" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
+                            <path id="meter-active-desktop" d="M40 170 A160 160 0 0 1 360 170" fill="none" stroke="url(#meterGradient)" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 1"/>
+                            <text id="total-meter-value-desktop" x="200" y="155" text-anchor="middle" font-size="48" font-weight="800" fill="#0f172a" style="font-family: 'Inter', sans-serif;">R34,900</text>
+                            <text x="200" y="180" text-anchor="middle" font-size="13" font-weight="600" fill="#16a34a">Ready to Pledge</text>
+                        </svg>
+                    </div>
+
+                    <p class="text-center text-xs font-semibold text-slate-500 -mt-6">*Fees may apply</p>
+
+                    <div class="grid grid-cols-[1fr_1.2fr] gap-3 mt-auto">
+                        <button id="pledge-all-btn-desktop" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full meter-tab-active text-xs font-bold shadow-md hover:scale-[1.02] transition-transform">
+                            <i class="fa-solid fa-bolt"></i> Pledge All
+                        </button>
+                        <div class="relative">
+                            <input type="text" id="desktop-search" placeholder="Search..." class="bg-white border border-slate-200 rounded-full py-2.5 pl-9 pr-3 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-purple-500 w-full shadow-sm">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="calc-card rounded-2xl p-6 shadow-sm flex flex-col justify-between h-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-lg">Pledge Calculator</h3>
+                            <p class="text-xs text-slate-500">Estimate your repayment</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-[#f8fafc] p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Amount</span>
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-slate-900 text-lg">R</span>
+                                <input type="number" id="calc-amount" class="bg-transparent text-right font-bold text-lg text-slate-900 focus:outline-none w-28" value="10000">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-slate-500 mb-3">
+                                <span>Term</span>
+                                <span id="calc-term-display" class="text-purple-700">12 Months</span>
+                            </div>
+                            <input type="range" id="calc-term" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600" min="1" max="24" value="12">
+                            <div class="flex justify-between mt-2 px-1 text-[10px] font-bold text-slate-300">
+                                <span>1M</span><span>24M</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-end pt-4 border-t border-slate-100 mt-auto">
+                        <span class="text-sm font-medium text-slate-500">Est. Repayment</span>
+                        <div class="text-right">
+                            <span id="calc-repayment" class="text-2xl font-extrabold text-[#582c89]">R920</span>
+                            <span class="text-sm text-slate-400 font-normal">/pm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mobile-view" class="md:hidden">
+                 <div class="meter-card rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4 flex flex-col">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900">Total Available Liquidity</p>
+                            <p class="text-xs text-slate-500">Across all portfolios</p>
+                        </div>
+                        <button id="pledge-history-btn-mobile" class="text-[13px] font-semibold text-sky-700">
+                            Pledge History
+                        </button>
+                    </div>
+
+                    <div class="relative w-full flex justify-center py-2">
+                        <svg viewBox="0 0 400 220" class="w-full h-40 overflow-visible">
+                            <path d="M40 170 A160 160 0 0 1 360 170" fill="none" stroke="#e5e7eb" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
+                            <path id="meter-active-mobile" d="M40 170 A160 160 0 0 1 360 170" fill="none" stroke="#22c55e" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 1"/>
+                            <text id="total-meter-value-mobile" x="200" y="155" text-anchor="middle" font-size="48" font-weight="800" fill="#0f172a" style="font-family: 'Inter', sans-serif;">R34,900</text>
+                            <text x="200" y="180" text-anchor="middle" font-size="13" font-weight="600" fill="#16a34a">Ready to Pledge</text>
+                        </svg>
+                    </div>
+
+                    <p class="text-center text-xs font-semibold text-slate-500 -mt-4">*Fees may apply</p>
+
+                    <div class="grid grid-cols-[1fr_1.2fr] gap-3 mt-auto">
+                        <button id="pledge-all-btn-mobile" class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full meter-tab-active text-xs font-bold shadow-md active:scale-[0.98] transition-transform">
+                            <i class="fa-solid fa-bolt"></i> Pledge All
+                        </button>
+                        <div class="relative">
+                            <input type="text" id="mobile-search" placeholder="Search..." class="bg-white border border-slate-200 rounded-full py-2.5 pl-9 pr-3 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-purple-500 w-full shadow-sm">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+            <section class="card-surface bg-white overflow-hidden border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between px-6 py-5 border-b border-slate-50">
+                    <h3 class="font-bold text-slate-900 tracking-tight">Qualifying Strategies</h3>
+                    <button class="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">View All</button>
+                </div>
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50">
+                                <th class="px-6 py-4 pl-8">Strategy</th>
+                                <th class="px-6 py-4">Code</th>
+                                <th class="px-6 py-4 text-right">Available</th>
+                                <th class="px-6 py-4 text-right">LTV</th>
+                                <th class="px-6 py-4 text-right pr-8">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktop-table-body" class="text-sm font-medium"></tbody>
+                    </table>
+                </div>
+                <div id="mobile-list-body" class="md:hidden p-4 space-y-3"></div>
+            </section>
+
+        </div>
+      </div>
+
+      <div id="detail-view" class="hidden-view fixed inset-0 z-[60] flex justify-end">
+         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" id="detail-backdrop"></div>
+         
+         <div class="relative w-full md:max-w-[420px] bg-[#f8fafc] h-full shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-out">
+            <div class="px-6 pt-12 md:pt-8 pb-4 flex items-center justify-between">
+                <button id="detail-back-btn" class="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors active:scale-90">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-slate-900 font-semibold text-sm tracking-wide">Pledge Position</div>
+                <div class="w-10"></div>
+            </div>
+
+            <div class="px-6 mb-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <h1 id="detail-title" class="text-2xl font-bold text-slate-900 tracking-tight leading-tight">Strategy Name</h1>
+                    <span id="detail-trend" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">+12.4%</span>
+                </div>
+                <p class="text-slate-500 text-xs font-medium">Max LTV: 50% • Instant Settlement</p>
+            </div>
+
+            <div class="h-48 w-full relative mb-6 px-6">
+                <canvas id="detailChart"></canvas>
+            </div>
+
+            <div class="flex-1 bg-white rounded-t-[32px] p-8 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.03)] overflow-y-auto">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Available to Pledge</p>
+                        <p id="detail-max" class="text-3xl font-bold text-slate-900 tracking-tight">R0.00</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Prime Interest</p>
+                        <p class="text-slate-900 text-lg font-bold">10.5%</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6 mb-8">
+                    <div class="ios-input-group">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Repayment</span>
+                        <input type="date" id="pledge-date" class="text-sm font-bold text-slate-900 bg-transparent text-right outline-none cursor-pointer">
+                    </div>
+
+                    <div class="ios-input-group">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Amount</span>
+                        <div class="flex items-center gap-1">
+                            <span class="text-slate-900 font-bold text-lg">R</span>
+                            <input type="number" id="pledge-input" class="bg-transparent text-right text-lg font-bold text-slate-900 focus:outline-none w-32 placeholder-slate-300" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="pt-2 px-1">
+                        <input type="range" id="pledge-slider" min="0" max="100" value="0" step="1" class="accent-purple-600 cursor-pointer">
+                        <div class="flex justify-between mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-wide">
+                            <span>Min</span>
+                            <span>Max</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-auto pt-4">
+                    <button id="contract-trigger-btn" disabled class="flex-1 btn-premium h-14 rounded-2xl text-sm font-bold tracking-wide shadow-lg shadow-purple-900/20 disabled:opacity-50 disabled:shadow-none transition-all">
+                        Pledge
+                    </button>
+                    <button id="view-contract-btn" class="flex-1 btn-premium-outline h-14 rounded-2xl text-sm font-bold tracking-wide hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-contract text-slate-400"></i> Contract
+                    </button>
+                </div>
+            </div>
+         </div>
+      </div>
+
+    </main>
+  </div>
+
+  <nav class="md:hidden fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur-xl z-50 pb-safe">
+    <div class="grid grid-cols-4 h-16">
+      <button class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-purple-700 transition-colors">
+        <i class="fa-solid fa-house text-lg"></i>
+      </button>
+      <button class="flex flex-col items-center justify-center gap-1 text-purple-700 relative">
+        <i class="fa-solid fa-bolt text-lg"></i>
+        <div class="absolute -bottom-1 w-1 h-1 bg-purple-700 rounded-full"></div>
+      </button>
+      <button class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-purple-700 transition-colors">
+        <i class="fa-regular fa-credit-card text-lg"></i>
+      </button>
+      <button class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-purple-700 transition-colors">
+        <i class="fa-regular fa-user text-lg"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div id="contract-modal" class="fixed inset-0 z-[70] hidden flex flex-col justify-center items-center p-4 modal-backdrop">
+    <div class="bg-white rounded-[32px] w-full max-w-sm max-h-[85vh] overflow-hidden flex flex-col shadow-2xl animate-popIn">
+        <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+            <h3 class="text-lg font-bold text-slate-900">Loan Agreement</h3>
+            <button id="close-contract-modal" class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto no-scrollbar">
+            <div class="space-y-4 mb-6">
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="text-sm text-slate-500 font-medium">Principal</span>
+                    <span id="contract-principal" class="text-sm font-bold text-slate-900">R0.00</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span class="text-sm text-slate-500 font-medium">Repayment</span>
+                    <span id="contract-date-display" class="text-sm font-bold text-slate-900"></span>
+                </div>
+                <div class="bg-slate-50 rounded-2xl p-4 mt-2 border border-slate-100">
+                    <div class="flex justify-between pt-1">
+                        <span class="text-sm font-bold text-slate-900">Total Repayment</span>
+                        <span id="contract-total" class="text-base font-bold text-purple-700">R0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-[11px] text-slate-400 leading-relaxed mb-6 text-justify font-medium">
+                By proceeding, you acknowledge that you have read and understood the terms. The asset listed will serve as collateral.
+            </div>
+            <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-2xl cursor-pointer hover:border-purple-600 transition-all bg-slate-50/50 group">
+                <div class="relative flex items-center pt-0.5">
+                    <input type="checkbox" id="contract-checkbox" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-slate-300 shadow-sm checked:border-purple-600 checked:bg-purple-600 transition-all">
+                    <i class="fa-solid fa-check text-white absolute left-1 top-1.5 text-[10px] opacity-0 peer-checked:opacity-100 pointer-events-none transform -translate-y-0.5 translate-x-px"></i>
+                </div>
+                <div class="text-xs text-slate-600 font-bold group-hover:text-purple-700 transition-colors">I agree to the Terms & Conditions.</div>
+            </label>
+            <div class="mt-6">
+                <button id="contract-pledge-btn" disabled class="w-full btn-premium h-12 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:shadow-none">
+                    Confirm Pledge
+                </button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="auth-modal" class="fixed inset-0 z-[80] hidden flex flex-col justify-end md:justify-center md:items-center modal-backdrop">
+    <div class="bg-white rounded-t-[32px] md:rounded-[32px] w-full md:max-w-sm p-8 pb-12 shadow-2xl animate-slideUp">
+        <div class="text-center mb-8">
+            <h3 class="text-xl font-bold text-slate-900">Authorize</h3>
+            <p class="text-sm text-slate-500 mt-2">Enter your PIN to confirm.</p>
+        </div>
+        <div class="flex justify-center gap-4 mb-8">
+             <input type="password" maxlength="4" class="w-full h-14 text-center text-2xl font-bold tracking-[0.5em] border-b-2 border-slate-200 focus:border-purple-600 focus:outline-none bg-transparent transition-colors" placeholder="••••">
+        </div>
+        <button id="confirm-auth-btn" class="w-full btn-premium h-14 rounded-2xl font-bold text-lg shadow-xl shadow-purple-900/20">Confirm</button>
+        <button id="close-auth-modal" class="w-full text-slate-400 font-bold py-4 text-sm hover:text-slate-600 transition-colors">Cancel</button>
+    </div>
+  </div>
+
+  <div id="success-modal" class="fixed inset-0 z-[90] bg-white hidden flex flex-col items-center justify-center p-6 animate-fadeIn">
+    <div class="w-full max-w-sm mx-auto flex flex-col items-center animate-popIn">
+         <div class="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-8 relative">
+            <div class="absolute inset-0 bg-green-50 rounded-full animate-ping opacity-75"></div>
+            <i class="fa-solid fa-check text-4xl text-green-500 relative z-10"></i>
+         </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Success!</h2>
+        <p class="text-sm text-slate-500 mb-8 text-center">Your liquidity has been secured.</p>
+        <div class="bg-slate-50 rounded-3xl p-8 w-full mb-8 text-center border border-slate-100">
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">Amount</span>
+            <h1 id="success-amount" class="text-4xl font-extrabold text-slate-900 mt-2 tracking-tight">R0.00</h1>
+            <p id="success-source" class="text-sm font-medium text-slate-500 mt-2">Bitcoin Alpha</p>
+        </div>
+        <button id="close-success-btn" class="w-full btn-premium h-14 rounded-2xl font-bold text-lg shadow-lg">Done</button>
+    </div>
+  </div>
+
+  <script nonce="ALGOHIVE">
+    const STRATEGIES = [
+        { id: 1, name: "Bitcoin Alpha", code: "BTC-001", available: 12450.00, ltv: "50%", trend: "+12.4%", logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
+        { id: 2, name: "Tech Growth ETF", code: "TECH-99", available: 8400.00, ltv: "45%", trend: "+8.2%", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/2048px-Microsoft_logo.svg.png" },
+        { id: 3, name: "Ethereum Yield", code: "ETH-YLD", available: 4200.00, ltv: "50%", trend: "-2.1%", logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
+        { id: 4, name: "Tesla Corp", code: "TSLA-X", available: 3150.00, ltv: "40%", trend: "+0.5%", logo: "https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png" },
+        { id: 5, name: "Gold Reserves", code: "PAXG-01", available: 5200.00, ltv: "60%", trend: "+1.1%", logo: "https://cryptologos.cc/logos/pax-gold-paxg-logo.png" },
+    ];
+
+    let currentStrategy = null;
+    let chartInstance = null;
+    let isPledgeAll = false;
+    let totalLiquidity = 34900; 
+
+    // DOM
+    const sidebar = document.getElementById('ah-sidebar');
+    const overlay = document.getElementById('ah-overlay');
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const desktopTable = document.getElementById('desktop-table-body');
+    const mobileList = document.getElementById('mobile-list-body');
+    const desktopSearch = document.getElementById('desktop-search');
+    const mobileSearch = document.getElementById('mobile-search');
+    const detailView = document.getElementById('detail-view');
+    const detailBackBtn = document.getElementById('detail-back-btn');
+    const detailBackdrop = document.getElementById('detail-backdrop');
+    
+    // Calc
+    const calcAmount = document.getElementById('calc-amount');
+    const calcTerm = document.getElementById('calc-term');
+    const calcTermDisplay = document.getElementById('calc-term-display');
+    const calcRepayment = document.getElementById('calc-repayment');
+
+    // Controls
+    const pInput = document.getElementById('pledge-input');
+    const pSlider = document.getElementById('pledge-slider');
+    const pDate = document.getElementById('pledge-date');
+    const pTriggerBtn = document.getElementById('contract-trigger-btn');
+    const viewContractBtn = document.getElementById('view-contract-btn');
+    const pledgeAllDesktop = document.getElementById('pledge-all-btn-desktop');
+    const pledgeAllMobile = document.getElementById('pledge-all-btn-mobile');
+
+    // Modals
+    const contractModal = document.getElementById('contract-modal');
+    const authModal = document.getElementById('auth-modal');
+    const successModal = document.getElementById('success-modal');
+    const closeContractBtn = document.getElementById('close-contract-modal');
+    const closeAuthBtn = document.getElementById('close-auth-modal');
+    const closeSuccessBtn = document.getElementById('close-success-btn');
+    const contractCheckbox = document.getElementById('contract-checkbox');
+    const contractPledgeBtn = document.getElementById('contract-pledge-btn');
+    const confirmAuthBtn = document.getElementById('confirm-auth-btn');
+
+    function init() {
+        totalLiquidity = STRATEGIES.reduce((sum, s) => sum + s.available, 0);
+        
+        setTimeout(() => {
+            const el = document.getElementById('meter-active-mobile');
+            const elDesk = document.getElementById('meter-active-desktop');
+            const len = 1005; 
+            const dash = len * 0.75; 
+            if(el) { el.style.strokeDasharray = `${dash} ${len}`; }
+            if(elDesk) { elDesk.style.strokeDasharray = `${dash} ${len}`; }
+        }, 100);
+
+        renderLists(STRATEGIES);
+        
+        if (mobileBtn) mobileBtn.addEventListener('click', () => { sidebar.classList.add('is-open'); overlay.classList.remove('hidden'); });
+        if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('is-open'); overlay.classList.add('hidden'); });
+
+        const today = new Date();
+        today.setDate(today.getDate() + 1);
+        pDate.min = today.toISOString().split('T')[0];
+    }
+
+    const updateCalculator = () => {
+        const amount = parseFloat(calcAmount.value) || 0;
+        const term = parseInt(calcTerm.value);
+        const totalWithInterest = amount * (1 + (0.105 * (term/12)));
+        const monthly = totalWithInterest / term;
+        calcTermDisplay.textContent = `${term} Month${term > 1 ? 's' : ''}`;
+        calcRepayment.textContent = `R${Math.ceil(monthly).toLocaleString()}`;
+    };
+    if(calcAmount) calcAmount.addEventListener('input', updateCalculator);
+    if(calcTerm) calcTerm.addEventListener('input', updateCalculator);
+
+    function renderLists(data) {
+        desktopTable.innerHTML = data.map(s => `
+            <tr class="border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors group strategy-row" data-id="${s.id}">
+                <td class="px-6 py-4 pl-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white p-1.5 border border-slate-100 shadow-sm flex items-center justify-center">
+                            <img src="${s.logo}" class="w-full h-full object-contain">
+                        </div>
+                        <p class="font-bold text-slate-900 group-hover:text-purple-700 transition-colors">${s.name}</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-slate-500 font-mono text-xs hidden sm:table-cell">${s.code}</td>
+                <td class="px-6 py-4 text-right font-bold text-slate-900">R${s.available.toLocaleString()}</td>
+                <td class="px-6 py-4 text-right text-slate-600 font-medium">${s.ltv}</td>
+                <td class="px-6 py-4 text-right pr-8">
+                    <span class="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-slate-100 text-slate-600 text-xs font-bold group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">View</span>
+                </td>
+            </tr>
+        `).join('');
+
+        mobileList.innerHTML = data.map(s => `
+            <div class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl active:scale-95 transition-transform cursor-pointer strategy-card shadow-sm hover:shadow-md" data-id="${s.id}">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 p-1.5 border border-slate-100 flex items-center justify-center">
+                        <img src="${s.logo}" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">${s.name}</h3>
+                        <p class="text-[10px] text-slate-400 font-bold">LTV ${s.ltv}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-slate-900 text-sm">R${s.available.toLocaleString()}</div>
+                    <div class="text-[10px] text-emerald-600 font-bold">Available</div>
+                </div>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.strategy-row, .strategy-card').forEach(el => {
+            el.addEventListener('click', () => openDetail(parseInt(el.dataset.id)));
+        });
+    }
+
+    const filter = (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = STRATEGIES.filter(s => s.name.toLowerCase().includes(term) || s.code.toLowerCase().includes(term));
+        renderLists(filtered);
+    };
+    if(desktopSearch) desktopSearch.addEventListener('input', filter);
+    if(mobileSearch) mobileSearch.addEventListener('input', filter);
+
+    function openDetail(id) {
+        currentStrategy = STRATEGIES.find(s => s.id === id);
+        if(!currentStrategy) return;
+        isPledgeAll = false;
+        populateDetail(currentStrategy.name, currentStrategy.trend, currentStrategy.available);
+    }
+
+    const handlePledgeAll = () => {
+        isPledgeAll = true;
+        currentStrategy = null;
+        populateDetail("Multi-Asset Pledge", "Diversified", totalLiquidity);
+    };
+
+    function populateDetail(title, trend, max) {
+        document.getElementById('detail-title').textContent = title;
+        document.getElementById('detail-trend').textContent = trend;
+        document.getElementById('detail-max').textContent = `R${max.toLocaleString()}`;
+        
+        resetInputs();
+        detailView.classList.remove('hidden-view');
+        
+        requestAnimationFrame(() => {
+            const sheet = detailView.querySelector('div.transform');
+            if(sheet) sheet.style.transform = 'translateX(0)';
+        });
+        renderChart();
+    }
+
+    if(pledgeAllDesktop) pledgeAllDesktop.addEventListener('click', handlePledgeAll);
+    if(pledgeAllMobile) pledgeAllMobile.addEventListener('click', handlePledgeAll);
+
+    const closeDetail = () => {
+        const sheet = detailView.querySelector('div.transform');
+        if(sheet) sheet.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            detailView.classList.add('hidden-view');
+        }, 300);
+    };
+
+    if(detailBackBtn) detailBackBtn.addEventListener('click', closeDetail);
+    if(detailBackdrop) detailBackdrop.addEventListener('click', closeDetail);
+
+    function resetInputs() {
+        pInput.value = ''; pSlider.value = 0; pDate.value = '';
+        pTriggerBtn.disabled = true;
+    }
+
+    function checkInputs() {
+        if(pInput.value > 0 && pDate.value) pTriggerBtn.disabled = false;
+        else pTriggerBtn.disabled = true;
+    }
+
+    pSlider.addEventListener('input', (e) => {
+        const max = isPledgeAll ? totalLiquidity : (currentStrategy ? currentStrategy.available : 0);
+        const val = (e.target.value / 100) * max;
+        pInput.value = Math.floor(val);
+        checkInputs();
+    });
+
+    pInput.addEventListener('input', (e) => {
+        const max = isPledgeAll ? totalLiquidity : (currentStrategy ? currentStrategy.available : 0);
+        let val = parseFloat(e.target.value);
+        if(val > max) val = max;
+        pSlider.value = (val / max) * 100;
+        checkInputs();
+    });
+    
+    pDate.addEventListener('change', checkInputs);
+
+    // --- MODAL WORKFLOW ---
+    const showModal = (modal) => {
+        modal.classList.remove('hidden');
+    };
+    const hideModal = (modal) => modal.classList.add('hidden');
+
+    if(closeContractBtn) closeContractBtn.addEventListener('click', () => hideModal(contractModal));
+    if(closeAuthBtn) closeAuthBtn.addEventListener('click', () => hideModal(authModal));
+    if(closeSuccessBtn) closeSuccessBtn.addEventListener('click', () => {
+        hideModal(successModal);
+        closeDetail();
+    });
+
+    const openContract = () => {
+        const principal = parseFloat(pInput.value) || 0;
+        document.getElementById('contract-principal').textContent = `R${principal.toLocaleString()}`;
+        document.getElementById('contract-date-display').textContent = pDate.value || 'Not selected';
+        const total = principal + (principal * 0.105 * 0.08) + 60; 
+        document.getElementById('contract-total').textContent = `R${total.toLocaleString(undefined, {maximumFractionDigits:2})}`;
+        
+        contractCheckbox.checked = false;
+        contractPledgeBtn.disabled = true; // FORCE DISABLED INITIALLY
+        showModal(contractModal);
+    };
+
+    pTriggerBtn.addEventListener('click', openContract);
+    if(viewContractBtn) viewContractBtn.addEventListener('click', openContract);
+
+    // STRICT CHECKBOX LOGIC
+    contractCheckbox.addEventListener('change', (e) => {
+        if(e.target.checked) {
+            contractPledgeBtn.disabled = false;
+        } else {
+            contractPledgeBtn.disabled = true;
+        }
+    });
+
+    contractPledgeBtn.addEventListener('click', () => {
+        hideModal(contractModal);
+        showModal(authModal);
+    });
+
+    confirmAuthBtn.addEventListener('click', () => {
+        const btn = confirmAuthBtn;
+        const originalText = btn.innerText;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+        setTimeout(() => {
+            hideModal(authModal);
+            btn.innerText = originalText;
+            
+            document.getElementById('success-amount').textContent = `R${parseFloat(pInput.value).toLocaleString()}`;
+            document.getElementById('success-source').textContent = isPledgeAll ? "Multi-Asset Portfolio" : currentStrategy.name;
+            
+            showModal(successModal);
+        }, 1500);
+    });
+
+    function renderChart() {
+        const ctx = document.getElementById('detailChart').getContext('2d');
+        if(chartInstance) chartInstance.destroy();
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)'); 
+        gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+        
+        let dataPoints = [100]; let val = 100;
+        for(let i=0; i<11; i++) { val += Math.floor(Math.random() * 10); dataPoints.push(val); }
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: Array(12).fill(''), datasets: [{ data: dataPoints, borderColor: '#22c55e', backgroundColor: gradient, borderWidth: 3, fill: true, tension: 0.4, pointRadius: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, layout: { padding: 0 } }
+        });
+    }
+
+    init();
+  </script>
+</body>
+</html>

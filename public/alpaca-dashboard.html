@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alpaca Asset Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-light: #f8fafc;
+        --text: #e2e8f0;
+        --accent: #22d3ee;
+        --muted: #94a3b8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #020617, #0f172a 40%, #020617);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 2.5rem clamp(1rem, 4vw, 4rem) 1rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3rem);
+      }
+
+      p.subtitle {
+        margin: 0.5rem 0 0;
+        color: var(--muted);
+        max-width: 65ch;
+      }
+
+      .dashboard {
+        margin: 0 auto;
+        padding: 0 clamp(1rem, 4vw, 4rem) 4rem;
+      }
+
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab {
+        border: 0;
+        border-radius: 999px;
+        padding: 0.55rem 1.5rem;
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 150ms ease;
+      }
+
+      .tab:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .tab.active {
+        background: var(--accent);
+        color: #03121b;
+        box-shadow: 0 8px 20px rgba(34, 211, 238, 0.35);
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .filters input,
+      .filters select {
+        flex: 1;
+        min-width: 240px;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: rgba(15, 23, 42, 0.8);
+        padding: 0.75rem 1rem;
+        color: inherit;
+        font-size: 1rem;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .card {
+        background: rgba(15, 23, 42, 0.75);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .card-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .card-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-top: 0.35rem;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(15, 23, 42, 0.7);
+        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 960px;
+      }
+
+      thead {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      th,
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        text-align: left;
+        font-size: 0.95rem;
+      }
+
+      tbody tr:hover {
+        background: rgba(34, 51, 76, 0.45);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.15rem 0.75rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+        text-transform: capitalize;
+      }
+
+      .badge.active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #4ade80;
+      }
+
+      .badge.inactive {
+        background: rgba(248, 113, 113, 0.15);
+        color: #f87171;
+      }
+
+      .badge.boolean-true {
+        background: rgba(34, 211, 238, 0.15);
+        color: var(--accent);
+      }
+
+      .badge.boolean-false {
+        background: rgba(241, 245, 249, 0.08);
+        color: var(--muted);
+      }
+
+      .trade-link {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .loading,
+      .error {
+        padding: 2rem;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      @media (prefers-color-scheme: light) {
+        body {
+          background: #f8fafc;
+          color: #0f172a;
+        }
+        header h1 {
+          color: #0f172a;
+        }
+        p.subtitle {
+          color: #475569;
+        }
+        .tabs {
+          border-color: rgba(15, 23, 42, 0.08);
+        }
+        .tab {
+          background: rgba(15, 23, 42, 0.06);
+          color: #0f172a;
+        }
+        .tab:hover {
+          background: rgba(15, 23, 42, 0.12);
+        }
+        .filters input,
+        .filters select {
+          background: #ffffff;
+          color: #0f172a;
+          border-color: rgba(15, 23, 42, 0.12);
+        }
+        .card,
+        .table-wrapper {
+          background: #ffffff;
+          border-color: rgba(15, 23, 42, 0.12);
+          box-shadow: 0 25px 45px rgba(15, 23, 42, 0.08);
+        }
+        tbody tr:hover {
+          background: rgba(15, 23, 42, 0.04);
+        }
+      }
+    </style>
+    <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+  <body>
+    <header>
+      <h1>Alpaca Asset Explorer</h1>
+      <p class="subtitle">
+        Interactive dashboard powered by the <code>alpaca-assets.json</code> feed.
+        Toggle the tabs to change the table perspective and jump directly into the
+        TradingView chart for any asset.
+      </p>
+    </header>
+
+    <main class="dashboard">
+      <div class="tabs" id="tabBar"></div>
+
+      <div class="filters">
+        <input
+          id="search"
+          type="search"
+          placeholder="Search symbol, name, or exchange..."
+          aria-label="Search assets"
+        />
+        <select id="classFilter" aria-label="Filter by asset class">
+          <option value="">All asset classes</option>
+        </select>
+        <select id="statusFilter" aria-label="Filter by status">
+          <option value="">All statuses</option>
+        </select>
+      </div>
+
+      <div class="card-grid" id="summaryCards"></div>
+
+      <div class="table-wrapper">
+        <div class="loading" id="loading">Loading assets...</div>
+        <div class="error" id="error" hidden></div>
+        <table hidden id="assetTable">
+          <thead>
+            <tr>
+              <th>Asset Class</th>
+              <th>Symbol</th>
+              <th>Exchange</th>
+              <th>Fractionable</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>TradingView</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+
+    <script src="/alpaca-dashboard.js" defer></script>
+  </body>
+</html>

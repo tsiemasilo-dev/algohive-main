@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AlgoHive – OpenStrategies</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{ --page:#0b1220; --bg:#fff; --muted:#64748b; --ink:#0f172a; --olive:#556B2F; --brand:#f59e0b; --line:#e5e7ef }
+    html,body{ font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink) }
+    .card{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow:0 1px 2px rgba(0,0,0,.04) }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.5rem; height:40px; padding:0 .875rem; border-radius:10px; border:1px solid var(--line); font-weight:600 }
+    .chip{ display:inline-flex; align-items:center; border-radius:9999px; padding:.2rem .55rem; font-size:.74rem; font-weight:600 }
+    .topbar{ height:52px }
+    
+        #layout{ --sb:275px; display:grid; grid-template-columns:1fr; min-height:100vh }
+    #ah-sidebar{
+      transition: transform .3s ease, width .2s ease;
+      width: 350px;
+      max-width: 85vw;
+      position: fixed;
+      top: 0;
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%);
+      overflow-y: auto;
+    }
+    #ah-sidebar.is-open { transform: translateX(0) }
+
+    @media (min-width: 768px) {
+      #layout{ grid-template-columns:var(--sb) 1fr }
+      #layout.is-collapsed { --sb: 64px }
+      #ah-sidebar{
+        position: sticky;
+        top: 0;
+        width: var(--sb);
+        max-width: none;
+        height: 100vh;
+        transform: translateX(0);
+        z-index: auto;
+      }
+    }
+
+
+    
+    #ah-sidebar[data-collapsed="true"] .label, #ah-sidebar[data-collapsed="true"] .chevron{ display:none }
+    #ah-sidebar details .sub{ transition: height .2s ease }
+    #ah-sidebar[data-collapsed="true"] details>.sub{ display:none!important }
+    #ah-sidebar[data-collapsed="true"] nav a, #ah-sidebar[data-collapsed="true"] details>summary{ justify-content:center; gap:.25rem }
+    #ah-sidebar[data-collapsed="true"] details>summary span{ gap:0 }
+    #ah-sidebar .footer{ transition:all .2s ease }
+    #ah-sidebar[data-collapsed="true"] .footer{ justify-content:center; flex-direction:column; gap:12px }
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg,i){ transform:rotate(180deg) }
+    
+    /* Hide desktop collapse button on mobile */
+    #ah-collapse { display: none; }
+    @media (min-width: 768px) {
+      #ah-collapse { display: inline-flex; } /* Show on desktop */
+    }
+
+    /* Brand switcher */
+    #ah-brand-switcher {
+      position: relative;
+    }
+
+    #ah-brand-switcher summary {
+      list-style: none;
+    }
+
+    #ah-brand-switcher summary::-webkit-details-marker {
+      display: none;
+    }
+
+    #ah-brand-switcher .brand-toggle {
+      width: calc(100% - 12px);
+      margin: 8px auto 4px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      box-shadow: 0 16px 40px -28px rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    #ah-brand-switcher .brand-toggle:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 16px 48px -28px rgba(15, 23, 42, 0.5);
+    }
+
+    #ah-brand-switcher .brand-marker {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f172a 0%, #1f2937 70%);
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 10px 30px -16px rgba(0, 0, 0, 0.5);
+    }
+
+    #ah-brand-switcher .brand-marker img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+    }
+
+    #ah-brand-switcher .brand-marker .ph-logo-fallback {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #1f2937;
+      color: #e2e8f0;
+      font-weight: 800;
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+    }
+
+    #ah-brand-switcher .brand-menu {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: calc(100% + 8px);
+      padding: 8px;
+      border-radius: 16px;
+      background: #0b1220;
+      color: #e2e8f0;
+      box-shadow: 0 30px 60px -24px rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(226, 232, 240, 0.08);
+      display: none;
+      z-index: 10;
+    }
+
+    #ah-brand-switcher[open] .brand-menu {
+      display: block;
+      animation: fadeIn .2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #ah-brand-switcher .brand-menu-header {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #cbd5e1;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .brand-option {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        transition: background-color .2s ease, color .2s ease, filter .2s ease;
+    }
+
+    .brand-option:hover {
+      background: linear-gradient(135deg, #000000, #7c3aed);
+    }
+
+    .brand-option:hover img {
+      filter: brightness(0) invert(1);
+    }
+
+    .brand-option:hover .algomoney-word {
+      color: #fff;
+    }
+
+    .brand-option img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        object-fit: contain;
+        background: transparent;
+    }
+
+    .brand-option .algomoney-word {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: #0f172a;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle {
+        margin: 12px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        justify-content: center;
+        gap: 0;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down {
+        display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker {
+        background: transparent;
+        width: 38px;
+        height: 38px;
+        box-shadow: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+        /* Table styles anchor */
+    /* table styles */
+    .tbl-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden }
+    /* --- MODIFIED: Added table-layout: fixed --- */
+    table { width:100%; border-collapse:separate; border-spacing:0; table-layout: fixed; }
+    thead th { position:sticky; top:0; background:#fff; z-index:1; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; border-bottom:1px solid #e5e7eb; padding:.875rem .875rem; text-align:left }
+    tbody td { padding:1rem .875rem; border-bottom:1px solid #f1f5f9; font-size:.925rem; vertical-align: middle; } /* Added vertical-align */
+    tbody tr:hover { background:#f8fafc }
+    /* --- MODIFIED: Re-added .th-min and added .th-center --- */
+    .th-min { width:1%; white-space:nowrap; }
+    .th-center { text-align: center; }
+    .cell-name { font-weight:600 }
+
+    /* --- MODIFIED: Mobile Carousel Styles (with Center Snapping) --- */
+    .mobile-carousel {
+      display: flex;
+      gap: 1.25rem; /* 20px */
+      overflow-x: auto;
+      
+      /* --- NEW SNAPPING STYLES --- */
+      /* 1. Enable scroll-snapping */
+      scroll-snap-type: x mandatory;
+      
+      /* 2. Set padding to center a 300px card */
+      /* (50vw) - (half card width: 150px) */
+      /* We must use !important to override Tailwind's `!px-6` utility class on the element */
+      padding-left: calc(50vw - 150px) !important;
+      padding-right: calc(50vw - 150px) !important;
+      
+      /* 3. Keep existing vertical padding */
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      
+      /* 4. Hide scrollbar (existing) */
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    .mobile-carousel::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
+    }
+    .mobile-strat-card {
+      /* Width must be static for centering calculation */
+      width: 300px; 
+      flex-shrink: 0;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+      
+      /* --- NEW SNAPPING STYLES --- */
+      /* Snap this item to the center */
+      scroll-snap-align: center;
+    }
+    /* --- END MODIFIED --- */
+
+    /* NEW: Digital Stopwatch Display Styles */
+    @font-face {
+        font-family: 'Digital-7 Mono';
+        src: url('https://fonts.cdnfonts.com/s/43424/digital-7%20(mono).woff') format('woff');
+        /* You might need to host this font yourself or use a different source */
+        font-weight: normal;
+        font-style: normal;
+    }
+    
+    .digital-display {
+      font-family: 'Digital-7 Mono', monospace; /* Will use a fallback if not available */
+      font-size: 3.5rem; /* Larger font size */
+      font-weight: normal; /* Digital fonts are usually not bold */
+      color: #000000; /* Black color */
+      letter-spacing: -3px; /* Tighter spacing for digital look */
+      line-height: 1;
+      text-align: center;
+      display: flex; /* To align minutes and seconds */
+      justify-content: center;
+      align-items: center;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .digital-display span {
+      position: relative;
+      padding: 0 5px; /* Add some padding around digits */
+    }
+
+    .digital-display span::before {
+      content: '88'; /* Ghosting effect for unlit segments */
+      position: absolute;
+      color: rgba(0, 0, 0, 0.1); /* Faded black for unlit segments */
+      left: 0;
+      top: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .digital-display span:first-child::before { content: '00'; } /* Minutes ghost */
+    .digital-display span:last-child::before { content: '88'; }  /* Seconds ghost */
+
+
+    /* Animation for attention - fade */
+    @keyframes fade-timer {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .digital-display.active-warning {
+      animation: fade-timer 1.5s infinite linear; /* Apply animation when active */
+    }
+
+    /* Keep the pop-up centered and visible */
+    #session-timeout-modal .modal-content-custom {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90vw;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    /* END: Digital Stopwatch Styles */
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-white">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 h-[100vh] bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+            <div class="text-[11px] text-slate-500 label">Markets</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch workspace</div>
+          <a href="#" class="brand-option">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoMoney</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/home.html" title="Home">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Markets</p>
+
+        <details class="group mt-1">
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/market-analysis-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Invest</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/strategies.html" title="OpenStrategies">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">OpenStrategies</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="#" title="Funds">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4" />
+              <span class="flex items-center gap-2">
+                <span class="label">Funds</span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+              </span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/markets.html" title="Markets">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/earth-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Markets</span>
+            </a>
+          </div>
+        </details>
+
+        <a class="mt-1 px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/news-insights.html" title="News &amp; Insights">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/news-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">News &amp; Insights</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Account</p>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/my-investment.html" title="Holdings">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Holdings</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/my-strategies.html" title="My Strategies">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">My Strategies</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Account Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Account Statements</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Funding">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/coins-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Funding</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Rewards">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/gift-stroke-rounded.svg" alt="" class="w-4 h-4" />
+          <span class="flex items-center gap-2">
+            <span class="label">Rewards</span>
+            <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+          </span>
+        </a>
+      <details class="group mt-4">
+        <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+          <span class="flex items-center">
+            <span class="label">Other</span>
+          </span>
+          <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+        </summary>
+        <div class="ml-8 mt-1 flex flex-col sub">
+          <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/support.html" title="Help">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/help-circle-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Help</span>
+          </a>
+          <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/legal.html" title="Legal">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/audit-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Legal</span>
+          </a>
+          <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/who-we-are.html" title="Learn">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pencil-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="flex items-center gap-2"><span class="label">Learn</span><span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span></span>
+          </a>
+        </div>
+      </details>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <button id="ah-collapse" class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+    </aside>
+    <main class="flex-1 min-w-0">
+      <div class="px-4 md:px-6 pt-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0 max-w-[560px]">
+            <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="text-xl font-bold text-slate-800 truncate">Strategies</h1>
+          </div>
+
+          <button id="hdr-profile-btn" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+            <img id="hdr-avatar"
+                 src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>"
+                 alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200"/>
+            <span id="hdr-name" class="hidden lg:inline-block lg:truncate lg:max-w-xs text-sm font-semibold text-slate-900">—</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="py-4 flex items-center justify-between">
+          <a href="/home.html"
+             class="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-[var(--olive)] transition-colors">
+             <i class="fa-solid fa-arrow-left text-xs"></i>
+             <span>Back to home</span>
+          </a>
+        </div>
+        <section class="sticky top-[69px] z-20 bg-white/70 backdrop-blur border-b border-slate-200 px-0 py-3">
+          <div class="hidden md:flex flex-wrap items-center gap-3">
+            <div class="text-sm font-semibold">Filters</div>
+             <input id="q" class="h-9 w-full sm:w-64 pl-3 pr-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--olive)] text-sm" placeholder="Search strategies…"/>
+            <select id="fRisk" class="h-9 rounded-lg border px-2 text-sm">
+              <option value="">Risk: Any</option>
+              <option>Conservative</option>
+              <option>Low</option>
+              <option>Moderate</option>
+              <option>High</option>
+              <option>High Risk</option>
+              <option>Very High Risk</option>
+            </select>
+            <select id="fCur" class="h-9 rounded-lg border px-2 text-sm">
+              <option value="">Currency: Any</option>
+              <option>ZAR</option>
+              <option>USD</option>
+              <option>EUR</option>
+            </select>
+            <select id="fStyle" class="h-9 rounded-lg border px-2 text-sm">
+              <option value="">Style: Any</option>
+            </select>
+            <select id="fSort" class="h-9 rounded-lg border px-2 text-sm ml-auto">
+              <option value="name-asc">Sort: Name (A→Z)</option>
+              <option value="cagr-desc">Sort: 1Y CAGR (High→Low)</option>
+              <option value="aum-desc">Sort: AUM (High→Low)</option>
+              <option value="dd-asc">Sort: Max DD (Low→High)</option>
+            </select>
+            <button id="clearBtn" class="h-9 px-3 rounded-lg border hover:bg-slate-50 text-sm">Clear</button>
+          </div>
+          
+           <div class="md:hidden">
+            <button id="mobile-filter-btn" class="btn w-full bg-white">
+              <i class="fa-solid fa-filter"></i>
+              <span>Filters & Sort</span>
+            </button>
+          </div>
+        </section>
+
+        <div class="flex items-center justify-between py-4">
+          <div id="resultCount" class="text-sm text-slate-500">Showing 0 strategies</div>
+          <div class="text-xs text-slate-400 hidden sm:block">* Metrics are simulated from monthly returns (net of TIF).</div>
+        </div>
+
+        <section id="mobile-carousel-section" class="block md:hidden -mx-6">
+          <div id="mobile-carousel-container" class="mobile-carousel !px-6">
+            </div>
+        </section>
+
+        <section id="tbl-wrap" class="tbl-wrap hidden md:block">
+          <div class="overflow-x-auto">
+            <table id="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="hidden md:table-cell">Ccy</th>
+                  <th class="hidden md:table-cell">Risk</th>
+                  <th class="hidden md:table-cell">Universe</th>
+                  <th class="hidden md:table-cell">Chart</th>
+                  <th class="hidden md:table-cell">YTD %</th>
+                  <th>Actions</th>
+                </tr>
+                </thead>
+              <tbody id="tbody">
+                </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div id="empty" class="hidden py-10 text-center text-slate-500">No strategies match your filters.</div>
+      </div>
+    </main>
+  </div>
+
+  <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-200">
+        <div class="text-sm font-semibold text-slate-900">Account</div>
+        <div id="pm-email" class="text-xs text-slate-500 truncate">user@example.com</div>
+      </div>
+      <div class="p-2">
+        <a id="pm-profile" href="/settings.html#basic" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-regular fa-user text-slate-500 w-4"></i>
+          <span>Profile settings</span>
+        </a>
+        <button id="pm-logout" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+          <i class="fa-solid fa-right-from-bracket w-4"></i>
+          <span>Log out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="filter-modal" class="fixed inset-0 z-[60] p-4 hidden">
+      <div id="filter-overlay" class="absolute inset-0 bg-black/40"></div>
+      <div class="relative w-full max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-6 mt-10">
+          <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Filters & Sort</h3>
+              <button id="filter-close-btn" class="btn h-9 w-9 p-0 rounded-lg border-0 bg-slate-100 hover:bg-slate-200">
+                  <i class="fa-solid fa-times"></i>
+              </button>
+          </div>
+          
+          <div class="space-y-4">
+              <div>
+                  <label for="q-m" class="block text-sm font-medium text-slate-600 mb-1">Search</label>
+                  <input id="q-m" class="h-10 w-full pl-3 pr-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--olive)] text-sm" placeholder="Search strategies…"/>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                  <div>
+                      <label for="fRisk-m" class="block text-sm font-medium text-slate-600 mb-1">Risk</label>
+                      <select id="fRisk-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                          <option value="">Any</option>
+                          <option>Conservative</option>
+                          <option>Low</option>
+                          <option>Moderate</option>
+                          <option>High</option>
+                          <option>High Risk</option>
+                          <option>Very High Risk</option>
+                      </select>
+                  </div>
+                  <div>
+                      <label for="fCur-m" class="block text-sm font-medium text-slate-600 mb-1">Currency</label>
+                      <select id="fCur-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                          <option value="">Any</option>
+                          <option>ZAR</option>
+                          <option>USD</option>
+                          <option>EUR</option>
+                      </select>
+                  </div>
+              </div>
+               <div>
+                  <label for="fStyle-m" class="block text-sm font-medium text-slate-600 mb-1">Style</label>
+                  <select id="fStyle-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                       <option value="">Any</option>
+                  </select>
+              </div>
+              <div>
+                  <label for="fSort-m" class="block text-sm font-medium text-slate-600 mb-1">Sort by</label>
+                  <select id="fSort-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                      <option value="name-asc">Name (A→Z)</option>
+                      <option value="cagr-desc">1Y CAGR (High→Low)</option>
+                      <option value="dd-asc">Max DD (Low→High)</option>
+                  </select>
+              </div>
+          </div>
+          
+          <div class="flex items-center justify-between mt-6">
+              <button id="clearBtn-m" class="btn h-10 text-sm">Clear</button>
+              <button id="filter-apply-btn" class="btn h-10 text-sm bg-[var(--olive)] text-white border-none hover:opacity-90">
+                  Apply Filters
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <div id="session-timeout-modal" class="fixed inset-0 z-[600] hidden p-6 grid place-items-center backdrop-blur-lg bg-black/40">
+    <div class="relative w-full max-w-md rounded-2xl border border-slate-300 bg-white p-8 shadow-2xl text-center">
+      <h2 class="text-xl font-semibold text-slate-900">Are you still there?</h2>
+      <p class="text-slate-600 mt-2">
+        You've been inactive for a while. You will be automatically logged out in
+        <div id="session-countdown" class="digital-display mt-4">
+          <span id="countdown-minutes">00</span>:<span id="countdown-seconds">60</span>
+        </div>
+         seconds for security.
+      </p>
+      <button
+        id="session-stay-btn"
+        class="mt-6 inline-flex h-10 px-6 rounded-lg items-center justify-center font-medium
+               bg-[var(--olive)] text-white hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/40"
+      >
+        I'm still here
+      </button>
+    </div>
+  </div>
+  <script nonce="ALGOHIVE">
+  // SCRIPT FOR MOBILE SIDEBAR
+  (function () {
+    const btn = document.getElementById('ah-mobile-menu-btn');
+    const overlay = document.getElementById('ah-overlay');
+    const sidebar = document.getElementById('ah-sidebar');
+
+    function openMenu() {
+      sidebar.classList.add('is-open');
+      overlay.classList.remove('hidden');
+    }
+    function closeMenu() {
+      sidebar.classList.remove('is-open');
+      overlay.classList.add('hidden');
+    }
+
+    btn?.addEventListener('click', openMenu);
+    overlay?.addEventListener('click', closeMenu);
+    
+    // Also close mobile menu on nav link click
+    sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+    });
+  })();
+</script>
+
+<script nonce="ALGOHIVE"> 
+  // Sidebar collapse memory (This controls the DESKTOP collapse)
+    (function () {
+      const layout = document.getElementById('layout');
+      const aside = document.getElementById('ah-sidebar');
+      const btn = document.getElementById('ah-collapse');
+      const saved = localStorage.getItem('ah_collapsed') === 'true';
+      if (saved) { aside.setAttribute('data-collapsed', 'true'); layout.classList.add('is-collapsed'); }
+      btn?.addEventListener('click', () => {
+        const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+        if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+        aside.setAttribute('data-collapsed', String(!isCollapsed));
+        layout.classList.toggle('is-collapsed', !isCollapsed);
+        localStorage.setItem('ah_collapsed', String(!isCollapsed));
+      });
+    })();
+</script>
+
+<script nonce="ALGOHIVE">
+  // SCRIPT FOR FILTER MODAL
+  (function () {
+    // Desktop filters
+    const $q = document.getElementById('q');
+    const $risk = document.getElementById('fRisk');
+    const $cur = document.getElementById('fCur');
+    const $style = document.getElementById('fStyle');
+    const $sort = document.getElementById('fSort');
+
+    // Mobile modal and its filters
+    const $modal = document.getElementById('filter-modal');
+    const $mobileBtn = document.getElementById('mobile-filter-btn');
+    const $closeBtn = document.getElementById('filter-close-btn');
+    const $overlay = document.getElementById('filter-overlay');
+    const $applyBtn = document.getElementById('filter-apply-btn');
+    const $clearMobileBtn = document.getElementById('clearBtn-m');
+    
+    const $q_m = document.getElementById('q-m');
+    const $risk_m = document.getElementById('fRisk-m');
+    const $cur_m = document.getElementById('fCur-m');
+    const $style_m = document.getElementById('fStyle-m');
+    const $sort_m = document.getElementById('fSort-m');
+
+    function openModal() {
+      // Sync desktop values to mobile modal
+      $q_m.value = $q.value;
+      $risk_m.value = $risk.value;
+      $cur_m.value = $cur.value;
+      $style_m.value = $style.value;
+      $sort_m.value = $sort.value;
+      $modal.classList.remove('hidden');
+    }
+    
+    function closeModal() {
+      $modal.classList.add('hidden');
+    }
+
+    function applyModalFilters() {
+      // Sync mobile modal values to desktop filters
+      $q.value = $q_m.value;
+      $risk.value = $risk_m.value;
+      $cur.value = $cur_m.value;
+      $style.value = $style_m.value;
+      $sort.value = $sort_m.value;
+      
+      closeModal();
+      
+      // Manually trigger the 'input' event on a desktop filter to run applyFilters()
+      $q.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    function clearModalFilters() {
+      // Only clear the modal's inputs
+      $q_m.value = '';
+      $risk_m.value = '';
+      $cur_m.value = '';
+      $style_m.value = '';
+      $sort_m.value = 'name-asc';
+    }
+    
+    $mobileBtn?.addEventListener('click', openModal);
+    $closeBtn?.addEventListener('click', closeModal);
+    $overlay?.addEventListener('click', closeModal);
+    $applyBtn?.addEventListener('click', applyModalFilters);
+    $clearMobileBtn?.addEventListener('click', clearModalFilters);
+    
+  })();
+</script>
+
+  <script type="module" nonce="ALGOHIVE">
+  import { supabase } from "/js/supabase.js";
+
+  // ------- helpers -------
+  const $ = (q, el=document) => el.querySelector(q);
+  const moneyFmt = (ccy) => new Intl.NumberFormat(ccy==='ZAR'?'en-ZA':'en-US',{style:'currency',currency:ccy||'USD',maximumFractionDigits:0});
+  const money = (n, ccy) => moneyFmt(ccy).format(n||0);
+
+  // filters
+  const $q     = document.getElementById('q');
+  const $risk  = document.getElementById('fRisk');
+  const $cur   = document.getElementById('fCur');
+  const $style = document.getElementById('fStyle');
+  const $sort  = document.getElementById('fSort');
+  const $clear = document.getElementById('clearBtn');
+  
+  // Chart objects cache to prevent re-rendering
+  let chartInstances = {};
+
+  // --- ADDED: Helper function to calculate growth curve (from strategy.html) ---
+  function curveFromPct(points, base = 100) {
+    const out = []; let lvl = base;
+    for (const p of points) {
+      const rDec = Number(p?.pct); // `pct` is a decimal like 0.0123
+      if (Number.isFinite(rDec)) lvl *= (1 + rDec); // Use decimal directly
+      out.push(Number(lvl.toFixed(2)));
+    }
+    return out;
+  }
+
+  // --- MODIFIED: Helper function to draw a mini-chart with dynamic colors ---
+  function drawCardChart(canvasId, seriesData, percentage) {
+    const ctx = document.getElementById(canvasId)?.getContext('2d');
+    if (!ctx) return;
+    
+    // If a chart already exists on this canvas, destroy it
+    if (chartInstances[canvasId]) {
+      chartInstances[canvasId].destroy();
+    }
+
+    const pcts = (seriesData || []).map(x => ({ pct: Number(x?.pct) }));
+    const curve = curveFromPct(pcts, 100); // base 100 percentage curve
+    const labels = (seriesData || []).map(x => x.label || '');
+    
+    // --- Define dynamic colors based on performance ---
+    const positiveColor = '#16a34a'; // tailwind green-600
+    const positiveGradient = 'rgba(22, 163, 74, 0.35)';
+    const negativeColor = '#dc2626'; // tailwind red-600
+    const negativeGradient = 'rgba(220, 38, 38, 0.35)';
+    const neutralColor = '#2563eb'; // tailwind blue-600
+    const neutralGradient = 'rgba(37, 99, 235, 0.35)';
+    
+    let borderColor = neutralColor;
+    let gradientStart = neutralGradient;
+
+    // Use a small epsilon for float comparison
+    if (percentage > 0.0001) { 
+        borderColor = positiveColor;
+        gradientStart = positiveGradient;
+    } else if (percentage < -0.0001) {
+        borderColor = negativeColor;
+        gradientStart = negativeGradient;
+    }
+    // --- End dynamic colors ---
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+    gradient.addColorStop(0, gradientStart);
+    gradient.addColorStop(1, 'rgba(0,0,0,0.01)'); // Fade to transparent
+
+    chartInstances[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: { 
+        labels: labels,
+        datasets: [{ 
+          data: curve, 
+          tension: .35, 
+          borderWidth: 2, 
+          borderColor: borderColor, // Use dynamic color
+          backgroundColor: gradient, // Use dynamic gradient
+          fill: true, 
+          pointRadius: 0 
+        }] 
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false, // Disable animation for faster rendering
+        plugins: {
+          legend: { display: false },
+          tooltip: { display: false } // Disable tooltips for mini-charts
+        },
+        scales: {
+          x: { display: false }, // Hide X-axis
+          y: { display: false }  // Hide Y-axis
+        }
+      }
+    });
+  }
+
+  // --- MODIFIED: Fetch strategies AND their metrics ---
+  async function fetchStrategiesAndMetrics(){
+    console.log("Fetching strategies...");
+    // 1. Fetch all strategies
+    const cols = 'id,name,creator,currency,risk_level,aum,style,asset_universe,inception_date,code,strategy_description';
+    const { data: strategiesData, error: strategiesError } = await supabase
+      .from('strategies')
+      .select(cols)
+      .order('name', { ascending: true });
+      
+    if (strategiesError) {
+        console.error("Error fetching strategies:", strategiesError);
+        throw strategiesError;
+    }
+    
+    console.log(`Fetched ${strategiesData.length} strategies. Now fetching metrics...`);
+
+    // 2. Prepare to fetch metrics (YTD only) for each strategy
+    const metricPromises = strategiesData.map(s => 
+      supabase.from('strategy_metrics')
+        .select('strategy_id, series_ytd') // Only get what we need
+        .eq('strategy_id', s.id)
+        .maybeSingle()
+    );
+    
+    // Wait for all metric fetches to complete
+    const metricsResults = await Promise.all(metricPromises);
+    
+    console.log("Fetched all metrics. Combining data...");
+
+    // 3. Combine the data
+    return strategiesData.map(strategy => {
+      const metricsResult = metricsResults.find(m => m.data && m.data.strategy_id === strategy.id);
+      return {
+        // Strategy info
+        id: strategy.id,
+        name: strategy.name,
+        provider: strategy.creator || '—',
+        currency: strategy.currency || 'ZAR',
+        risk: strategy.risk_level || '—',
+        aum: Number(strategy.aum || 0),
+        style: strategy.style || '—',
+        universe: strategy.asset_universe || '—',
+        inception: strategy.inception_date || null,
+        desc: strategy.strategy_description || '—',
+        // Metrics info
+        metrics: metricsResult?.data || null // Attach the metrics
+      };
+    });
+  }
+
+  // --- MODIFIED: Render both table and carousel ---
+  function renderStrategies(items){
+    const tbody = document.getElementById('tbody');
+    const carouselContainer = document.getElementById('mobile-carousel-container');
+    
+    tbody.innerHTML = '';
+    carouselContainer.innerHTML = '';
+
+    // Clear old chart instances
+    Object.values(chartInstances).forEach(chart => chart.destroy());
+    chartInstances = {};
+
+    items.forEach((s, idx) => {
+      const riskChip = s.risk==='Low' ? 'bg-emerald-50 text-emerald-700'
+                     : s.risk==='Conservative' ? 'bg-emerald-50 text-emerald-700'
+                     : s.risk==='High' ? 'bg-rose-50 text-rose-700'
+                     : s.risk==='High Risk' ? 'bg-rose-50 text-rose-700'
+                     : s.risk==='Very High Risk' ? 'bg-red-50 text-red-700'
+                     : 'bg-amber-50 text-amber-700';
+
+      // --- Calculate YTD Growth Stats & define IDs ---
+      let growthPct = '—';
+      let growthColor = 'text-slate-600';
+      let hasChart = false;
+      let percentage = 0; // This will store the raw percentage for the chart color
+      const seriesData = (s.metrics && s.metrics.series_ytd) ? s.metrics.series_ytd : [];
+
+      if (seriesData.length > 0) {
+        hasChart = true;
+        const pcts = seriesData.map(x => ({ pct: Number(x?.pct) }));
+        const curve = curveFromPct(pcts, 100);
+        const lastVal = curve.at(-1);
+        
+        if (lastVal) {
+          percentage = (lastVal - 100); // Store the raw percentage
+          growthPct = `${percentage >= 0 ? '+' : ''}${percentage.toFixed(1)}%`;
+          growthColor = percentage >= 0 ? 'text-green-600' : 'text-red-600';
+        }
+      }
+      
+      const chartIdMobile = `chart-mobile-${s.id}`;
+      const chartIdDesktop = `chart-desktop-${s.id}`;
+      // --- End Stats ---
+
+
+      // --- 1. Desktop Table Row (MODIFIED) ---
+      const tr = document.createElement('tr');
+      // No change to JS, alignment is handled by th/td classes in CSS and thead
+      tr.innerHTML = `
+        <td class="cell-name">
+          <div class="flex items-center gap-2">
+            <a href="strategy.html?strategy=${encodeURIComponent(s.id)}" class="hover:underline" title="${s.name}">${s.name}</a>
+          </div>
+        </td>
+        <td class="text-slate-600 hidden md:table-cell">${s.currency}</td>
+        <td class="hidden md:table-cell">
+          <span class="chip ${riskChip}">${s.risk}</span>
+        </td>
+        <td class="text-slate-600 hidden md:table-cell" title="${s.universe}">${s.universe}</td>
+        
+        <td class="hidden md:table-cell">
+          <div class="h-[30px] w-27">
+            ${hasChart ? `<canvas id="${chartIdDesktop}"></canvas>` : '<div class="h-full grid place-items-center text-sm text-slate-400">—</div>'}
+          </div>
+        </td>
+        
+        <td class="hidden md:table-cell font-medium ${growthColor}">
+          ${growthPct}
+        </td>
+        
+        <td>
+          <a class="btn bg-[var(--olive)] text-white hover:opacity-95 h-9 text-sm"
+             href="strategy.html?strategy=${encodeURIComponent(s.id)}">
+            <i class="fa-regular fa-note-sticky mr-1.5"></i>
+            Factsheet
+          </a>
+        </td>`;
+      tbody.appendChild(tr);
+
+      // --- 2. Mobile Carousel Card (MODIFIED) ---
+      const card = document.createElement('div');
+      card.className = 'mobile-strat-card flex flex-col';
+      
+      card.innerHTML = `
+        <div>
+          <h3 class="font-bold text-lg text-slate-900 truncate" title="${s.name}">${s.name}</h3>
+          <p class="text-sm text-slate-600 truncate mt-1">${s.provider}</p>
+          
+          <div class="mt-3">
+            <div class="flex items-baseline gap-2">
+              <span class="text-xl font-bold ${growthColor}">${growthPct}</span>
+            </div>
+            <div class="h-[100px] mt-2">
+              ${hasChart ? `<canvas id="${chartIdMobile}"></canvas>` : '<div class="h-full grid place-items-center text-sm text-slate-400">No chart data</div>'}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 mt-3 flex-wrap">
+            <span class="chip bg-slate-100 text-slate-700 !px-3">${s.currency}</span>
+            <span class="chip ${riskChip}">${s.risk}</span>
+            <span class="chip bg-blue-50 text-blue-700">YTD</span>
+          </div>
+        </div>
+        
+        <a class="btn bg-[var(--olive)] text-white hover:opacity-95 h-9 text-sm mt-4"
+           href="strategy.html?strategy=${encodeURIComponent(s.id)}">
+          <i class="fa-regular fa-note-sticky mr-1.5"></i>
+          View Factsheet
+        </a>
+      `;
+      carouselContainer.appendChild(card);
+      
+      // --- 3. Draw the charts (after elements are in DOM) ---
+      if (hasChart) {
+        // Use a tiny timeout to let the DOM update before drawing
+        setTimeout(() => {
+          drawCardChart(chartIdMobile, seriesData, percentage);
+          drawCardChart(chartIdDesktop, seriesData, percentage);
+        }, 0);
+      }
+    });
+
+    document.getElementById('resultCount').textContent =
+      `Showing ${items.length} ${items.length===1?'strategy':'strategies'}`;
+    
+    const emptyEl = document.getElementById('empty');
+    emptyEl.classList.toggle('hidden', items.length !== 0);
+
+    const isMobile = window.innerWidth < 768;
+    document.getElementById('tbl-wrap').classList.toggle('hidden', items.length === 0 || isMobile);
+    document.getElementById('mobile-carousel-section').classList.toggle('hidden', items.length === 0 || !isMobile);
+  }
+
+  // ------- filtering/sorting -------
+  let ALL = [];
+
+  function applyFilters(){
+    const q  = ($q.value||'').trim().toLowerCase();
+    const r  = $risk.value;
+    const c  = $cur.value;
+    const st = $style.value;
+    const sortVal = $sort.value;
+
+    let rows = ALL.filter(s => {
+      const text = `${s.name} ${s.provider} ${s.style} ${s.universe} ${s.desc}`.toLowerCase();
+      if (q && !text.includes(q)) return false;
+      if (r && s.risk !== r) return false;
+      if (c && s.currency !== c) return false;
+      if (st && s.style !== st) return false;
+      return true;
+    });
+
+    rows.sort((a,b)=>{
+      if (sortVal==='name-asc') return a.name.localeCompare(b.name);
+      if (sortVal==='aum-desc') return (b.aum - a.aum);
+      // placeholders for future metrics:
+      if (sortVal==='cagr-desc') return 0;
+      if (sortVal==='dd-asc')   return 0;
+      return 0;
+    });
+
+    renderStrategies(rows);
+  }
+
+  // ------- init style dropdown from DB values -------
+  function initStyleOptions(items){
+    const desktopSel = document.getElementById('fStyle');
+    const mobileSel = document.getElementById('fStyle-m');
+    const styles = [...new Set(items.map(s => s.style).filter(Boolean))].sort();
+    
+    desktopSel.options.length = 1;
+    mobileSel.options.length = 1;
+
+    styles.forEach(st => { 
+      const o1=document.createElement('option'); o1.value=st; o1.textContent=st; desktopSel.appendChild(o1); 
+      const o2=document.createElement('option'); o2.value=st; o2.textContent=st; mobileSel.appendChild(o2);
+    });
+  }
+
+  // clear button
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    $q.value=''; $risk.value=''; $cur.value=''; $style.value=''; $sort.value='name-asc';
+    applyFilters();
+  });
+  [$q,$risk,$cur,$style,$sort].forEach(el => el.addEventListener('input', applyFilters));
+
+  // ------- boot -------
+  try{
+    // MODIFIED: Call the new function
+    ALL = await fetchStrategiesAndMetrics(); 
+    initStyleOptions(ALL);
+    applyFilters();
+  }catch(e){
+    console.error(e);
+    // This is the error message you are seeing
+    const emptyEl = document.getElementById('empty');
+    emptyEl.textContent = 'Sorry, failed to load strategies. Please ensure you are running this on a web server.';
+    emptyEl.classList.remove('hidden');
+    document.getElementById('tbl-wrap').classList.add('hidden');
+    document.getElementById('mobile-carousel-section').classList.add('hidden');
+  }
+</script>
+
+  <script type="module" nonce="ALGOHIVE">
+  import { supabase } from "/js/supabase.js";
+
+  // --- tiny helpers ---
+  const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>";
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? "—"; };
+  const setSrc  = (id, v) => { const el = document.getElementById(id); if (el) el.src = v || BLANK_AVATAR; };
+
+  // === [NEW] PROFILE GATING HELPERS (from home.html) ===
+  const REQUIRED_PROFILE_FIELDS = [
+    "first_name", "last_name", "phone", "dob", "id_number", "nationality",
+    "country_residence", "employment_status", "occupation", "employer",
+    "income_bracket", "source_of_funds", "net_worth_range", "experience_level",
+    "risk_tolerance", "objectives",
+  ];
+  const hasValue = (value) => String(value ?? "").trim().length > 0;
+  const computeProfileComplete = (row) =>
+    REQUIRED_PROFILE_FIELDS.every((key) => hasValue(row?.[key]));
+
+  function resolveKycBoolean(row) {
+    const v = row?.kyc_status;
+    if (typeof v === "boolean") return v;
+    if (typeof v === "string")
+      return ["verified", "approved", "done", "passed", "kyc_done"].includes(
+        v.toLowerCase()
+      );
+    return false;
+  }
+  function gateBannerMessage(profileComplete, kycDone) {
+    if (!profileComplete && !kycDone)
+      return "Please finish Additional Info and complete KYC first.";
+    if (!profileComplete) return "Please finish Additional Info first.";
+    if (!kycDone) return "Please complete KYC first.";
+    return "";
+  }
+  // === [END NEW GATING HELPERS] ===
+
+  // === [NEW] SESSION TIMEOUT FUNCTION (Black, Fading) ===
+  function setupSessionTimeout() {
+    const TIMEOUT_MINUTES = 10; 
+    const WARNING_SECONDS = 60;
+    
+    let inactivityTimer;
+    let warningTimer;
+    let countdownInterval;
+
+    const modal = document.getElementById('session-timeout-modal');
+    const countdownContainer = document.getElementById('session-countdown'); 
+    const countdownMinutesEl = document.getElementById('countdown-minutes');
+    const countdownSecondsEl = document.getElementById('countdown-seconds');
+    const stayBtn = document.getElementById('session-stay-btn');
+
+    if (!modal || !countdownContainer || !countdownMinutesEl || !countdownSecondsEl || !stayBtn) {
+      console.warn('Session timeout modal elements not found or incomplete. Timeout disabled.');
+      return;
+    }
+
+    const logoutUser = () => {
+      supabase.auth.signOut();
+      // Manually redirect to be safe
+      location.replace("/auth.html?tab=in&reason=timeout");
+    };
+
+    const updateCountdownDisplay = (totalSeconds) => {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      countdownMinutesEl.textContent = String(minutes).padStart(2, '0');
+      countdownSecondsEl.textContent = String(seconds).padStart(2, '0');
+    };
+
+    const showWarning = () => {
+      modal.classList.remove('hidden');
+      countdownContainer.classList.add('active-warning'); 
+
+      let remaining = WARNING_SECONDS;
+      updateCountdownDisplay(remaining);
+
+      countdownInterval = setInterval(() => {
+        remaining--;
+        updateCountdownDisplay(remaining);
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+
+      warningTimer = setTimeout(logoutUser, WARNING_SECONDS * 1000);
+    };
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      clearTimeout(warningTimer);
+      clearInterval(countdownInterval);
+      modal.classList.add('hidden');
+      countdownContainer.classList.remove('active-warning');
+      updateCountdownDisplay(WARNING_SECONDS);
+      
+      inactivityTimer = setTimeout(showWarning, TIMEOUT_MINUTES * 60 * 1000); 
+    };
+
+    const userActivityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    userActivityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer, true);
+    });
+
+    stayBtn.addEventListener('click', resetTimer);
+
+    // Initial start
+    resetTimer();
+  }
+  // === [END SESSION TIMEOUT FUNCTION] ===
+
+  async function ensureProfile(id, email) {
+    // try fetch; if missing, create a shell row
+    let { data, error } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+    if (error && error.code !== "PGRST116") throw error; // Do not throw on "No rows"
+    if (data) return data;
+    const up = await supabase.from("profiles")
+      .upsert({ id, email, updated_at: new Date().toISOString() }, { onConflict: "id" })
+      .select("*").single();
+    if (up.error) throw up.error;
+    return up.data;
+  }
+
+  // --- auth guard + hydrate header + modal ---
+  try {
+    // require session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+      throw new Error("redirecting");
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { // Added this check just in case
+        throw new Error("User not found despite session.");
+    }
+    const row = await ensureProfile(user.id, user.email || null);
+
+    const profileComplete = computeProfileComplete(row || {});
+    const kycDone = resolveKycBoolean(row || {});
+
+    // header name (prefer first + last; fallback email handle)
+    const fn = (row?.first_name || "").trim();
+    const ln = (row?.last_name || "").trim();
+    const fallback = (user.email || "User").split("@")[0];
+    setText("hdr-name", (fn || ln) ? `${fn} ${ln}`.trim() : fallback); // <-- This populates the name
+
+    // avatar (cache-bust public URL)
+    const avatarUrl = row?.avatar_url ? `${row.avatar_url}${row.avatar_url.includes("?") ? "&" : "?"}v=${Date.now()}` : BLANK_AVATAR;
+    setSrc("hdr-avatar", avatarUrl);
+
+    // (optional) sidebar account label if you want it populated
+    if (row?.account_number) setText("sidebar-acc", row.account_number);
+
+    // profile modal wiring
+    const modal = document.getElementById("profile-modal");
+    const pmEmail = document.getElementById("pm-email");
+    const btnOpen = document.getElementById("hdr-profile-btn");
+    const btnLogout = document.getElementById("pm-logout");
+
+    const open = () => { pmEmail.textContent = user.email || "—"; modal?.classList.remove("hidden"); };
+    const close = () => modal?.classList.add("hidden");
+
+    btnOpen?.addEventListener("click", (e) => { e.preventDefault(); open(); });
+    modal?.addEventListener("click", (e) => {
+      if (e.target === modal || e.target.classList.contains("bg-black/40")) close();
+    });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+    btnLogout?.addEventListener('click', async () => {
+      try {
+        await supabase.auth.signOut();
+        location.replace("/auth.html?tab=in");
+      } catch {
+        console.warn("Logout failed");
+      }
+    });
+
+    // === [NEW] START THE SESSION TIMEOUT ===
+    setupSessionTimeout();
+
+  } catch (e) {
+    // ignore “redirecting”
+    if (String(e?.message).toLowerCase() !== "redirecting") console.error(e);
+  }
+</script>
+
+</body>
+</html>

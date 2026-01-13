@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Who We Are — AlgoHive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --olive:#7e8d52; --olive-700:#576138; --ink:#0B1215; --muted:#525A67 }
+    html,body{ 
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;  
+      background:#FFF; 
+      color:#111827;
+      width: 100%;
+      overflow-x: hidden; /* Prevents horizontal scrolling */
+    }
+    .grid-bg{ background-image:radial-gradient(rgba(69,98,67,.08) 1px, transparent 1px); background-size:18px 18px; background-position:-10px -10px }
+    .btn-shine{ position:relative; overflow:hidden }
+    .btn-shine:before{ content:""; position:absolute; inset:0; background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.7) 50%,transparent 100%); transform:translateX(-120%) }
+    .btn-shine:hover:before{ transform:translateX(120%); transition:transform .8s ease }
+    .nav-active { background-color: rgba(0,0,0,0.05); }
+
+    /* === Entrance animations === */
+    .anim-fade-in-scale { animation: animScaleIn .8s cubic-bezier(.2,.8,.2,1) both; }
+    .anim-fade-in-up    { animation: animSlideUp .7s ease-out .2s both; }
+    .anim-stagger-child > * { animation: animSlideUp .6s ease-out .3s both paused; }
+
+    @keyframes animScaleIn {
+      0%   { transform: scale(1.08); opacity: 0; }
+      100% { transform: scale(1);    opacity: 1; }
+    }
+    @keyframes animSlideUp {
+      0%   { transform: translateY(16px); opacity: 0; }
+      100% { transform: translateY(0);    opacity: 1; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="grid-bg">
+
+<div class="relative min-h-screen flex flex-col">
+  <header class="w-full sticky top-3 z-50 px-3 sm:px-4 lg:px-6">
+    <div class="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-full max-w-[80rem] bg-[radial-gradient(ellipse_at_center,rgba(69,98,67,.12),transparent_55%)]"></div>
+    <div class="mx-auto max-w-5xl">
+      <nav aria-label="Primary" class="relative flex items-center justify-between gap-2 rounded-full border border-black/10 bg-white px-3 py-2 shadow-lg">
+        <!-- Logo -->
+        <a href="index.html" class="flex flex-shrink-0 items-center gap-2 rounded-full px-2 py-1.5 hover:bg-black/5">
+          <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="h-7 w-auto">
+          <span class="hidden md:inline text-sm font-extrabold tracking-tight text-[var(--ink)]">AlgoHive</span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden md:flex items-center gap-1">
+          <span class="h-6 w-px bg-black/10 mx-1"></span>
+          <a href="who-we-are.html" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] nav-active">Who We Are</a>
+          <a href="how-we-work.html" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] hover:bg-black/5">How We Work</a>
+          <a href="index.html#pricing" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] hover:bg-black/5">Pricing</a>
+          <a href="index.html#faqs" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] hover:bg-black/5">FAQs</a>
+        </div>
+
+        <!-- Login & CTA -->
+        <div class="flex items-center gap-2">
+          <a href="/auth.html?redirect=/home.html" class="btn-shine inline-flex items-center gap-2 rounded-full bg-[var(--olive)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--olive-700)]">Login</a>
+          <a href="index.html#strategies" class="hidden sm:inline-flex items-center gap-2 rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-[var(--ink)] hover:bg-black/5">View OpenStrategies</a>
+          <!-- Hamburger Menu Button -->
+          <button id="hamburger-button" class="md:hidden p-2 rounded-full hover:bg-black/5">
+            <svg class="w-6 h-6 text-[var(--ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+          </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-black/10">
+          <a href="who-we-are.html" class="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-black/5 nav-active">Who We Are</a>
+          <a href="how-we-work.html" class="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-black/5">How We Work</a>
+          <a href="index.html#pricing" class="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-black/5">Pricing</a>
+          <a href="index.html#faqs" class="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-black/5">FAQs</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <section class="py-16 lg:py-20 anim-fade-in-up">
+      <div class="mx-auto max-w-4xl px-3 sm:px-4 lg:px-6 text-center">
+        <span class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 text-xs text-black/60">
+          Our Mission
+        </span>
+        <h1 class="mt-5 text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-[var(--ink)]">
+          We're building a <span class="text-[var(--olive)]">smarter, fairer</span> way to invest.
+        </h1>
+        <p class="mt-5 text-lg text-[var(--muted)] max-w-2xl mx-auto">
+          AlgoHive was founded on a simple principle: your financial partner should only succeed when you do. We replace outdated AUM fees with a performance-driven model, aligning our success directly with your portfolio's growth.
+        </p>
+      </div>
+    </section>
+
+    <section class="py-16 lg:py-20">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+        <div class="text-center max-w-3xl mx-auto">
+            <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--ink)]">
+                Our Philosophy
+            </h2>
+            <p class="mt-3 text-base sm:text-lg text-[var(--muted)]">
+                Three core beliefs guide everything we build.
+            </p>
+        </div>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 anim-stagger-child">
+            <div class="rounded-3xl border border-black/10 bg-gradient-to-b from-white to-slate-50 p-6 shadow-[0_6px_24px_rgba(0,0,0,0.06)]">
+                <h3 class="text-lg font-bold text-[var(--ink)]">Systems</h3>
+                <p class="mt-2 text-sm text-[var(--muted)]">We use technology driven systems to design, test and manage strategies. Realtime data and controls support consistent, risk adjusted results across cycles.</p>
+            </div>
+            <div class="rounded-3xl border border-black/10 bg-gradient-to-b from-white to-slate-50 p-6 shadow-[0_6px_24px_rgba(0,0,0,0.06)]">
+                <h3 class="text-lg font-bold text-[var(--ink)]">Talent</h3>
+                <p class="mt-2 text-sm text-[var(--muted)]">Our team applies institutional discipline to research, construction and risk control. Experience and review align choice with clear mandates and client outcomes.</p>
+            </div>
+            <div class="rounded-3xl border border-black/10 bg-gradient-to-b from-white to-slate-50 p-6 shadow-[0_6px_24px_rgba(0,0,0,0.06)]">
+                <h3 class="text-lg font-bold text-[var(--ink)]">Compliance</h3>
+                <p class="mt-2 text-sm text-[var(--muted)]">We align economics with client outcomes via straightforward fees and strong controls. Conflicts inherent in AUM models are reduced through clear rules and disclosure. We operate in a licensed, regulated environment.</p>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="final-cta" class="py-16 lg:py-20 anim-fade-in-scale">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+        <div class="overflow-hidden rounded-[2rem] border border-black/10 bg-white shadow-[0_10px_32px_rgba(0,0,0,0.08)]">
+          <div class="px-6 sm:px-12 py-12 sm:py-16 text-center">
+            <span class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 text-xs text-black/60">
+              No AUM fees — we win when you do
+            </span>
+            <h2 class="mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--ink)]">
+              Ready to grow with <span class="text-[var(--olive)]">AlgoHive</span>?
+            </h2>
+            <p class="mt-3 text-[15px] sm:text-lg text-[var(--muted)]">
+              Pick a strategy, track performance, and stay invested with smarter tools.
+            </p>
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <a href="/auth.html?redirect=/home.html" class="inline-flex items-center gap-2 rounded-xl bg-[var(--olive)] px-6 py-3 font-semibold text-white hover:bg-[var(--olive-700)] btn-shine">
+                Create your account
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 4.5 21 12l-7.5 7.5M21 12H3"/></svg>
+              </a>
+              <a href="index.html#strategies" class="inline-flex items-center gap-2 rounded-xl border border-black/15 px-6 py-3 text-[var(--ink)] font-semibold hover:bg-black/5">
+                View OpenStrategies
+              </a>
+            </div>
+            <p class="mt-3 text-xs text-slate-600">Start free. Upgrade anytime. Cancel anytime.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-black/10 bg-white">
+    <div class="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div>
+          <a href="index.html" class="flex items-center gap-2">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" class="h-7 w-auto" alt="AlgoHive">
+            <span class="text-[var(--ink)] font-extrabold">AlgoHive</span>
+          </a>
+          <p class="mt-3 text-sm text-[var(--muted)]">
+            Ready-made strategies, tracked and managed. Built to grow your wealth, not fees.
+          </p>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-[var(--ink)]">Product</h4>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a href="index.html#strategies" class="text-[var(--muted)] hover:text-[var(--ink)]">Strategies</a></li>
+            <li><a href="index.html#pricing" class="text-[var(--muted)] hover:text-[var(--ink)]">Pricing</a></li>
+            <li><a href="index.html#lending" class="text-[var(--muted)] hover:text-[var(--ink)]">Portfolio-backed credit</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-[var(--ink)]">Company</h4>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a href="who-we-are.html" class="text-[var(--muted)] hover:text-[var(--ink)]">About</a></li>
+            <li><a href="how-we-work.html" class="text-[var(--muted)] hover:text-[var(--ink)]">How we work</a></li>
+            <li><a href="index.html#faqs" class="text-[var(--muted)] hover:text-[var(--ink)]">FAQs</a></li>
+          </ul>
+        </div>
+        <div>
+        <h4 class="text-sm font-semibold text-[var(--ink)]">Legal</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Terms%20and%20Conditions.pdf" class="text-[var(--muted)] hover:text-[var(--ink)]">Terms & Conditions</a></li>
+          <li><a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Privacy%20Policy.pdf" class="text-[var(--muted)] hover:text-[var(--ink)]">Privacy Policy</a></li>
+          <li><a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Advertising%20Policy.pdf" class="text-[var(--muted)] hover:text-[var(--ink)]">Advertising Policy</a></li>
+          <li><a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Risk%20Policy.pdf" class="text-[var(--muted)] hover:text-[var(--ink)]">Risk Policy</a></li>
+          <li><a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AML%20&%20CTF.pdf" class="text-[var(--muted)] hover:text-[var(--ink)]">Anti-Money Laundering & CTF</a></li>
+        </ul>
+      </div>
+    </div>
+      <div class="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <p class="text-xs text-slate-500">© <span id="yr"></span> AlgoHive. All rights reserved.
+  AlgoHive (FSP 55118) is a registered Financial Services Provider. All asset classes carry investment risks, including the potential loss of capital. Past performance is not indicative of future results. Investors should carefully consider their financial situation and objectives before making any investment decisions. Invest responsibly.
+   </p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script nonce="ALGOHIVE">
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  
+  // Hamburger Menu Toggle
+  const hamburgerButton = document.getElementById('hamburger-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  hamburgerButton.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+  });
+
+  // Animation stagger script
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.anim-stagger-child').forEach(container => {
+      const children = container.children;
+      for (let i = 0; i < children.length; i++) {
+        children[i].style.animationDelay = `${i * 150}ms`;
+        children[i].style.animationPlayState = 'running';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive — Markets</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root { --page:#0b1220; --bg:#fff; --muted:#64748b; --ink:#0f172a; --olive:#556B2F; --brand:#f59e0b; --line:#e5e7ef }
+    html,body { font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink) }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.5rem; height:40px; padding:0 .875rem; border-radius:10px; border:1px solid var(--line); font-weight:600 }
+    .topbar{ height:52px }
+
+    #layout{ --sb:275px; display:grid; grid-template-columns:1fr; min-height:100vh }
+    #ah-sidebar{ transition: transform .3s ease, width .2s ease; width:350px; max-width:85vw; position:fixed; top:0; z-index:50; height:100vh; transform:translateX(-100%); overflow-y:auto }
+    #ah-sidebar.is-open { transform: translateX(0); }
+
+    @media (min-width: 768px) {
+      #layout{ grid-template-columns:var(--sb) 1fr }
+      #layout.is-collapsed{ --sb:64px }
+      #ah-sidebar{ position:sticky; top:0; width:var(--sb); max-width:none; height:100vh; transform:translateX(0); z-index:auto}
+    }
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron { display:none }
+    #ah-sidebar[data-collapsed="true"] #main-nav { visibility:hidden; pointer-events:none; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-menu{ display:none }
+    #ah-sidebar details .sub{ transition:height .2s ease }
+    #ah-sidebar[data-collapsed="true"] details>.sub{ display:none!important }
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details>summary{ justify-content:center; gap:.25rem }
+    #ah-sidebar[data-collapsed="true"] details>summary span{ gap:0 }
+    #ah-sidebar .footer{ transition:all .2s ease }
+    #ah-sidebar[data-collapsed="true"] .footer{ justify-content:center; flex-direction:column; gap:12px }
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg,i){ transform:rotate(180deg) }
+
+    #ah-collapse { display:none; }
+    @media (min-width: 768px) { #ah-collapse { display:inline-flex; } }
+
+    #ah-brand-switcher { position: relative; }
+    #ah-brand-switcher summary { list-style: none; }
+    #ah-brand-switcher summary::-webkit-details-marker { display: none; }
+    .brand-toggle { margin: 10px 12px; border: 1px solid #e2e8f0; border-radius: 14px; background: linear-gradient(135deg, #f8fafc, #eef2ff); box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4); display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: all .2s ease; }
+    #ah-brand-switcher[open] .brand-toggle { border-color: #cbd5e1; background: #fff; box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55); }
+    .brand-marker { width: 42px; height: 42px; border-radius: 12px; background: #111827; display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12); }
+    .brand-marker img { width: 28px; height: 28px; object-fit: contain; }
+    .brand-marker .ph-logo-fallback { font-weight: 800; color: #0f172a; font-size: 13px; }
+    .brand-menu { position: absolute; left: 12px; right: 12px; top: calc(100% - 6px); border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5); padding: 12px; display: grid; gap: 8px; z-index: 10; }
+    .brand-menu-header { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: #475569; padding: 4px 4px 2px; }
+    .brand-option { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; transition: background-color .2s ease, color .2s ease, filter .2s ease; }
+    .brand-option:hover { background: linear-gradient(135deg, #000000, #7c3aed); }
+    .brand-option:hover img { filter: brightness(0) invert(1); }
+    .brand-option:hover .algomoney-word { color: #fff; }
+    .brand-option img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; background: transparent; }
+    .brand-option .algomoney-word { font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; font-size: 13px; color: #0f172a; }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle { margin: 12px; padding: 0; border: none; background: transparent; box-shadow: none; justify-content: center; gap: 0; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down { display:none }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker { background: transparent; width: 38px; height: 38px; box-shadow: none; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker img { width: 24px; height: 24px; }
+
+    .market-chip { border:1px solid #e2e8f0; border-radius:999px; padding:14px 18px; background:#fff; display:flex; align-items:center; gap:16px; min-width:360px; cursor:pointer; transition:border-color .15s ease; }
+    .market-chip:hover { transform: none; box-shadow:none; }
+    .market-chip.active { border-color:#0f172a; box-shadow:none; }
+    .market-logo { width:56px; height:56px; border-radius:9999px; object-fit:cover; background:#f8fafc; border:1px solid #e2e8f0; }
+    .pill { display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:9999px; font-weight:800; color:#0f172a; background:#f1f5f9; }
+    .sparkline { width:100%; height:200px; max-height:220px; }
+    #markets-row { scrollbar-width: none; }
+    #markets-row::-webkit-scrollbar { display:none; }
+    .chart-ranges { display:flex; flex-wrap:wrap; gap:8px; }
+    .search-input { width:100%; max-width:560px; }
+    .list-card { border:1px solid #e2e8f0; border-radius:14px; padding:14px; background:#fff; display:flex; align-items:center; gap:12px; }
+    .list-card .tag { font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; border:1px solid #e2e8f0; }
+    .list-card .tag.pos { color:#16a34a; background:#f0fdf4; border-color:#bbf7d0; }
+    .list-card .tag.neg { color:#dc2626; background:#fef2f2; border-color:#fecdd3; }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-white">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 h-[100vh] bg-white flex flex-col">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+            <div class="text-[11px] text-slate-500 label">Markets</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch workspace</div>
+          <a href="#" class="brand-option">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoMoney</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/home.html" title="Home">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Markets</p>
+
+        <details class="group mt-1" open>
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/market-analysis-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Invest</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/strategies.html" title="OpenStrategies">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">OpenStrategies</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="#" title="Funds">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4" />
+              <span class="flex items-center gap-2">
+                <span class="label">Funds</span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+              </span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 bg-slate-100 border border-slate-200 font-semibold text-slate-900" href="/markets.html" title="Markets">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/earth-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Markets</span>
+            </a>
+          </div>
+        </details>
+
+        <a class="mt-1 px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/news-insights.html" title="News &amp; Insights">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/news-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">News &amp; Insights</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Account</p>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/my-investment.html" title="Holdings">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Holdings</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/my-strategies.html" title="My Strategies">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">My Strategies</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Account Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Account Statements</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Funding">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/coins-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Funding</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Rewards">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/gift-stroke-rounded.svg" alt="" class="w-4 h-4" />
+          <span class="flex items-center gap-2"><span class="label">Rewards</span><span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span></span>
+        </a>
+        <details class="group mt-4">
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center"><span class="label">Other</span></span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/support.html" title="Help">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/help-circle-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Help</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/legal.html" title="Legal">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/audit-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Legal</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/who-we-are.html" title="Learn">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pencil-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="flex items-center gap-2"><span class="label">Learn</span><span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span></span>
+            </a>
+          </div>
+        </details>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <button id="ah-collapse" class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <div class="px-4 md:px-6 pt-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0 max-w-3xl">
+            <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <label class="flex items-center gap-3 w-full search-input rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+              <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+              <input id="market-search" type="search" placeholder="Search symbols or names" class="w-full bg-transparent focus:outline-none text-sm font-semibold text-slate-900 placeholder:text-slate-400" />
+            </label>
+          </div>
+
+          <button id="hdr-profile-btn" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+            <img id="hdr-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200"/>
+            <span id="hdr-name" class="hidden lg:inline-block lg:truncate lg:max-w-xs text-sm font-semibold text-slate-900">—</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-4 md:px-6 py-8 space-y-10">
+        <header class="space-y-4 text-left">
+          <p class="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold">AlgoHive Markets</p>
+          <div class="flex flex-wrap items-center gap-3">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Markets</h2>
+            <label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm text-base font-semibold">
+              <span class="text-slate-500 text-sm">View:</span>
+              <select id="region-select" class="bg-transparent focus:outline-none font-semibold text-slate-900">
+                <option value="US">🇺🇸 US Stocks</option>
+                <option value="ZA">🇿🇦 South African Stocks</option>
+              </select>
+            </label>
+          </div>
+          <p class="text-slate-500 text-lg">Tap into live market movers pulled directly from your trading universe.</p>
+        </header>
+
+        <section class="space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="text-lg font-semibold text-slate-900">All-time Gainers</h3>
+            <div class="flex items-center gap-2 text-sm text-slate-500">
+              <span class="inline-flex items-center gap-2 border border-slate-200 rounded-full px-3 py-1 bg-white shadow-sm">
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                Live from trading_universe
+              </span>
+            </div>
+          </div>
+          <div id="markets-row" class="flex gap-3 overflow-x-auto pb-2">
+            <div class="text-slate-500 text-sm">Loading markets…</div>
+          </div>
+        </section>
+
+        <section class="bg-white rounded-2xl p-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p class="text-sm text-slate-500">Selected market</p>
+                  <div class="flex items-center gap-3">
+                    <div class="relative">
+                      <img id="selected-logo" class="market-logo hidden" alt="Selected market logo" />
+                      <div id="selected-pill" class="pill bg-slate-100 text-base">—</div>
+                    </div>
+                    <div>
+                      <p id="selected-name" class="font-semibold text-slate-900">Loading…</p>
+                      <p id="selected-exchange" class="text-sm text-slate-500">—</p>
+                      <p id="selected-daily" class="text-xs text-slate-500">Daily Change: —</p>
+                    </div>
+                  </div>
+                </div>
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <span id="selected-change" class="px-2.5 py-1 rounded-full border border-slate-200">—</span>
+            </div>
+          </div>
+
+          <canvas id="market-chart" class="sparkline"></canvas>
+
+          <div class="chart-ranges text-sm text-slate-600 pt-2">
+            <button class="px-3 py-1.5 rounded-full border border-slate-200 bg-slate-900 text-white" data-range="1M">1M</button>
+            <button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white" data-range="3M">3M</button>
+            <button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white" data-range="6M">6M</button>
+            <button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white" data-range="1Y">1Y</button>
+            <button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white" data-range="YTD">YTD</button>
+            <button class="px-3 py-1.5 rounded-full border border-slate-200 bg-white" data-range="ALL">ALL</button>
+          </div>
+        </section>
+
+        <section class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900">All-time Losers</h3>
+            <p class="text-sm text-slate-500">Full trading universe</p>
+          </div>
+          <div id="alltime-losers" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="text-slate-500 text-sm">Loading…</div>
+          </div>
+        </section>
+
+        <section class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-slate-900">Today</h3>
+            <p class="text-sm text-slate-500">Intraday movers</p>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-base font-semibold text-slate-900">Today's Gainers</p>
+                <button id="toggle-gainers" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">View all</button>
+              </div>
+              <div id="today-gainers" class="space-y-2">
+                <div class="text-slate-500 text-sm">Loading…</div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-base font-semibold text-slate-900">Today's Losers</p>
+                <button id="toggle-losers" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">View all</button>
+              </div>
+              <div id="today-losers" class="space-y-2">
+                <div class="text-slate-500 text-sm">Loading…</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-200">
+        <div class="text-sm font-semibold text-slate-900">Account</div>
+        <div id="pm-email" class="text-xs text-slate-500 truncate">user@example.com</div>
+      </div>
+      <div class="p-2">
+        <a id="pm-profile" href="/settings.html#basic" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-regular fa-user text-slate-500 w-4"></i>
+          <span>Profile settings</span>
+        </a>
+        <button id="pm-logout" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+          <i class="fa-solid fa-right-from-bracket w-4"></i>
+          <span>Log out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="ALGOHIVE">
+    // Mobile sidebar toggle
+    (function () {
+      const btn = document.getElementById('ah-mobile-menu-btn');
+      const sidebar = document.getElementById('ah-sidebar');
+      const overlay = document.getElementById('ah-overlay');
+      const openMenu = () => { sidebar.classList.add('is-open'); overlay?.classList.remove('hidden'); };
+      const closeMenu = () => { sidebar.classList.remove('is-open'); overlay?.classList.add('hidden'); };
+      btn?.addEventListener('click', openMenu);
+      overlay?.addEventListener('click', closeMenu);
+      sidebar?.querySelectorAll('nav a, nav details a').forEach(link => link.addEventListener('click', closeMenu));
+    })();
+  </script>
+
+  <script nonce="ALGOHIVE">
+    // Desktop sidebar collapse memory
+    (function () {
+      const layout = document.getElementById('layout');
+      const aside = document.getElementById('ah-sidebar');
+      const btn = document.getElementById('ah-collapse');
+      const saved = localStorage.getItem('ah_collapsed') === 'true';
+      if (saved) { aside.setAttribute('data-collapsed', 'true'); layout.classList.add('is-collapsed'); }
+      btn?.addEventListener('click', () => {
+        const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+        if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+        aside.setAttribute('data-collapsed', String(!isCollapsed));
+        layout.classList.toggle('is-collapsed', !isCollapsed);
+        localStorage.setItem('ah_collapsed', String(!isCollapsed));
+      });
+    })();
+  </script>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    const marketsRow = document.getElementById('markets-row');
+    const regionSelect = document.getElementById('region-select');
+    const pillEl = document.getElementById('selected-pill');
+    const searchInput = document.getElementById('market-search');
+    const logoEl = document.getElementById('selected-logo');
+    const nameEl = document.getElementById('selected-name');
+    const exchangeEl = document.getElementById('selected-exchange');
+    const changeEl = document.getElementById('selected-change');
+    const dailyEl = document.getElementById('selected-daily');
+    const rangeButtons = Array.from(document.querySelectorAll('[data-range]'));
+    const profileModal = document.getElementById('profile-modal');
+    const profileBtn = document.getElementById('hdr-profile-btn');
+    const pmEmail = document.getElementById('pm-email');
+    const pmLogout = document.getElementById('pm-logout');
+    const pmProfile = document.getElementById('pm-profile');
+    const hdrAvatar = document.getElementById('hdr-avatar');
+    const hdrName = document.getElementById('hdr-name');
+    const allTimeLosersEl = document.getElementById('alltime-losers');
+    const todayGainersEl = document.getElementById('today-gainers');
+    const todayLosersEl = document.getElementById('today-losers');
+    const toggleGainersBtn = document.getElementById('toggle-gainers');
+    const toggleLosersBtn = document.getElementById('toggle-losers');
+
+    let chart;
+    let markets = [];
+    let selectedRegion = regionSelect?.value || 'US';
+    let currentRange = '1M';
+    let searchTerm = '';
+    let selectedMarketId = null;
+    let showAllGainers = false;
+    let showAllLosers = false;
+
+    const requireSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.replace('/auth.html?tab=in');
+        return false;
+      }
+      return true;
+    };
+
+    const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><rect width='100%' height='100%' fill='%23f1f5f9'/><text x='50%' y='54%' text-anchor='middle' fill='%2394a3b8' font-size='22' font-family='Inter, sans-serif'>AH</text></svg>";
+
+    const setText = (id, value) => {
+      const el = typeof id === 'string' ? document.getElementById(id) : id;
+      if (el) el.textContent = value;
+    };
+
+    const setSrc = (id, value) => {
+      const el = typeof id === 'string' ? document.getElementById(id) : id;
+      if (el) el.src = value;
+    };
+
+    const shortDate = (date) => {
+      try {
+        return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+      } catch (e) {
+        return '';
+      }
+    };
+
+    const fallbackSeries = () => {
+      const points = 20;
+      const today = new Date();
+      return Array.from({ length: points }, (_, i) => {
+        const rawDate = new Date(today.getTime() - ((points - 1 - i) * 24 * 60 * 60 * 1000));
+        return {
+          label: shortDate(rawDate) || `Day ${i + 1}`,
+          value: 100 + Math.sin(i / 2) * 4 + i * 0.4,
+          rawDate
+        };
+      });
+    };
+
+    const buildSeries = (closes = []) => {
+      if (!Array.isArray(closes) || closes.length === 0) return fallbackSeries();
+      const sorted = [...closes].filter(Boolean).sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      let value = 100;
+      const series = sorted.map((entry, idx) => {
+        const pct = typeof entry.pct === 'number' ? entry.pct : 0;
+        value = value * (1 + pct);
+        const rawDate = entry.date ? new Date(entry.date) : new Date(Date.now() - ((sorted.length - 1 - idx) * 24 * 60 * 60 * 1000));
+        return { label: shortDate(rawDate) || entry.date || `Day ${idx + 1}`, value: Number(value.toFixed(2)), rawDate };
+      });
+      return series.length ? series : fallbackSeries();
+    };
+
+    const applyRange = (series = [], range = 'ALL') => {
+      if (!series.length) return fallbackSeries();
+      const safeSeries = series.map((pt, idx) => {
+        const rawDate = pt.rawDate instanceof Date && !isNaN(pt.rawDate) ? pt.rawDate : new Date(Date.now() - ((series.length - 1 - idx) * 24 * 60 * 60 * 1000));
+        return { ...pt, rawDate };
+      });
+
+      const latest = safeSeries[safeSeries.length - 1]?.rawDate || new Date();
+      let cutoff;
+
+      switch (range) {
+        case '1M':
+          cutoff = new Date(latest.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '3M':
+          cutoff = new Date(latest.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case '6M':
+          cutoff = new Date(latest.getTime() - 180 * 24 * 60 * 60 * 1000);
+          break;
+        case '1Y':
+          cutoff = new Date(latest.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        case 'YTD':
+          cutoff = new Date(latest.getFullYear(), 0, 1);
+          break;
+        default:
+          cutoff = null;
+      }
+
+      const filtered = cutoff
+        ? safeSeries.filter(point => point.rawDate >= cutoff)
+        : safeSeries;
+
+      return filtered.length ? filtered : safeSeries;
+    };
+
+    const formatExchangeLabel = (value = '') => {
+      if (!value) return '';
+      return value.replace(/\s*\(?US\)?/gi, '').replace(/\s+/g, ' ').trim();
+    };
+
+    const applyExchangeLabel = (el, value) => {
+      if (!el) return;
+      const label = formatExchangeLabel(value);
+      if (!label) {
+        el.textContent = '';
+        el.classList.add('hidden');
+      } else {
+        el.textContent = label;
+        el.classList.remove('hidden');
+      }
+    };
+
+    const exchangeToCountry = (exchange = '') => {
+      const code = exchange.toUpperCase();
+      if (code.includes('JSE')) return 'ZA';
+      return 'US';
+    };
+
+    const formatMarket = (row, idx) => {
+      const series = buildSeries(row?.closes_30d);
+      const lastPct = Array.isArray(row?.closes_30d) && row.closes_30d.length
+        ? Number((row.closes_30d[row.closes_30d.length - 1]?.pct || 0) * 100)
+        : 0;
+      const base = series[0]?.value || 1;
+      const last = series[series.length - 1]?.value || base;
+      const allTimeChange = base ? ((last - base) / base) * 100 : 0;
+      return {
+        id: row?.id || idx,
+        symbol: row?.symbol || '—',
+        name: row?.name || row?.symbol || 'Unknown instrument',
+        exchange: row?.exchange || '—',
+        logo: row?.logo || '',
+        country: exchangeToCountry(row?.exchange),
+        series,
+        dailyChange: lastPct,
+        allTimeChange
+      };
+    };
+
+    const updateChart = (market) => {
+      const canvas = document.getElementById('market-chart');
+      const ctx = canvas.getContext('2d');
+      const series = applyRange(market.series, currentRange);
+      const labels = series.map(point => point.label);
+      const base = series[0]?.value || 1;
+      const last = series[series.length - 1]?.value || base;
+      const data = series.map(point => base ? ((point.value - base) / base) * 100 : 0);
+      const rangeChange = base ? ((last - base) / base) * 100 : 0;
+      const color = rangeChange >= 0 ? '#16a34a' : '#dc2626';
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 260);
+      gradient.addColorStop(0, `${color}20`);
+      gradient.addColorStop(1, `${color}00`);
+
+      if (chart) chart.destroy();
+      chart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            borderColor: color,
+            borderWidth: 2.5,
+            backgroundColor: gradient,
+            pointRadius: 0,
+            tension: 0.35,
+            fill: 'start'
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.parsed.y >= 0 ? '+' : ''}${ctx.parsed.y.toFixed(2)}%`
+              }
+            }
+          },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: {
+              display: true,
+              grid: { display: false, drawBorder: false },
+              border: { display: false },
+              ticks: { color: '#475569', maxTicksLimit: 6 }
+            },
+            y: {
+              display: true,
+              position: 'right',
+              grid: { display: false, drawBorder: false },
+              border: { display: false },
+              ticks: {
+                color: '#475569',
+                callback: (value) => {
+                  if (typeof value === 'number') return `${value > 0 ? '+' : ''}${value.toFixed(0)}%`;
+                  return value;
+                }
+              }
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      return rangeChange;
+    };
+
+    const updateSelectedLogo = (market) => {
+      if (market.logo) {
+        logoEl?.classList.remove('hidden');
+        logoEl.src = market.logo;
+        logoEl.onerror = () => { logoEl.classList.add('hidden'); pillEl?.classList.remove('hidden'); };
+        pillEl?.classList.add('hidden');
+      } else {
+        logoEl?.classList.add('hidden');
+        pillEl?.classList.remove('hidden');
+      }
+      pillEl.textContent = market.symbol.slice(0, 3).toUpperCase();
+    };
+
+    const getVisibleMarkets = () => {
+      let filtered = markets.filter(m => !selectedRegion || (m.country || '').toUpperCase() === selectedRegion.toUpperCase());
+
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(m => m.symbol.toLowerCase().includes(term) || m.name.toLowerCase().includes(term));
+      }
+
+      if (!filtered.length && !searchTerm) return markets;
+      return filtered;
+    };
+
+    const ensureProfile = async (userId, email) => {
+      let { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) return data;
+
+      const payload = { id: userId, email, updated_at: new Date().toISOString() };
+      const upsert = await supabase.from('profiles').upsert(payload, { onConflict: 'id' }).select('*').single();
+      if (upsert.error) throw upsert.error;
+      return upsert.data;
+    };
+
+    const selectMarket = (marketId) => {
+      const market = getVisibleMarkets().find(m => m.id === marketId);
+      if (!market) return;
+      selectedMarketId = marketId;
+      marketsRow.querySelectorAll('.market-chip').forEach(chip => chip.classList.remove('active'));
+      const active = marketsRow.querySelector(`[data-id="${marketId}"]`);
+      active?.classList.add('active');
+
+      updateSelectedLogo(market);
+      nameEl.textContent = market.name || market.symbol;
+      applyExchangeLabel(exchangeEl, market.exchange);
+      dailyEl.textContent = `Daily Change: ${market.dailyChange >= 0 ? '+' : ''}${market.dailyChange.toFixed(2)}%`;
+      dailyEl.className = `text-xs ${market.dailyChange >= 0 ? 'text-green-600' : 'text-red-600'}`;
+
+      const rangeChange = updateChart(market);
+      changeEl.textContent = `${rangeChange >= 0 ? '+' : ''}${rangeChange.toFixed(2)}%`;
+      changeEl.className = `px-2.5 py-1 rounded-full border border-slate-200 ${rangeChange >= 0 ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`;
+    };
+
+    const buildListItem = (mkt, changeValue, positiveText = '+', negativeText = '') => {
+      const row = document.createElement('div');
+      row.className = 'list-card cursor-pointer hover:bg-slate-50 transition-colors';
+      row.setAttribute('data-id', mkt.id);
+      row.addEventListener('click', () => selectMarket(mkt.id));
+
+      const logo = document.createElement('img');
+      logo.className = 'market-logo';
+      logo.alt = `${mkt.symbol} logo`;
+      const fallback = document.createElement('div');
+      fallback.className = 'pill bg-slate-100 text-base hidden';
+      fallback.textContent = mkt.symbol.slice(0, 3).toUpperCase();
+      if (mkt.logo) {
+        logo.src = mkt.logo;
+        logo.onerror = () => { logo.classList.add('hidden'); fallback.classList.remove('hidden'); };
+      } else {
+        logo.classList.add('hidden');
+        fallback.classList.remove('hidden');
+      }
+
+      const text = document.createElement('div');
+      text.className = 'min-w-0 flex-1';
+      const name = document.createElement('a');
+      name.className = 'text-sm font-semibold text-slate-900 truncate hover:underline';
+      name.href = `/symbol.html?instrument=${encodeURIComponent(mkt.symbol)}`;
+      name.textContent = mkt.name || mkt.symbol;
+      name.addEventListener('click', (e) => e.stopPropagation());
+      const exch = document.createElement('p');
+      exch.className = 'text-xs text-slate-500';
+      applyExchangeLabel(exch, mkt.exchange);
+      text.append(name, exch);
+
+      const tag = document.createElement('span');
+      const positive = changeValue >= 0;
+      tag.className = `tag ${positive ? 'pos' : 'neg'}`;
+      tag.textContent = `${changeValue >= 0 ? positiveText : negativeText}${changeValue.toFixed(2)}%`;
+
+      row.append(logo, fallback, text, tag);
+      return row;
+    };
+
+    const renderMarkets = () => {
+      const visibleMarkets = getVisibleMarkets();
+      const gainers = visibleMarkets
+        .filter(mkt => mkt.allTimeChange > 0)
+        .sort((a, b) => b.allTimeChange - a.allTimeChange);
+      const losers = visibleMarkets
+        .filter(mkt => mkt.allTimeChange < 0)
+        .sort((a, b) => a.allTimeChange - b.allTimeChange);
+      const todaysGainers = visibleMarkets
+        .filter(mkt => mkt.dailyChange > 0)
+        .sort((a, b) => b.dailyChange - a.dailyChange);
+      const todaysLosers = visibleMarkets
+        .filter(mkt => mkt.dailyChange < 0)
+        .sort((a, b) => a.dailyChange - b.dailyChange);
+
+      marketsRow.innerHTML = '';
+      const chipList = gainers.length ? gainers : visibleMarkets;
+      if (!chipList.length) {
+        marketsRow.innerHTML = '<div class="text-slate-500 text-sm">No markets available right now.</div>';
+      } else {
+        chipList.forEach((mkt, idx) => {
+          const chip = document.createElement('div');
+          chip.className = `market-chip ${idx === 0 ? 'active' : ''}`;
+          chip.setAttribute('data-id', mkt.id);
+          chip.setAttribute('role', 'button');
+          chip.tabIndex = 0;
+
+          const logoWrap = document.createElement('div');
+          logoWrap.className = 'relative';
+          const logo = document.createElement('img');
+          logo.className = 'market-logo';
+          logo.alt = `${mkt.symbol} logo`;
+          const fallbackPill = document.createElement('div');
+          fallbackPill.className = 'pill bg-slate-100 text-base hidden';
+          fallbackPill.textContent = mkt.symbol.slice(0, 3).toUpperCase();
+          if (mkt.logo) {
+            logo.src = mkt.logo;
+            logo.onerror = () => { logo.classList.add('hidden'); fallbackPill.classList.remove('hidden'); };
+          } else {
+            logo.classList.add('hidden');
+            fallbackPill.classList.remove('hidden');
+          }
+          logoWrap.appendChild(logo);
+          logoWrap.appendChild(fallbackPill);
+
+          const textWrap = document.createElement('div');
+          textWrap.className = 'text-left min-w-0 flex-1';
+          const name = document.createElement('a');
+          name.className = 'text-sm font-semibold text-slate-900 hover:underline';
+          name.textContent = mkt.name || mkt.symbol;
+          name.href = `/symbol.html?instrument=${encodeURIComponent(mkt.symbol)}`;
+          name.addEventListener('click', (e) => e.stopPropagation());
+          const exch = document.createElement('p');
+          exch.className = 'text-xs text-slate-500';
+          applyExchangeLabel(exch, mkt.exchange);
+          const daily = document.createElement('p');
+          daily.className = `text-xs ${mkt.dailyChange >= 0 ? 'text-green-600' : 'text-red-600'}`;
+          daily.textContent = `Daily Change: ${mkt.dailyChange >= 0 ? '+' : ''}${mkt.dailyChange.toFixed(2)}%`;
+          textWrap.appendChild(name);
+          textWrap.appendChild(exch);
+          textWrap.appendChild(daily);
+
+          const changeWrap = document.createElement('div');
+          changeWrap.className = 'ml-auto text-right text-sm font-semibold flex items-center';
+          const delta = document.createElement('span');
+          const deltaPositive = mkt.allTimeChange >= 0;
+          delta.className = `px-2.5 py-1 rounded-full border border-slate-200 ${deltaPositive ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`;
+          delta.textContent = `${deltaPositive ? '+' : ''}${mkt.allTimeChange.toFixed(2)}%`;
+          changeWrap.append(delta);
+
+          chip.append(logoWrap, textWrap, changeWrap);
+          chip.addEventListener('click', () => selectMarket(mkt.id));
+          chip.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectMarket(mkt.id);
+            }
+          });
+          marketsRow.appendChild(chip);
+        });
+      }
+
+      allTimeLosersEl.innerHTML = '';
+      if (!losers.length) {
+        allTimeLosersEl.innerHTML = '<div class="text-slate-500 text-sm">No decliners in this view.</div>';
+      } else {
+        losers.forEach(mkt => {
+          const row = buildListItem(mkt, mkt.allTimeChange, '+', '');
+          allTimeLosersEl.appendChild(row);
+        });
+      }
+
+      const renderDailyList = (container, list, emptyText, showAll = false, toggleBtn) => {
+        container.innerHTML = '';
+        if (!list.length) {
+          container.innerHTML = `<div class="text-slate-500 text-sm">${emptyText}</div>`;
+          return;
+        }
+        const slice = showAll ? list : list.slice(0, 5);
+        slice.forEach(mkt => {
+          const row = buildListItem(mkt, mkt.dailyChange, '+', '');
+          container.appendChild(row);
+        });
+
+        if (toggleBtn) {
+          toggleBtn.textContent = showAll ? 'Show top 5' : 'View all';
+          toggleBtn.classList.toggle('hidden', list.length <= 5);
+        }
+      };
+
+      renderDailyList(todayGainersEl, todaysGainers, 'No gainers yet.', showAllGainers, toggleGainersBtn);
+      renderDailyList(todayLosersEl, todaysLosers, 'No losers yet.', showAllLosers, toggleLosersBtn);
+
+      const chosen = chipList.find(m => m.id === selectedMarketId) || chipList[0];
+      if (chosen) selectMarket(chosen.id);
+    };
+
+    const loadMarkets = async () => {
+      let { data, error } = await supabase
+        .from('trading_universe')
+        .select('id,symbol,name,exchange,closes_30d,logo');
+
+      if (error) {
+        const fallback = await supabase
+          .from('trading_universe')
+          .select('id,symbol,name,exchange,logo');
+        data = fallback.data;
+        error = fallback.error;
+      }
+
+      if (error) {
+        marketsRow.innerHTML = `<div class="text-red-600 text-sm">Failed to load markets: ${error.message}</div>`;
+        markets = Array.from({ length: 5 }, (_, idx) => formatMarket({ symbol: `SIM${idx + 1}`, name: 'Sample Index', exchange: 'Simulated' }, idx));
+        renderMarkets();
+        return;
+      }
+
+      markets = (data || []).map(formatMarket);
+      renderMarkets();
+    };
+
+    rangeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        rangeButtons.forEach(b => b.classList.remove('bg-slate-900', 'text-white'));
+        rangeButtons.forEach(b => b.classList.add('bg-white', 'text-slate-700'));
+        btn.classList.add('bg-slate-900', 'text-white');
+        btn.classList.remove('bg-white', 'text-slate-700');
+        currentRange = btn.dataset.range || 'ALL';
+        if (selectedMarketId) selectMarket(selectedMarketId);
+      });
+    });
+
+    regionSelect?.addEventListener('change', () => {
+      selectedRegion = regionSelect.value;
+      renderMarkets();
+    });
+
+    searchInput?.addEventListener('input', (e) => {
+      searchTerm = (e.target.value || '').trim();
+      renderMarkets();
+    });
+
+    toggleGainersBtn?.addEventListener('click', () => {
+      showAllGainers = !showAllGainers;
+      renderMarkets();
+    });
+
+    toggleLosersBtn?.addEventListener('click', () => {
+      showAllLosers = !showAllLosers;
+      renderMarkets();
+    });
+
+    const hydrateProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setText(hdrName, 'Guest');
+          setSrc(hdrAvatar, BLANK_AVATAR);
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const profile = await ensureProfile(user.id, user.email || null);
+
+        const fn = (profile?.first_name || '').trim();
+        const ln = (profile?.last_name || '').trim();
+        const fallback = (user.email || 'User').split('@')[0];
+        setText(hdrName, (fn || ln) ? `${fn} ${ln}`.trim() : fallback);
+        setText(pmEmail, user.email || '—');
+
+        const avatarUrl = profile?.avatar_url
+          ? `${profile.avatar_url}${profile.avatar_url.includes('?') ? '&' : '?'}v=${Date.now()}`
+          : BLANK_AVATAR;
+        setSrc(hdrAvatar, avatarUrl);
+
+        profileBtn?.addEventListener('click', (e) => {
+          e.preventDefault();
+          profileModal?.classList.toggle('hidden');
+        });
+
+        profileModal?.addEventListener('click', (e) => {
+          if (e.target === profileModal || (e.target instanceof HTMLElement && e.target.classList.contains('bg-black/40'))) {
+            profileModal.classList.add('hidden');
+          }
+        });
+
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') profileModal?.classList.add('hidden'); });
+
+        pmLogout?.addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          location.replace('/auth.html?tab=in');
+        });
+
+        pmProfile?.addEventListener('click', () => profileModal?.classList.add('hidden'));
+
+        supabase.auth.onAuthStateChange((_event, sess) => {
+          if (!sess) location.replace('/auth.html?tab=in');
+        });
+      } catch (err) {
+        console.warn('Failed to hydrate profile', err);
+      }
+    };
+
+    (async () => {
+      if (!await requireSession()) return;
+      loadMarkets();
+      hydrateProfile();
+    })();
+  </script>
+</body>
+</html>

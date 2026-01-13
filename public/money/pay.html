@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoMoney — Pay</title>
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <script nonce="ALGOHIVE">
+    // Silence the production warning from the Tailwind CDN helper for this demo environment.
+    (function () {
+      const originalWarn = console.warn;
+      console.warn = function (msg, ...rest) {
+        if (typeof msg === 'string' && msg.includes('cdn.tailwindcss.com should not be used in production')) return;
+        originalWarn.call(console, msg, ...rest);
+      };
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" nonce="ALGOHIVE"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+    referrerpolicy="no-referrer"
+  />
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
+    referrerpolicy="no-referrer"
+  ></script>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --primary: #1a73e8;
+      --primary-dark: #0c5ac9;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --line: #e5e7ef;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    body.fullscreen-map { overflow: hidden; }
+
+    /* Demo sidebar styling */
+    #layout { --sb: 275px; display: grid; grid-template-columns: 1fr; min-height: 100vh; }
+    #ah-overlay { position: fixed; inset: 0; z-index: 40; }
+    #ah-sidebar { transition: transform .3s ease, width .2s ease; width: 350px; max-width: 85vw; position: fixed; top: 0; z-index: 50; height: 100vh; transform: translateX(-100%); background: #fff; }
+    #ah-sidebar.is-open { transform: translateX(0); }
+    @media (min-width: 768px) {
+      #layout { grid-template-columns: var(--sb) 1fr; }
+      #ah-sidebar { position: sticky; top: 0; width: var(--sb); max-width: none; height: 100vh; transform: translateX(0); z-index: auto; }
+    }
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron { display: none; }
+    #ah-sidebar[data-collapsed="true"] #main-nav { visibility: hidden; pointer-events: none; }
+    #ah-sidebar[data-collapsed="true"] details > .sub { display: none !important; }
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details > summary { justify-content: center; gap: 0.25rem; }
+    #ah-sidebar[data-collapsed="true"] details > summary span { gap: 0; }
+    #ah-sidebar .footer { transition: all 0.2s ease; }
+    #ah-sidebar[data-collapsed="true"] .footer { justify-content: center; flex-direction: column; gap: 12px; }
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) { transform: rotate(180deg); }
+    #ah-collapse { display: none; }
+    @media (min-width: 768px) { #ah-collapse { display: inline-flex; } }
+
+    /* Brand switcher */
+    #ah-brand-switcher { position: relative; }
+    #ah-brand-switcher summary { list-style: none; }
+    #ah-brand-switcher summary::-webkit-details-marker { display: none; }
+    .brand-toggle { margin: 10px 12px; border: 1px solid #e2e8f0; border-radius: 14px; background: linear-gradient(135deg, #f8fafc, #eef2ff); box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4); display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: all 0.2s ease; }
+    #ah-brand-switcher[open] .brand-toggle { border-color: #cbd5e1; background: #fff; box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55); }
+    .brand-marker {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .brand-menu { position: absolute; left: 12px; right: 12px; top: calc(100% - 6px); border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5); padding: 12px; display: grid; gap: 8px; z-index: 10; }
+    .brand-menu-header { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #475569; padding: 4px 4px 2px; }
+    .brand-option { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease; }
+    .brand-option:hover { background: linear-gradient(135deg, #556b2f, #000000); }
+    .brand-option:hover .algomoney-word { color: #fff; }
+    .brand-option img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid #e2e8f0; padding: 6px; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle { justify-content: center; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down { display: none; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker { margin: 0; }
+
+    /* Page visuals */
+    .nav-icon { color: #94a3b8; }
+    .nav-active { color: var(--primary); background: #e5f0ff; }
+    .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    .step-card {
+      border: 1px solid rgba(88, 28, 135, 0.12);
+      background: linear-gradient(180deg, rgba(124, 58, 237, 0.04), rgba(15, 23, 42, 0.02));
+      box-shadow: 0 18px 48px -26px rgba(79, 70, 229, 0.45);
+    }
+    .step-card[data-active="true"] {
+      border-color: rgba(124, 58, 237, 0.6);
+      box-shadow: 0 24px 60px -28px rgba(124, 58, 237, 0.55);
+    }
+    .step-card[data-done="true"] { border-color: #22c55e; }
+
+    .pill-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: linear-gradient(120deg, rgba(76, 29, 149, 0.12), rgba(59, 130, 246, 0.12));
+      color: #4c1d95;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .map-sim {
+      position: relative;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      min-height: 320px;
+      background: #eef2ff;
+      box-shadow: 0 18px 46px -32px rgba(15, 23, 42, 0.45);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .map-sim.fullscreen {
+      position: fixed;
+      inset: 16px;
+      z-index: 70;
+      height: auto;
+      min-height: calc(100vh - 32px);
+      max-width: none;
+      border-radius: 18px;
+      box-shadow: 0 30px 80px -34px rgba(15, 23, 42, 0.65);
+    }
+    #geo-map {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    #geo-map-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 60;
+    }
+    .map-action {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+    }
+    .map-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 8px 12px;
+      box-shadow: 0 10px 24px -18px rgba(15, 23, 42, 0.45);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .map-btn:hover { transform: translateY(-1px); box-shadow: 0 16px 30px -20px rgba(15, 23, 42, 0.55); border-color: #cbd5e1; }
+    .map-btn:active { transform: translateY(0); box-shadow: 0 12px 24px -18px rgba(15, 23, 42, 0.6); }
+    .leaflet-container { font-family: 'Inter', sans-serif; }
+    .leaflet-tile { filter: saturate(1.05); }
+    .leaflet-control-container { display: none; }
+    .geo-pin-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #fff;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.25);
+    }
+    .geo-pin-avatar[data-self="true"] {
+      border-color: #4f46e5;
+      box-shadow: 0 12px 28px rgba(79, 70, 229, 0.35);
+    }
+    .geo-pin-label {
+      margin-top: 4px;
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.8);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.35);
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden bg-[var(--bg)]">
+  <div id="geo-map-overlay" class="hidden"></div>
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoMoney</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch</div>
+          <a href="/demo/dashboard.html" class="brand-option">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Markets Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoHive Markets</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/home.html" title="Home">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Accounts">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Accounts</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Pay</p>
+        <details class="group rounded-lg" open>
+          <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer nav-active" aria-current="page">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-send-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+            <span class="label flex-1 flex items-center justify-between">Make a Payment <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+          </summary>
+          <div class="sub ml-9 mt-1 flex flex-col gap-1">
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#geo" title="GeoPay">
+              <span class="label">GeoPay</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#bill-split" title="Bill Split">
+              <span class="label">Bill Split</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#eft" title="EFT">
+              <span class="label">EFT</span>
+            </a>
+          </div>
+        </details>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Receive a Payment">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-receive-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Receive a Payment</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Credit</p>
+        <details class="group rounded-lg">
+          <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+            <span class="label flex-1 flex items-center justify-between">Personal Credit <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+          </summary>
+          <div class="sub ml-9 mt-1 flex flex-col gap-1">
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="#" title="Unsecured Credit">
+              <span class="label">Unsecured Credit</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/instant-liquidity.html" title="Portfolio Credit">
+              <span class="label">Portfolio Credit</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="#" title="Instant Liquidity">
+              <span class="label">Instant Liquidity</span>
+            </a>
+          </div>
+        </details>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/business/apply.html" title="For my business">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">For my business</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Documents</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/demo/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      </div>
+    </aside>
+
+    <main class="relative flex-1 min-w-0 bg-[var(--bg)]">
+      <div class="max-w-7xl mx-auto px-3 md:px-5 pb-24 lg:pb-12 pt-6 lg:pt-8 space-y-6">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <button id="ah-mobile-menu-btn" aria-label="Open menu" class="md:hidden btn h-11 w-11 p-0 rounded-xl border-0">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 relative">
+            <button class="inline-flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50" aria-label="Notifications">
+              <i class="fa-regular fa-bell text-base"></i>
+            </button>
+            <button id="profile-menu-trigger" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+              <img data-profile-avatar src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+              <span class="text-sm font-semibold text-slate-900 hidden sm:inline" data-profile-name>Ronaldinho Fazio</span>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+            </button>
+            <div id="profile-menu" class="absolute right-0 top-[calc(100%+8px)] w-64 rounded-xl border border-slate-200 bg-white shadow-xl hidden z-20 overflow-hidden">
+              <div class="px-4 py-3 border-b border-slate-200">
+                <p class="text-sm font-semibold text-slate-900" data-profile-name>Ronaldinho Fazio</p>
+                <p class="text-xs text-slate-500">Profile controls</p>
+              </div>
+              <button id="geopay-toggle" class="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <span>Enable GeoPay</span>
+                <div id="geopay-toggle-track" class="relative inline-flex h-5 w-10 items-center rounded-full border border-slate-200 bg-slate-200 transition-colors">
+                  <span id="geopay-toggle-knob" class="h-4 w-4 rounded-full bg-white shadow-sm transition-transform translate-x-1"></span>
+                </div>
+              </button>
+              <button id="sign-out-btn" class="flex items-center gap-2 w-full px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 border-t border-slate-200">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <section class="space-y-6">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <a href="/money/home.html" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to home
+              </a>
+              <span id="step-label" class="text-sm font-semibold text-slate-700">Step 1 • Payment type</span>
+            </div>
+            <div class="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
+              <div id="progress-fill" class="h-full bg-gradient-to-r from-purple-600 via-purple-800 to-black transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="space-y-4 max-w-3xl mx-auto w-full">
+            <div class="step-card rounded-2xl border border-slate-200 bg-white/90 p-4 sm:p-5" data-step="1">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Step 1</p>
+                  <p class="text-lg font-bold text-slate-900">Choose the payment type</p>
+                </div>
+                <span class="text-xs font-semibold text-slate-500">Required</span>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-3">
+                <button id="geo" class="pay-choice border border-slate-200 rounded-xl p-4 text-left bg-white hover:border-slate-300 hover:shadow-sm transition" data-pay-choice="geo">
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-indigo-50 text-indigo-700 grid place-items-center">
+                      <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="font-bold text-slate-900">Geo Pay</p>
+                      <p class="text-sm text-slate-500">Discover and send by location</p>
+                    </div>
+                  </div>
+                </button>
+                <button id="eft" class="pay-choice border border-slate-200 rounded-xl p-4 text-left bg-white hover:border-slate-300 hover:shadow-sm transition" data-pay-choice="eft">
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-sky-50 text-sky-700 grid place-items-center">
+                      <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="font-bold text-slate-900">EFT</p>
+                      <p class="text-sm text-slate-500">Send into your EFT baskets</p>
+                    </div>
+                  </div>
+                </button>
+                <div id="bill-split" class="sr-only">Bill Split</div>
+              </div>
+            </div>
+
+            <div class="step-card rounded-2xl border border-slate-200 bg-white/90 p-4 sm:p-5 hidden" data-step="2">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Step 2</p>
+                  <p class="text-lg font-bold text-slate-900">Choose the amount to pay from</p>
+                </div>
+                <span class="pill-label"><i class="fa-solid fa-shield-check text-[13px]"></i>Required</span>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-3" id="pay-accounts">
+                <button class="account-option border border-slate-200 rounded-xl p-4 text-left bg-white hover:border-slate-300 hover:shadow-sm transition" data-account-name="Credit Card" data-account-id="CC" data-account-balance="R12,450.00">
+                  <p class="text-sm font-semibold text-slate-500">Credit Card</p>
+                  <p class="text-xs font-semibold text-indigo-600">Available balance</p>
+                  <p class="text-xl font-black text-slate-900">R12,450.00</p>
+                  <p class="text-xs text-slate-500">**** 1104</p>
+                </button>
+                <button class="account-option border border-slate-200 rounded-xl p-4 text-left bg-white hover:border-slate-300 hover:shadow-sm transition" data-account-name="Business Wallet" data-account-id="BUSN" data-account-balance="R15,420.00">
+                  <p class="text-sm font-semibold text-slate-500">Business Wallet</p>
+                  <p class="text-xs font-semibold text-indigo-600">Available balance</p>
+                  <p class="text-xl font-black text-slate-900">R15,420.00</p>
+                  <p class="text-xs text-slate-500">**** 7755</p>
+                </button>
+                <button class="account-option border border-slate-200 rounded-xl p-4 text-left bg-white hover:border-slate-300 hover:shadow-sm transition" data-account-name="Main Account" data-account-id="MAIN" data-account-balance="R8,960.00">
+                  <p class="text-sm font-semibold text-slate-500">Main Account</p>
+                  <p class="text-xs font-semibold text-indigo-600">Available balance</p>
+                  <p class="text-xl font-black text-slate-900">R8,960.00</p>
+                  <p class="text-xs text-slate-500">**** 9023</p>
+                </button>
+              </div>
+            </div>
+
+                <div class="step-card rounded-2xl bg-white p-4 sm:p-5 hidden" data-step="3">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Step 3</p>
+                      <p class="text-lg font-bold text-slate-900">Choose a beneficiary</p>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-500">Required</span>
+                  </div>
+
+                  <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="flex-1 space-y-3">
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm font-semibold text-slate-900">Saved beneficiaries</p>
+                        <span id="beneficiary-count" class="text-xs text-slate-500">0</span>
+                      </div>
+                      <div class="relative">
+                        <input id="beneficiary-search" type="text" placeholder="Search by name" class="w-full rounded-xl border border-slate-200 px-3 py-2.5 pr-10 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100" />
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 absolute right-3 top-3"></i>
+                      </div>
+                      <div class="space-y-3" id="beneficiary-list"></div>
+                    </div>
+
+                    <div class="w-full lg:w-80 space-y-2" id="geo-panel">
+                      <div class="flex items-center justify-between">
+                        <p class="text-sm font-semibold text-slate-900">Geo discover</p>
+                        <span class="text-xs font-semibold text-indigo-700" id="geo-mode-label">Geo Pay on</span>
+                      </div>
+                      <div class="map-sim" id="geo-map-wrapper">
+                        <div id="geo-map"></div>
+                        <div class="map-action">
+                          <button id="geo-fullscreen-btn" type="button" class="map-btn" aria-pressed="false">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center text-slate-600"></i>
+                            <span class="map-btn-label">Full screen</span>
+                          </button>
+                        </div>
+                        <div class="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-600 flex flex-col gap-1" id="geo-status">
+                          <span id="geo-status-text">Pins show where your people are when using Geo Pay.</span>
+                          <span class="text-[11px] text-slate-500" id="geo-status-meta"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step-card rounded-2xl bg-white p-4 sm:p-5 hidden" data-step="4">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Step 4</p>
+                      <p class="text-lg font-bold text-slate-900">Input the amount</p>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-500">Required</span>
+                  </div>
+                  <div class="space-y-4">
+                    <label class="block">
+                      <span class="text-sm font-semibold text-slate-700">Amount to send</span>
+                      <div class="mt-2 flex items-center rounded-xl border border-slate-200 bg-white shadow-inner px-3 py-2">
+                        <span class="text-slate-500 font-semibold mr-2">ZAR</span>
+                        <input id="amount-input" type="number" min="0" step="0.01" placeholder="0.00" class="flex-1 text-2xl font-bold text-slate-900 focus:outline-none" />
+                      </div>
+                    </label>
+                    <p class="text-sm text-slate-500">You can adjust fees later. For now we just need the send amount.</p>
+                  </div>
+                </div>
+
+                <div class="step-card rounded-2xl bg-white p-4 sm:p-5 hidden" data-step="5">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Step 5</p>
+                      <p class="text-lg font-bold text-slate-900">Confirm and view receipt</p>
+                    </div>
+                    <span class="text-xs font-semibold text-slate-500">Check details</span>
+                  </div>
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-2" id="receipt-card">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-semibold text-slate-700">Payment type</p>
+                      <p id="receipt-type" class="text-sm font-bold text-slate-900">—</p>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-semibold text-slate-700">From account</p>
+                      <p id="receipt-account" class="text-sm font-bold text-slate-900">—</p>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-semibold text-slate-700">Beneficiary</p>
+                      <p id="receipt-beneficiary" class="text-sm font-bold text-slate-900">—</p>
+                    </div>
+                    <div class="pt-3 border-t border-dashed border-slate-300 flex items-center gap-3 text-xs text-slate-500">
+                      <i class="fa-solid fa-receipt text-slate-400"></i>
+                      <span>Double check before sending. This acts as your receipt preview.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="step-card rounded-2xl bg-white p-4 sm:p-5 hidden" data-step="6">
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Step 6</p>
+                      <p class="text-lg font-bold text-slate-900">Send</p>
+                    </div>
+                    <span class="pill-label"><i class="fa-solid fa-circle-check text-[13px]"></i>Final</span>
+                  </div>
+                  <div class="rounded-2xl border border-indigo-200 bg-gradient-to-r from-purple-50 via-white to-indigo-50 p-4 space-y-4" id="send-panel">
+                    <div class="flex items-center gap-3" id="send-initial">
+                      <div class="h-10 w-10 rounded-full bg-indigo-600 text-white grid place-items-center text-lg shadow-lg shadow-indigo-200/70">
+                        <i class="fa-solid fa-paper-plane"></i>
+                      </div>
+                      <div>
+                        <p class="font-bold text-slate-900">Ready to send</p>
+                        <p class="text-sm text-slate-600">This will use your selected details. Tap send to finish.</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 hidden" id="send-loading">
+                      <div class="h-12 w-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+                      <div>
+                        <p class="font-bold text-slate-900">Sending</p>
+                        <p class="text-sm text-slate-600">We’re processing your payment...</p>
+                      </div>
+                    </div>
+
+                    <div class="hidden space-y-3" id="send-success">
+                      <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-700 text-white grid place-items-center text-2xl shadow-lg shadow-indigo-200/70">
+                          <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                          <p class="font-bold text-slate-900">Sent</p>
+                          <p class="text-sm text-slate-600" id="send-success-text">You have just sent your payment.</p>
+                        </div>
+                      </div>
+                      <a href="/money/home.html" id="send-back-home" class="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-700 to-indigo-600 shadow-sm hover:from-purple-800 hover:to-indigo-700">Back home</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                  <button id="step-back" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back
+                  </button>
+                  <button id="step-next" class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm">
+                    Continue
+                    <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+  </div>
+  <nav class="lg:hidden fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto grid grid-cols-4">
+      <button class="flex flex-col items-center gap-1 py-3 nav-active">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[11px] font-semibold">Home</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-chart-bar text-lg"></i>
+        <span class="text-[11px] font-semibold">Statistics</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-credit-card text-lg"></i>
+        <span class="text-[11px] font-semibold">Cards</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-user text-lg"></i>
+        <span class="text-[11px] font-semibold">Account</span>
+      </button>
+    </div>
+  </nav>
+
+  <script nonce="ALGOHIVE">
+    const sidebar = document.getElementById('ah-sidebar');
+    const overlayEl = document.getElementById('ah-overlay');
+    const mobileBtn = document.getElementById('ah-mobile-menu-btn');
+    const payChoiceButtons = document.querySelectorAll('[data-pay-choice]');
+    const accountButtons = document.querySelectorAll('.account-option');
+    const stepPanels = document.querySelectorAll('[data-step]');
+    const stepLabel = document.getElementById('step-label');
+    const progressFill = document.getElementById('progress-fill');
+    const stepNext = document.getElementById('step-next');
+    const stepBack = document.getElementById('step-back');
+    const beneficiaryList = document.getElementById('beneficiary-list');
+    const beneficiaryCount = document.getElementById('beneficiary-count');
+    const beneficiarySearch = document.getElementById('beneficiary-search');
+    const geoPanel = document.getElementById('geo-panel');
+    const geoModeLabel = document.getElementById('geo-mode-label');
+    const mapWrapper = document.getElementById('geo-map-wrapper');
+    const mapOverlayEl = document.getElementById('geo-map-overlay');
+    const mapFullscreenBtn = document.getElementById('geo-fullscreen-btn');
+    const mapFullscreenLabel = mapFullscreenBtn?.querySelector('.map-btn-label');
+    const mapFullscreenIcon = mapFullscreenBtn?.querySelector('i');
+    const geoMap = document.getElementById('geo-map');
+    const geoStatus = document.getElementById('geo-status');
+    const geoStatusText = document.getElementById('geo-status-text');
+    const geoStatusMeta = document.getElementById('geo-status-meta');
+    const amountInput = document.getElementById('amount-input');
+    const receiptType = document.getElementById('receipt-type');
+    const receiptAccount = document.getElementById('receipt-account');
+    const receiptBeneficiary = document.getElementById('receipt-beneficiary');
+    const sendInitial = document.getElementById('send-initial');
+    const sendLoading = document.getElementById('send-loading');
+    const sendSuccess = document.getElementById('send-success');
+    const sendSuccessText = document.getElementById('send-success-text');
+    const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
+    const supabaseClient = window.supabase?.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
+      {
+        global: {
+          fetch: (url, options = {}) =>
+            fetch(url, {
+              mode: 'cors',
+              cache: 'no-store',
+              ...options,
+            }),
+        },
+      }
+    );
+    const profileNameEls = document.querySelectorAll('[data-profile-name]');
+    const profileAvatarEls = document.querySelectorAll('[data-profile-avatar]');
+    const PROFILE_AVATAR_FALLBACK = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80';
+    const profileMenu = document.getElementById('profile-menu');
+    const profileTrigger = document.getElementById('profile-menu-trigger');
+    const signOutBtn = document.getElementById('sign-out-btn');
+    const geoToggle = document.getElementById('geopay-toggle');
+    const geoToggleTrack = document.getElementById('geopay-toggle-track');
+    const geoToggleKnob = document.getElementById('geopay-toggle-knob');
+    const GEO_PREF_KEY = 'algomoney_geo_pay_enabled';
+    let geoPayEnabled = true;
+    let isMapFullscreen = false;
+    let onGeoPreferenceChanged = () => {};
+    let currentUser = null;
+    let currentCoords = null;
+    let nearbyMarkersLayer = null;
+    let leafletMap = null;
+
+    let activeAccount = null;
+    let activePayMode = null;
+    let activeBeneficiary = null;
+    let activeAmount = '';
+    let currentStep = 1;
+    let sendTimer = null;
+
+    mobileBtn?.addEventListener('click', () => {
+      sidebar?.classList.add('is-open');
+      overlayEl?.classList.remove('hidden');
+    });
+
+    overlayEl?.addEventListener('click', () => {
+      sidebar?.classList.remove('is-open');
+      overlayEl?.classList.add('hidden');
+    });
+
+    const setMapFullscreen = (enabled) => {
+      const next = !!enabled;
+      isMapFullscreen = next;
+      mapWrapper?.classList.toggle('fullscreen', next);
+      mapOverlayEl?.classList.toggle('hidden', !next);
+      document.body.classList.toggle('fullscreen-map', next);
+      if (mapFullscreenBtn) {
+        mapFullscreenBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+        if (mapFullscreenLabel) mapFullscreenLabel.textContent = next ? 'Exit full screen' : 'Full screen';
+        if (mapFullscreenIcon) {
+          mapFullscreenIcon.classList.toggle('fa-up-right-and-down-left-from-center', !next);
+          mapFullscreenIcon.classList.toggle('fa-down-left-and-up-right-to-center', next);
+        }
+      }
+      if (leafletMap) {
+        setTimeout(() => leafletMap.invalidateSize(), 180);
+      }
+    };
+
+    const setProfileName = (value) => {
+      const resolved = (typeof value === 'string' && value.trim()) ? value.trim() : 'AlgoMoney Member';
+      profileNameEls.forEach(el => {
+        el.textContent = resolved;
+        el.title = resolved;
+      });
+    };
+
+    const setProfileAvatar = (url) => {
+      const resolved = (typeof url === 'string' && url.trim().startsWith('http')) ? url.trim() : PROFILE_AVATAR_FALLBACK;
+      profileAvatarEls.forEach(img => { img.src = resolved; });
+    };
+
+    const redirectToAuth = () => {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+    };
+
+    const ensureSession = async () => {
+      if (!supabaseClient) {
+        console.warn('Supabase unavailable; cannot enforce auth');
+        redirectToAuth();
+        return null;
+      }
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) console.warn('Error fetching session', error.message);
+        if (!session) {
+          redirectToAuth();
+          return null;
+        }
+        return session;
+      } catch (err) {
+        console.warn('Unable to enforce session guard', err);
+        redirectToAuth();
+        return null;
+      }
+    };
+
+    const hydrateProfileFromSupabase = async (user) => {
+      if (!supabaseClient || !user) return null;
+      let profileRow = null;
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('first_name,last_name,avatar_url,geopay_enabled,geo_lat,geo_lng')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (error && error.code !== 'PGRST116') throw error;
+        profileRow = data || null;
+      } catch (err) {
+        console.warn('Unable to load profile', err);
+      }
+
+      const fullName = [profileRow?.first_name, profileRow?.last_name].filter(Boolean).join(' ').trim();
+      const metaFullName = [user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(' ').trim();
+      const displayName = fullName
+        || metaFullName
+        || (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim())
+        || 'AlgoMoney Member';
+
+      setProfileName(displayName);
+      setProfileAvatar(profileRow?.avatar_url || user.user_metadata?.avatar_url);
+      return profileRow;
+    };
+
+    const handleSignOut = async () => {
+      try {
+        await supabaseClient?.auth.signOut();
+      } catch (err) {
+        console.warn('Unable to sign out', err);
+      }
+      redirectToAuth();
+    };
+
+    const setGeoToggle = (enabled) => {
+      geoPayEnabled = !!enabled;
+      if (!geoToggleTrack || !geoToggleKnob) return;
+      geoToggleTrack.classList.toggle('bg-indigo-600', enabled);
+      geoToggleTrack.classList.toggle('border-indigo-600', enabled);
+      geoToggleTrack.classList.toggle('bg-slate-200', !enabled);
+      geoToggleTrack.classList.toggle('border-slate-200', !enabled);
+      geoToggleKnob.classList.toggle('translate-x-5', enabled);
+      geoToggleKnob.classList.toggle('translate-x-1', !enabled);
+      geoModeLabel.textContent = enabled ? 'Geo Pay on' : 'Geo Pay off';
+    };
+
+    const updateGeoStatus = (text, meta = '') => {
+      if (geoStatusText) geoStatusText.textContent = text;
+      if (geoStatusMeta) geoStatusMeta.textContent = meta;
+    };
+
+    const requestLocation = () => new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        updateGeoStatus('GeoPay needs location services to show pins.', 'Location unavailable in this browser.');
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+        (err) => {
+          console.warn('Geo location denied', err);
+          updateGeoStatus('We could not read your location.', 'Please allow location access to use GeoPay.');
+          resolve(null);
+        },
+        { enableHighAccuracy: true, maximumAge: 15000, timeout: 12000 }
+      );
+    });
+
+    const toCoordNumber = (value) => {
+      const parsed = typeof value === 'string' ? Number.parseFloat(value) : value;
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const ensureLeafletMap = (coords) => {
+      if (!geoMap || !window.L) return null;
+      if (!leafletMap) {
+        leafletMap = L.map(geoMap, { zoomControl: false, attributionControl: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(leafletMap);
+        nearbyMarkersLayer = L.layerGroup().addTo(leafletMap);
+      }
+      if (coords) {
+        leafletMap.setView([coords.latitude, coords.longitude], 15);
+      }
+      return leafletMap;
+    };
+
+    const renderGeoPins = (selfProfile, nearbyProfiles) => {
+      const baseCoords = selfProfile?.coords;
+      const map = ensureLeafletMap(baseCoords || nearbyProfiles?.[0]?.coords);
+      if (!map || !nearbyMarkersLayer) return;
+      nearbyMarkersLayer.clearLayers();
+
+      const markers = [];
+      const addMarker = (profile, isSelf = false) => {
+        if (!profile?.coords) return;
+        const name = profile.name || 'GeoPay user';
+        const avatar = profile.avatar || PROFILE_AVATAR_FALLBACK;
+        const marker = L.marker([profile.coords.latitude, profile.coords.longitude], {
+          icon: L.divIcon({
+            className: 'geo-pin',
+            html: `<div class="geo-pin-avatar" data-self="${isSelf}" style="background-image:url('${avatar}')"></div><div class="geo-pin-label">${name}</div>`
+          })
+        });
+        marker.addTo(nearbyMarkersLayer);
+        markers.push(marker);
+      };
+
+      if (baseCoords) {
+        addMarker(selfProfile, true);
+      }
+      (nearbyProfiles || []).forEach(profile => addMarker(profile, false));
+
+      const bounds = L.latLngBounds(markers.map(m => m.getLatLng()));
+      if (bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.35));
+      }
+    };
+
+    const updateProfileGeoState = async (enabled, coords = null) => {
+      const payload = {
+        geopay_enabled: enabled,
+        geo_lat: enabled && coords ? coords.latitude : null,
+        geo_lng: enabled && coords ? coords.longitude : null,
+        geo_updated_at: new Date().toISOString()
+      };
+      try {
+        const { error } = await supabaseClient
+          .from('profiles')
+          .update(payload)
+          .eq('id', currentUser?.id);
+        if (error) throw error;
+      } catch (err) {
+        console.warn('Unable to persist GeoPay preference', err);
+      }
+    };
+
+    const fetchNearbyProfiles = async (coords) => {
+      if (!supabaseClient) return [];
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('id,first_name,last_name,avatar_url,geo_lat,geo_lng,geopay_enabled')
+          .eq('geopay_enabled', true)
+          .not('geo_lat', 'is', null)
+          .not('geo_lng', 'is', null);
+
+        if (error) throw error;
+
+        return (data || [])
+          .map(row => {
+            const lat = toCoordNumber(row.geo_lat);
+            const lng = toCoordNumber(row.geo_lng);
+            if (lat === null || lng === null || row.id === currentUser?.id) return null;
+            const nameParts = [row.first_name, row.last_name].filter(Boolean);
+            const name = (nameParts.join(' ').trim()) || 'GeoPay user';
+            const coordsObj = { latitude: lat, longitude: lng };
+            const distance = coords ? Math.hypot(coords.latitude - lat, coords.longitude - lng) : Number.POSITIVE_INFINITY;
+            return { id: row.id, name, avatar: row.avatar_url, coords: coordsObj, distance };
+          })
+          .filter(Boolean)
+          .sort((a, b) => {
+            const aDist = Number.isFinite(a.distance) ? a.distance : Infinity;
+            const bDist = Number.isFinite(b.distance) ? b.distance : Infinity;
+            return aDist - bDist;
+          });
+      } catch (err) {
+        console.warn('Unable to fetch nearby GeoPay users', err);
+        return [];
+      }
+    };
+
+    const setPayMode = (mode) => {
+      activePayMode = mode;
+      payChoiceButtons.forEach(btn => {
+        const active = btn.dataset.payChoice === mode;
+        btn.classList.toggle('ring-2', active);
+        btn.classList.toggle('ring-indigo-200', active);
+        btn.classList.toggle('border-indigo-400', active);
+      });
+      geoPanel?.classList.toggle('opacity-50', mode !== 'geo');
+      geoPanel?.classList.toggle('pointer-events-none', mode !== 'geo');
+      geoModeLabel.textContent = mode === 'geo' ? 'Geo Pay on' : 'Geo Pay off';
+    };
+
+    onGeoPreferenceChanged = (enabled) => {
+      setPayMode(enabled ? 'geo' : 'eft');
+    };
+
+    const syncGeoPreference = async (enabled) => {
+      const nextValue = !!enabled;
+      localStorage.setItem(GEO_PREF_KEY, nextValue ? 'true' : 'false');
+      setGeoToggle(nextValue);
+      onGeoPreferenceChanged(nextValue);
+      if (!currentUser || !supabaseClient) return;
+
+      if (nextValue) {
+        updateGeoStatus('Requesting your location...');
+        const coords = await requestLocation();
+        if (!coords) {
+          setGeoToggle(false);
+          localStorage.setItem(GEO_PREF_KEY, 'false');
+          return;
+        }
+        currentCoords = coords;
+        await updateProfileGeoState(true, coords);
+        const nearby = await fetchNearbyProfiles(coords);
+        renderGeoPins({ name: 'You', avatar: profileAvatarEls?.[0]?.src, coords }, nearby);
+        const meta = nearby.length ? `${nearby.length} GeoPay users sharing now` : 'No GeoPay users visible yet.';
+        updateGeoStatus('GeoPay is sharing your location.', meta);
+      } else {
+        currentCoords = null;
+        await updateProfileGeoState(false, null);
+        if (nearbyMarkersLayer) nearbyMarkersLayer.clearLayers();
+        updateGeoStatus('GeoPay is turned off.', 'Enable it to discover people nearby.');
+      }
+    };
+
+    const loadGeoPreference = async (profileRow) => {
+      const storedPrefRaw = localStorage.getItem(GEO_PREF_KEY);
+      const storedEnabled = storedPrefRaw !== 'false';
+      const profileEnabled = profileRow?.geopay_enabled === true;
+      const lat = toCoordNumber(profileRow?.geo_lat);
+      const lng = toCoordNumber(profileRow?.geo_lng);
+      const initialEnabled = profileEnabled || storedEnabled;
+      if (profileEnabled && lat !== null && lng !== null) {
+        currentCoords = { latitude: lat, longitude: lng };
+        setGeoToggle(true);
+        onGeoPreferenceChanged(true);
+        const nearby = await fetchNearbyProfiles(currentCoords);
+        renderGeoPins({ name: 'You', avatar: profileRow?.avatar_url || PROFILE_AVATAR_FALLBACK, coords: currentCoords }, nearby);
+        updateGeoStatus('GeoPay is sharing your location.', nearby.length ? `${nearby.length} GeoPay users sharing now` : 'No GeoPay users visible yet.');
+      } else {
+        setGeoToggle(initialEnabled);
+        if (initialEnabled) {
+          await syncGeoPreference(true);
+        } else {
+          onGeoPreferenceChanged(false);
+          updateGeoStatus('GeoPay is off.', 'Toggle it on to show your live location.');
+        }
+      }
+    };
+
+    const toggleProfileMenu = () => {
+      profileMenu?.classList.toggle('hidden');
+    };
+
+    const closeProfileMenu = () => profileMenu?.classList.add('hidden');
+
+    (async () => {
+      const session = await ensureSession();
+      if (!session) return;
+      currentUser = session.user;
+      const profileRow = await hydrateProfileFromSupabase(session.user);
+      await loadGeoPreference(profileRow);
+    })();
+
+    const payChoiceCopy = {
+      geo: 'Geo Pay',
+      eft: 'EFT'
+    };
+
+    const beneficiaries = [
+      { id: 'ava', name: 'Ava Mensah', location: 'Nairobi • Mobile money', lastAmount: 'R250', initials: 'AM', coords: [62, 48], avatar: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=200&q=80' },
+      { id: 'luis', name: 'Luis Ortega', location: 'Bogotá • Bank transfer', lastAmount: 'R120', initials: 'LO', coords: [42, 58], avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=200&q=80' },
+      { id: 'mei', name: 'Mei Chen', location: 'Singapore • Wallet', lastAmount: 'R430', initials: 'MC', coords: [72, 62], avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80' },
+      { id: 'samir', name: 'Samir Patel', location: 'Dubai • Bank transfer', lastAmount: 'R320', initials: 'SP', coords: [55, 36], avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' },
+      { id: 'james', name: 'James Okoye', location: 'Lagos • Mobile money', lastAmount: 'R180', initials: 'JO', coords: [35, 44], avatar: 'https://images.unsplash.com/photo-1500336624523-d727130c3328?auto=format&fit=crop&w=200&q=80' }
+    ];
+
+    const renderBeneficiaries = (filterText = '') => {
+      if (!beneficiaryList) return;
+      beneficiaryList.innerHTML = '';
+      const normalized = filterText.trim().toLowerCase();
+      const filtered = normalized
+        ? beneficiaries.filter(b => b.name.toLowerCase().includes(normalized)).slice(0, 1)
+        : [];
+      beneficiaryCount.textContent = `${filtered.length} shown`;
+
+      filtered.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = 'beneficiary-option flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm transition text-left w-full';
+        btn.dataset.id = b.id;
+        btn.innerHTML = `
+          <img src="${b.avatar}" alt="${b.name}" class="h-10 w-10 rounded-full object-cover border border-slate-200" />
+          <div class="min-w-0">
+            <p class="font-semibold text-slate-900">${b.name}</p>
+            <p class="text-sm text-slate-500">${b.location}</p>
+          </div>
+        `;
+        btn.addEventListener('click', () => setBeneficiary(b));
+        if (activeBeneficiary && activeBeneficiary.id === b.id) {
+          btn.classList.add('ring-2', 'ring-indigo-200', 'border-indigo-400');
+        }
+        beneficiaryList.appendChild(btn);
+      });
+    };
+
+    const updateReceipt = () => {
+      receiptType.textContent = activePayMode ? payChoiceCopy[activePayMode] : '—';
+      receiptAccount.textContent = activeAccount ? `${activeAccount.name} (${activeAccount.balance})` : '—';
+      receiptBeneficiary.textContent = activeBeneficiary ? activeBeneficiary.name : '—';
+    };
+
+    const resetSendState = () => {
+      if (sendTimer) {
+        clearTimeout(sendTimer);
+        sendTimer = null;
+      }
+      sendInitial?.classList.remove('hidden');
+      sendLoading?.classList.add('hidden');
+      sendSuccess?.classList.add('hidden');
+      stepNext?.classList.remove('hidden', 'cursor-wait', 'opacity-80');
+      stepNext.textContent = currentStep === 6 ? 'Send' : 'Continue';
+    };
+
+    const triggerSend = () => {
+      if (!sendInitial || !sendLoading || !sendSuccess) return;
+      sendInitial.classList.add('hidden');
+      sendLoading.classList.remove('hidden');
+      stepNext.disabled = true;
+      stepNext.classList.add('cursor-wait', 'opacity-80');
+      stepNext.textContent = 'Sending...';
+
+      sendTimer = setTimeout(() => {
+        sendLoading.classList.add('hidden');
+        sendSuccess.classList.remove('hidden');
+        stepNext.classList.add('hidden');
+        const parsedAmount = Number(activeAmount || 0);
+        const amt = Number.isFinite(parsedAmount) ? `R${parsedAmount.toFixed(2)}` : 'R0.00';
+        const person = activeBeneficiary ? activeBeneficiary.name : 'your recipient';
+        if (sendSuccessText) {
+          sendSuccessText.textContent = `You have just sent ${amt} to ${person}.`;
+        }
+      }, 1400);
+    };
+
+    const setAccount = (buttonEl) => {
+      if (!buttonEl) return;
+      accountButtons.forEach(btn => {
+        const active = btn === buttonEl;
+        btn.classList.toggle('ring-2', active);
+        btn.classList.toggle('ring-indigo-200', active);
+        btn.classList.toggle('border-indigo-400', active);
+      });
+
+      activeAccount = {
+        name: buttonEl.dataset.accountName,
+        id: buttonEl.dataset.accountId,
+        balance: buttonEl.dataset.accountBalance
+      };
+    };
+
+    const setBeneficiary = (beneficiary) => {
+      activeBeneficiary = beneficiary;
+      document.querySelectorAll('.beneficiary-option').forEach(btn => {
+        const active = btn.dataset.id === beneficiary.id;
+        btn.classList.toggle('ring-2', active);
+        btn.classList.toggle('ring-indigo-200', active);
+        btn.classList.toggle('border-indigo-400', active);
+      });
+    };
+
+    const setStep = (step) => {
+      currentStep = step;
+      stepPanels.forEach(panel => {
+        panel.classList.toggle('hidden', Number(panel.dataset.step) !== step);
+        panel.dataset.active = Number(panel.dataset.step) === step;
+      });
+
+      stepLabel.textContent = {
+        1: 'Step 1 • Payment type',
+        2: 'Step 2 • Pay from account',
+        3: 'Step 3 • Beneficiary',
+        4: 'Step 4 • Amount',
+        5: 'Step 5 • Confirm',
+        6: 'Step 6 • Send'
+      }[step];
+      const progress = ((step - 1) / (stepPanels.length - 1)) * 100;
+      progressFill.style.width = `${progress}%`;
+
+      stepBack.disabled = step === 1;
+      stepNext.textContent = step === 6 ? 'Send' : 'Continue';
+
+      if (step === 5) updateReceipt();
+      if (step === 6) {
+        resetSendState();
+      } else {
+        stepNext.classList.remove('hidden');
+      }
+    };
+
+    const validateStep = () => {
+      if (currentStep === 1 && !activePayMode) return false;
+      if (currentStep === 2 && !activeAccount) return false;
+      if (currentStep === 3 && !activeBeneficiary) return false;
+      if (currentStep === 4 && (!activeAmount || Number(activeAmount) <= 0)) return false;
+      return true;
+    };
+
+      stepNext?.addEventListener('click', () => {
+        if (!validateStep()) return;
+        if (currentStep < 6) {
+          setStep(currentStep + 1);
+        } else {
+          triggerSend();
+        }
+      });
+
+    stepBack?.addEventListener('click', () => {
+      if (currentStep > 1) {
+        resetSendState();
+        setStep(currentStep - 1);
+      }
+    });
+
+    payChoiceButtons.forEach(btn => {
+      btn.addEventListener('click', () => setPayMode(btn.dataset.payChoice));
+    });
+
+    accountButtons.forEach(btn => {
+      btn.addEventListener('click', () => setAccount(btn));
+    });
+
+    mapFullscreenBtn?.addEventListener('click', () => setMapFullscreen(!isMapFullscreen));
+    mapOverlayEl?.addEventListener('click', () => setMapFullscreen(false));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isMapFullscreen) setMapFullscreen(false);
+    });
+
+    beneficiarySearch?.addEventListener('input', (e) => renderBeneficiaries(e.target.value));
+
+    amountInput?.addEventListener('input', (e) => {
+      activeAmount = e.target.value;
+    });
+
+    profileTrigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleProfileMenu();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileMenu?.contains(e.target) && !profileTrigger?.contains(e.target)) {
+        closeProfileMenu();
+      }
+    });
+
+    signOutBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSignOut();
+      closeProfileMenu();
+    });
+
+    geoToggle?.addEventListener('click', (e) => {
+      e.preventDefault();
+      persistGeoPreference(!geoPayEnabled);
+    });
+
+    renderBeneficiaries();
+    setAccount(accountButtons[0]);
+    setStep(1);
+  </script>
+</body>
+</html>

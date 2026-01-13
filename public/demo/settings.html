@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive — Demo Settings</title>
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root {
+      --page: #0b1220;
+      --bg: #ffffff;
+      --muted: #64748b;
+      --ink: #0f172a;
+      --olive: #7e8d52;
+      --olive-700: #576138;
+      --line: #e2e8f0;
+    }
+
+    html,
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100%;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      height: 40px;
+      padding: 0 .875rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-weight: 600
+    }
+
+    .btn-olive {
+      background: var(--olive);
+      color: #fff;
+      border: 0;
+    }
+
+    .btn-olive:hover {
+      filter: brightness(0.92);
+    }
+
+    .input {
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0 .85rem;
+      width: 100%;
+    }
+
+    #layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh;
+    }
+
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 280px;
+      max-width: 85vw;
+      position: fixed;
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%)
+    }
+
+    #ah-sidebar.is-open {
+      transform: translateX(0)
+    }
+
+    @media (min-width: 768px) {
+      #layout {
+        grid-template-columns: 260px 1fr
+      }
+
+      #ah-sidebar {
+        position: sticky;
+        width: 260px;
+        max-width: none;
+        transform: translateX(0);
+        z-index: auto
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 h-[100vh] bg-white flex flex-col overflow-hidden">
+      <div class="px-4 py-4 flex items-center gap-3 border-b border-slate-200">
+        <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Logo" class="w-10 h-10 object-contain" />
+        <div class="min-w-0">
+          <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+          <div class="text-[11px] text-slate-500 label">Demo Workspace</div>
+        </div>
+      </div>
+
+      <nav class="p-3 text-[14px] flex-1 overflow-y-auto space-y-1">
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="/demo/dashboard.html">
+          <i class="fa-solid fa-chart-line text-slate-500 w-4 shrink-0"></i><span class="label">Dashboard</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="/auth.html">
+          <i class="fa-solid fa-right-to-bracket text-slate-500 w-4 shrink-0"></i><span class="label">Switch Account</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <div class="px-4 md:px-6 pt-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-800 font-semibold">
+              <div class="h-8 w-8 rounded-full border border-blue-200 bg-white grid place-items-center text-blue-600 text-base">ⓘ</div>
+              <p id="banner-copy" class="whitespace-normal">Demo Account</p>
+            </div>
+          </div>
+
+          <button id="profile-btn" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+            <img id="profile-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+            <span id="profile-name" class="text-sm font-semibold text-slate-900 hidden sm:inline">—</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <header class="px-5 md:px-8 pt-6 pb-4 flex flex-col gap-1">
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--olive)]">Demo settings</p>
+        <h1 class="text-2xl font-semibold text-slate-900">Manage your paper profile</h1>
+        <p class="text-sm text-slate-600">Update your details and manage demo accounts.</p>
+      </header>
+
+      <section class="px-5 md:px-8 pb-10 grid grid-cols-12 gap-6">
+        <aside class="col-span-12 md:col-span-3">
+          <div class="card p-3 sticky top-4">
+            <nav class="space-y-1 text-sm font-semibold text-slate-700">
+              <a href="#basic" class="block rounded-lg px-3 py-2 hover:bg-slate-50">Basic info</a>
+              <a href="#manage" class="block rounded-lg px-3 py-2 hover:bg-slate-50">Manage accounts</a>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="col-span-12 md:col-span-9 space-y-6">
+          <div id="alert" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
+
+          <section id="basic" class="card p-6 space-y-5 border border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-slate-900">Basic info</h2>
+                <p class="text-sm text-slate-600">These details stay with your paper profile.</p>
+              </div>
+              <button id="signout" class="btn">Sign out</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label class="block text-sm font-semibold text-slate-700">
+                First name
+                <input id="first-name" class="input mt-1" placeholder="Jane" />
+              </label>
+              <label class="block text-sm font-semibold text-slate-700">
+                Last name
+                <input id="last-name" class="input mt-1" placeholder="Doe" />
+              </label>
+              <label class="block text-sm font-semibold text-slate-700 sm:col-span-2">
+                Phone
+                <input id="phone" class="input mt-1" placeholder="+1 555 123 4567" />
+              </label>
+              <label class="block text-sm font-semibold text-slate-700 sm:col-span-2">
+                Email
+                <input id="email" class="input mt-1 bg-slate-50" disabled />
+              </label>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+              <button id="save-basic" class="btn btn-olive">Save changes</button>
+              <p class="text-sm text-slate-500" id="basic-status"></p>
+            </div>
+          </section>
+
+          <section id="manage" class="card p-6 space-y-4 border border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-slate-900">Manage Accounts</h2>
+                <p class="text-sm text-slate-600">Your paper trading accounts.</p>
+              </div>
+              <button id="refresh-accounts" class="btn">Refresh</button>
+            </div>
+
+            <div id="accounts-loading" class="text-sm text-slate-500">Loading accounts…</div>
+            <div id="accounts-empty" class="hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">No demo accounts yet.</div>
+            <div id="accounts-list" class="space-y-3"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    const firstName = document.getElementById("first-name");
+    const lastName = document.getElementById("last-name");
+    const phone = document.getElementById("phone");
+    const email = document.getElementById("email");
+    const saveBasic = document.getElementById("save-basic");
+    const alertBox = document.getElementById("alert");
+    const basicStatus = document.getElementById("basic-status");
+    const signoutBtn = document.getElementById("signout");
+    const accountsLoading = document.getElementById("accounts-loading");
+    const accountsEmpty = document.getElementById("accounts-empty");
+    const accountsList = document.getElementById("accounts-list");
+    const refreshAccounts = document.getElementById("refresh-accounts");
+
+    let currentUser = null;
+    let profileRow = null;
+    let accountRow = null;
+
+    function banner(message, tone = "info") {
+      if (!alertBox) return;
+      alertBox.className = "rounded-2xl border px-4 py-3 text-sm";
+      const toneClasses = tone === "error"
+        ? ["border-rose-200", "bg-rose-50", "text-rose-800"]
+        : ["border-amber-200", "bg-amber-50", "text-amber-800"];
+      alertBox.classList.add(...toneClasses);
+      alertBox.textContent = message;
+      alertBox.classList.remove("hidden");
+    }
+
+    function clearBanner() {
+      if (!alertBox) return;
+      alertBox.className = "hidden rounded-2xl border px-4 py-3 text-sm";
+      alertBox.textContent = "";
+    }
+
+    function setBasicStatus(msg = "") {
+      if (basicStatus) basicStatus.textContent = msg;
+    }
+
+    async function guard() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        location.replace(`/auth.html?redirect=${encodeURIComponent("/demo/settings.html")}`);
+        return null;
+      }
+      const metaType = session.user?.user_metadata?.account_type;
+      if (metaType !== "paper") {
+        location.replace("/demo/dashboard.html");
+        return null;
+      }
+      currentUser = session.user;
+      return session.user;
+    }
+
+    async function loadProfile() {
+      try {
+        let query = supabase
+          .from("demo_profiles")
+          .select("first_name,last_name,phone,avatar_url,watch_list");
+        if (currentUser?.id) query = query.eq("id", currentUser.id);
+        const { data, error } = await query.maybeSingle();
+        if (error) throw error;
+        profileRow = data || {};
+      } catch (error) {
+        console.warn("Could not load demo profile", error);
+        profileRow = {};
+      }
+
+      const meta = currentUser?.user_metadata || {};
+      const source = { ...profileRow, ...meta };
+      if (firstName && source.first_name) firstName.value = source.first_name;
+      if (lastName && source.last_name) lastName.value = source.last_name;
+      if (phone && source.phone) phone.value = source.phone;
+      if (email) email.value = currentUser?.email || "";
+    }
+
+    async function saveProfile() {
+      if (!currentUser) return;
+      clearBanner();
+      setBasicStatus("Saving…");
+      saveBasic.disabled = true;
+      try {
+        const payload = {
+          id: currentUser.id,
+          first_name: firstName?.value?.trim() || null,
+          last_name: lastName?.value?.trim() || null,
+          phone: phone?.value?.trim() || null,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase.from("demo_profiles").upsert(payload, { onConflict: "id" });
+        if (error) throw error;
+
+        profileRow = { ...profileRow, ...payload };
+        await supabase.auth.updateUser({ data: { first_name: payload.first_name, last_name: payload.last_name, phone: payload.phone } });
+        banner("Details saved to your demo profile.");
+        setBasicStatus("Saved just now");
+      } catch (error) {
+        console.error(error);
+        banner(error.message || "Save failed", "error");
+        setBasicStatus("Save failed");
+      } finally {
+        saveBasic.disabled = false;
+      }
+    }
+
+    function renderAccount(row = {}, userId = "") {
+      const frag = document.createElement("div");
+      frag.className = "rounded-xl border border-slate-200 p-4 flex flex-col gap-3";
+
+      const currency = (row.currency || profileRow?.base_currency || "USD").toUpperCase();
+      const currencyOptions = ["USD", "ZAR", "EUR", "GBP", "NGN"];
+
+      frag.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-slate-800">${row.name || "Paper Account"}</div>
+            <p class="text-xs text-slate-500">Account ID: ${row.id || userId || "—"}</p>
+          </div>
+          <span class="text-xs rounded-full bg-emerald-50 text-emerald-700 px-3 py-1">Active</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-700">
+          <div>
+            <p class="text-xs text-slate-500">Balance currency</p>
+            <div class="flex items-center gap-2 mt-1">
+              <select id="account-ccy" class="input h-10 !py-0">
+                ${currencyOptions.map((ccy) => `<option value="${ccy}" ${ccy === currency ? "selected" : ""}>${ccy}</option>`).join("")}
+              </select>
+              <button id="save-ccy" class="btn">Save</button>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Current equity</p>
+            <p class="font-semibold">${Number.isFinite(Number(row.equity)) ? new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(row.equity)) : "—"}</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">Use this currency for your paper allocations so balances match your strategies.</p>
+      `;
+
+      const saveBtn = frag.querySelector("#save-ccy");
+      const select = frag.querySelector("#account-ccy");
+
+      saveBtn?.addEventListener("click", async () => {
+        if (!select) return;
+        const next = select.value || "USD";
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving…";
+        try {
+          const { error } = await supabase.from("demo_accounts").upsert({ id: userId, currency: next }, { onConflict: "id" });
+          if (error) throw error;
+          await supabase.from("demo_profiles").upsert({ id: userId, base_currency: next });
+          banner("Updated your demo account currency.", "info");
+          accountRow = { ...(accountRow || {}), currency: next };
+        } catch (err) {
+          console.error(err);
+          banner(err.message || "Could not update currency", "error");
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save";
+        }
+      });
+
+      accountsList.appendChild(frag);
+    }
+
+    async function loadAccounts() {
+      accountsLoading?.classList.remove("hidden");
+      accountsEmpty?.classList.add("hidden");
+      accountsList.innerHTML = "";
+      try {
+        let query = supabase.from("demo_accounts").select("*");
+        if (currentUser?.id) query = query.eq("id", currentUser.id);
+        const { data, error } = await query.maybeSingle();
+        if (error) throw error;
+        if (!data) {
+          accountsEmpty?.classList.remove("hidden");
+          return;
+        }
+        accountRow = data;
+        renderAccount(accountRow, currentUser?.id || "");
+      } catch (error) {
+        console.warn("Could not load demo accounts", error);
+        accountsEmpty?.classList.remove("hidden");
+      } finally {
+        accountsLoading?.classList.add("hidden");
+      }
+    }
+
+    signoutBtn?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      location.replace("/auth.html");
+    });
+
+    saveBasic?.addEventListener("click", (e) => {
+      e.preventDefault();
+      saveProfile();
+    });
+
+    refreshAccounts?.addEventListener("click", () => loadAccounts());
+
+    (async function init() {
+      const user = await guard();
+      if (!user) return;
+      await loadProfile();
+      await loadAccounts();
+    })();
+  </script>
+</body>
+
+</html>

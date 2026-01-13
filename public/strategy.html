@@ -1,0 +1,3038 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AlgoHive – Strategy Factsheet</title>
+    <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <style>
+        :root {
+            --bg: #fff;
+            --line: #e2e8f0;
+            --ink: #0f172a;
+            --olive: #556B2F
+        }
+
+        html,
+        body {
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink)
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            height: 40px;
+            padding: 0 .875rem;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            font-weight: 600
+        }
+
+        .input {
+            height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 0 .75rem
+        }
+
+        .tab {
+            height: 36px;
+            border-radius: 8px;
+            padding: 0 .75rem
+        }
+
+        .tab-active {
+            background: #111827;
+            color: #fff
+        }
+
+        /* UPDATED FOR RESPONSIVENESS */
+        #layout {
+            --sb: 275px;
+            display: grid;
+            grid-template-columns: 1fr;
+            /* Mobile-first: 1 column */
+            min-height: 100vh
+        }
+
+        #ah-sidebar {
+            transition: transform .3s ease, width .2s ease;
+            width: 350px;
+            /* Mobile width */
+            max-width: 85vw;
+            position: fixed;
+            /* Mobile overlay */
+            z-index: 50;
+            height: 100vh;
+            transform: translateX(-100%);
+            /* Hidden by default */
+        }
+
+        #ah-sidebar.is-open {
+            transform: translateX(0);
+            /* Show sidebar */
+        }
+
+        /* Desktop styles */
+        @media (min-width: 768px) {
+            #layout {
+                grid-template-columns: var(--sb) 1fr
+                    /* 2-col grid on desktop */
+            }
+
+            #layout.is-collapsed {
+                --sb: 64px
+            }
+
+            #ah-sidebar {
+                position: sticky;
+                /* Back to sticky */
+                top: 0;
+                width: var(--sb);
+                /* Use variable width */
+                max-width: none;
+                transform: translateX(0);
+                /* Always visible */
+                z-index: auto;
+            }
+        }
+
+        /* END RESPONSIVE UPDATES */
+
+        #layout.is-collapsed {
+            --sb: 64px
+        }
+
+        #ah-sidebar[data-collapsed="true"] .label,
+        #ah-sidebar[data-collapsed="true"] .chevron {
+            display: none
+        }
+
+        #ah-sidebar details .sub {
+            transition: height .2s ease
+        }
+
+        #ah-sidebar[data-collapsed="true"] details>.sub {
+            display: none !important
+        }
+
+        #ah-sidebar .footer {
+            transition: all .2s ease
+        }
+
+        #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+            transform: rotate(180deg)
+        }
+
+        /* Hide desktop collapse button on mobile */
+        #ah-collapse {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            #ah-collapse {
+                display: inline-flex;
+            }
+
+            /* Show on desktop */
+        }
+
+        /* Brand switcher */
+
+        #ah-brand-switcher {
+          position: relative;
+        }
+
+        #ah-brand-switcher summary {
+          list-style: none;
+        }
+
+        #ah-brand-switcher summary::-webkit-details-marker {
+          display: none;
+        }
+
+        #ah-brand-switcher .brand-toggle {
+          width: calc(100% - 12px);
+          margin: 8px auto 4px;
+          padding: 12px;
+          border-radius: 16px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          box-shadow: 0 16px 40px -28px rgba(15, 23, 42, 0.4);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        #ah-brand-switcher .brand-toggle:hover {
+          border-color: #cbd5e1;
+          box-shadow: 0 16px 48px -28px rgba(15, 23, 42, 0.5);
+        }
+
+        #ah-brand-switcher .brand-marker {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, #0f172a 0%, #1f2937 70%);
+          display: grid;
+          place-items: center;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                0 10px 30px -16px rgba(0, 0, 0, 0.5);
+        }
+
+        #ah-brand-switcher .brand-marker img {
+          width: 32px;
+          height: 32px;
+          object-fit: contain;
+          filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+        }
+
+        #ah-brand-switcher .brand-marker .ph-logo-fallback {
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          background: #1f2937;
+          color: #e2e8f0;
+          font-weight: 800;
+          font-size: 14px;
+          display: grid;
+          place-items: center;
+        }
+
+        #ah-brand-switcher .brand-menu {
+          position: absolute;
+          left: 8px;
+          right: 8px;
+          top: calc(100% + 8px);
+          padding: 8px;
+          border-radius: 16px;
+          background: #0b1220;
+          color: #e2e8f0;
+          box-shadow: 0 30px 60px -24px rgba(15, 23, 42, 0.5);
+          border: 1px solid rgba(226, 232, 240, 0.08);
+          display: none;
+          z-index: 10;
+        }
+
+        #ah-brand-switcher[open] .brand-menu {
+          display: block;
+          animation: fadeIn .2s ease;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        #ah-brand-switcher .brand-menu-header {
+          padding: 10px 12px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.04);
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          color: #cbd5e1;
+          font-size: 13px;
+          margin-bottom: 6px;
+        }
+
+        .brand-option {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                border-radius: 12px;
+                transition: background-color .2s ease, color .2s ease, filter .2s ease;
+        }
+
+        .brand-option:hover {
+          background: linear-gradient(135deg, #000000, #7c3aed);
+        }
+
+        .brand-option:hover img {
+          filter: brightness(0) invert(1);
+        }
+
+        .brand-option:hover .algomoney-word {
+          color: #fff;
+        }
+
+        .brand-option img {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                object-fit: contain;
+                background: transparent;
+        }
+
+        .brand-option .algomoney-word {
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                font-size: 13px;
+                color: #0f172a;
+        }
+
+        #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle {
+                margin: 12px;
+                padding: 0;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+                justify-content: center;
+                gap: 0;
+        }
+
+        #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+        #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down {
+                display: none;
+        }
+
+        #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker {
+                background: transparent;
+                width: 38px;
+                height: 38px;
+                box-shadow: none;
+        }
+
+        #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker img {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+        }
+
+                /* Perf tiles */
+        .ps-tile {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 14px 16px;
+            background: #fff
+        }
+
+        .ps-label {
+            color: #64748b;
+            font-weight: 500;
+            font-size: .85rem
+        }
+
+        .ps-value {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 2px
+        }
+
+        @keyframes ah-spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .spin i {
+            animation: ah-spin .8s linear infinite
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-auto-rows: minmax(36px, auto);
+            gap: 0;
+            border-collapse: collapse
+        }
+
+        /* --- REMOVED this incorrect rule ---
+        .cal-grid>.cal-sticky {
+            border-right: 0
+        }
+        */
+
+        .cal-cell,
+        .cal-head {
+            border: 1px solid #e5e7eb;
+            margin: 0
+        }
+
+        .cal-head.cal-sticky {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: sticky;
+            left: 0;
+            background: var(--bg, #fff);
+            z-index: 10;
+            /* --- ADDED this border to fix visual glitch --- */
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .35rem .65rem;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            font-size: .75rem;
+            font-weight: 600;
+            background: #fff
+        }
+
+        /* Dynamic Risk Badge Styles */
+        .badge.risk-conservative {
+            background-color: #dcfce7;
+            border-color: #16a34a;
+            color: #15803d;
+        }
+
+        .badge.risk-moderate {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+            color: #d97706;
+        }
+
+        .badge.risk-high {
+            background-color: #fee2e2;
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        .badge.risk-very-high {
+            background-color: #fecaca;
+            border-color: #b91c1c;
+            color: #991b1b;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 9999px;
+            display: inline-block
+        }
+
+        /* --- ADDED: Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: none;
+        }
+
+        .modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            z-index: 101;
+            width: 90vw;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .modal-content.is-open,
+        .modal-overlay.is-open {
+            display: block;
+        }
+
+        .day-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .day-grid-header {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #64748b;
+            padding-bottom: 8px;
+        }
+
+        .day-grid-cell {
+            font-size: 0.875rem;
+            min-height: 48px;
+            padding: 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .day-grid-cell.is-empty {
+            background: #f8fafc;
+            border-color: transparent;
+        }
+
+        .day-grid-cell .day-num {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .day-grid-cell .day-pct {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Logo fallback initials */
+        .ph-logo-fallback {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #e2e8f0;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Responsive list item */
+        .ph-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .ph-item:last-child {
+            border-bottom: none;
+        }
+
+        .ph-symbol {
+            font-weight: 600;
+            font-size: 0.875rem;
+            min-width: 60px;
+        }
+
+        .ph-name {
+            font-size: 0.875rem;
+            color: #475569;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ph-weight {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #0f172a;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* Top gainers carousel */
+        .top-gainers-marquee {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .top-gainers-marquee::-webkit-scrollbar {
+            display: none;
+        }
+
+        .top-gainers-track {
+            display: inline-flex;
+            align-items: stretch;
+            gap: 16px;
+            min-width: max-content;
+        }
+
+        .top-gainers-track.is-looping {
+            animation: tg-scroll var(--tg-duration, 24s) linear infinite;
+        }
+
+        .top-gainers-track.is-looping:hover {
+            animation-play-state: paused;
+        }
+
+        .tg-card {
+            min-width: 200px;
+            max-width: 220px;
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tg-card:hover {
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+        }
+
+        .tg-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tg-card-meta {
+            min-width: 0;
+        }
+
+        .tg-symbol {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .tg-name {
+            font-size: 0.75rem;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+
+        .tg-logo-img,
+        .tg-logo-fallback {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tg-logo-img {
+            object-fit: contain;
+            background: #ffffff;
+        }
+
+        .tg-logo-fallback {
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .tg-value {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #0f172a;
+        }
+
+        .tg-change {
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tg-change.is-up {
+            color: #16a34a;
+        }
+
+        .tg-change.is-down {
+            color: #dc2626;
+        }
+
+        @keyframes tg-scroll {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .tg-card {
+                min-width: 180px;
+                max-width: 200px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .top-gainers-track.is-looping {
+                animation: none !important;
+            }
+        }
+
+        /* --- END ADDED: Modal Styles --- */
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+            #layout { grid-template-columns: 1fr; }
+            #layout.is-collapsed { --sb: 275px; }
+            #ah-sidebar {
+                position: fixed;
+                top: 0;
+                width: 350px;
+                max-width: 85vw;
+                height: 100vh;
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            #ah-sidebar.is-open { transform: translateX(0); }
+            #ah-collapse { display: none; }
+            #ah-mobile-menu-btn { display: inline-flex !important; }
+            #ah-overlay { display: none; }
+            #ah-overlay:not(.hidden) { display: block; }
+        }
+    </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+
+<body class="min-h-screen bg-white">
+    <div id="layout">
+        <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+        <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 h-[100vh] bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+            <div class="text-[11px] text-slate-500 label">Markets</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch workspace</div>
+          <a href="#" class="brand-option">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoMoney</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/home.html" title="Home">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Markets</p>
+
+        <details class="group mt-1">
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/market-analysis-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Invest</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/strategies.html" title="OpenStrategies">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">OpenStrategies</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="#" title="Funds">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4" />
+              <span class="flex items-center gap-2">
+                <span class="label">Funds</span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+              </span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/markets.html" title="Markets">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/earth-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Markets</span>
+            </a>
+          </div>
+        </details>
+
+        <a class="mt-1 px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/news-insights.html" title="News &amp; Insights">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/news-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">News &amp; Insights</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Account</p>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/my-investment.html" title="Holdings">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Holdings</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/my-strategies.html" title="My Strategies">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">My Strategies</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Account Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Account Statements</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Funding">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/coins-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Funding</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Rewards">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/gift-stroke-rounded.svg" alt="" class="w-4 h-4" />
+          <span class="flex items-center gap-2">
+            <span class="label">Rewards</span>
+            <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+          </span>
+        </a>
+      <details class="group mt-4">
+        <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+          <span class="flex items-center">
+            <span class="label">Other</span>
+          </span>
+          <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+        </summary>
+        <div class="ml-8 mt-1 flex flex-col sub">
+          <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/support.html" title="Help">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/help-circle-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Help</span>
+          </a>
+          <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/legal.html" title="Legal">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/audit-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Legal</span>
+          </a>
+          <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/who-we-are.html" title="Learn">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pencil-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="flex items-center gap-2"><span class="label">Learn</span><span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span></span>
+          </a>
+        </div>
+      </details>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <button id="ah-collapse" class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+    </aside>
+        <main class="flex-1 min-w-0">
+            <div class="px-4 md:px-6 pt-4">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+                        <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0"
+                            title="Open Menu">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                        <h1 class="text-xl font-bold text-slate-800 truncate">Strategy</h1>
+                    </div>
+                <button id="hdr-profile-btn"
+                        class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50 min-w-0">
+                        <img id="hdr-avatar"
+                            src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>"
+                            alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+                        <span
+                            id="hdr-name" class="hidden sm:inline truncate text-sm font-semibold text-slate-900">—</span><i
+                            class="fa-solid fa-chevron-down text-slate-500 text-xs"></i></button>
+                </div>
+            </div>
+
+            <div class="px-6 pt-5">
+                <a href="strategies.html"
+                    class="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-[var(--olive)] transition-colors">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Back to OpenStrategies</span>
+                </a>
+            </div>
+
+            <div class="px-6 py-6 pt-2 grid grid-cols-12 gap-6 min-w-0">
+                <section id="portfolio-card"
+                    class="card border border-slate-200 shadow-none col-span-12 lg:col-span-9 min-w-0">
+                    <div class="px-5 pt-5">
+                        <div class="text-[12px] text-slate-500 font-semibold tracking-wide"> STRATEGY FACTSHEET <span
+                                class="mx-1">•</span> <span id="fs-updated">Current Time —</span> </div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold mt-1 break-words" id="fs-title">-</h1>
+                        <div class="mt-2 mb-3 flex flex-wrap items-center gap-2 text-slate-600" id="fs-badges"> <span
+                                id="fs-provider">AlgoForge</span> <span class="mx-1 text-slate-400">•</span> <span>Live
+                                since <span class="font-medium" id="fs-since">01/02/2021</span></span> <span
+                                class="mx-1 text-slate-400">•</span>
+                            <span id="fs-currency">ZAR</span> <span
+                                class="badge bg-gray-50 border-gray-200 text-gray-700" id="fs-risk">Risk
+                </span>
+                        </div>
+                    </div>
+                    <div
+                        class="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-y-3 sm:gap-y-0 px-5 py-4 border-t border-b border-slate-200">
+                        <div>
+                            <h3 class="font-normal text-slate-800">Equity Curve — <span id="pf-name"
+                                    class="font-semibold">—</span>
+                            </h3>
+                            <div class="mt-1 text-sm text-slate-500" id="pf-updated">—</div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button data-range="1D" class="tab text-[13px]">1D</button>
+                            <button data-range="1M" class="tab text-[13px]">1M</button>
+                            <button data-range="3M" class="tab text-[13px]">3M</button>
+                            <button data-range="6M" class="tab tab-active text-[13px]">6M</button>
+                            <button data-range="YTD" class="tab text-[13px]">YTD</button>
+                            <button data-range="1Y" class="tab text-[13px]">1Y</button>
+                            <button data-range="3Y" class="tab text-[13px]">3Y</button>
+                            <button data-range="ALL" class="tab text-[13px]">All</button>
+
+                            <button id="pf-refresh"
+                                class="ml-2 h-9 w-9 rounded-lg border border-slate-200 hover:bg-slate-50 grid place-items-center"
+                                title="Refresh">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+
+
+
+
+                    </div>
+                    <div class="px-5 pt-4">
+                        <div class="flex items-baseline gap-3">
+                            <div class="text-2xl font-bold" id="pf-value">R 0.00</div>
+                            <div class="text-lg font-normal" id="pf-change" data-sign="-"></div>
+                        </div>
+                    </div>
+                    <div class="px-2 pb-4 pt-2">
+                        <div class="h-[260px]">
+                            <canvas id="pf-chart" class="max-w-full"></canvas>
+                        </div>
+
+                    </div>
+
+                    <section class="card mx-5 mb-5 p-6">
+                        <h3 class="text-lg font-medium text-slate-900 mb-2">Strategy Description</h3>
+                        <p class="text-sm text-slate-700" id="fs-desc">-</p>
+                        <ul class="list-disc pl-5 mt-2 text-sm text-slate-700" id="fs-desc-bullets">
+                            <li>-</li>
+                            <li>-</li>
+                            <li>-</li>
+                        </ul>
+                    </section>
+                </section>
+                <aside class="col-span-12 lg:col-span-3 lg:row-span-5 grid gap-6 lg:sticky lg:top-4 self-start min-w-0">
+                    <div class="card p-5 border border-slate-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-medium text-slate-900">Allocate to Strategy</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="col-span-2"> <label class="block text-xs text-slate-500 mb-1.5"
+                                    for="alloc-name">Strategy</label> <input id="alloc-name"
+                                    class="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm bg-slate-50"
+                                    value="Trend Alpha" disabled /> </div>
+                            <div class="hidden"> <label class="block text-xs text-slate-500 mb-1.5" for="alloc-price">Slot Price
+                                    (Min allocation)</label> <input id="alloc-price" type="number" step="0.01" value="1"
+                                    class="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm bg-slate-50"
+                                    disabled /> </div>
+                            <div class="col-span-2"> <label class="block text-xs text-slate-500 mb-1.5"
+                                    for="alloc-amount">Allocation amount</label>
+                                <div class="flex items-center gap-2">
+                                    <button id="alloc-decrease" type="button"
+                                        class="h-9 px-3 rounded-lg border border-slate-200 text-sm font-semibold hover:bg-slate-50">−</button>
+                                    <input id="alloc-amount" type="number" min="1" step="1" readonly
+                                        class="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm bg-slate-50" />
+                                    <button id="alloc-increase" type="button"
+                                        class="h-9 px-3 rounded-lg border border-slate-200 text-sm font-semibold hover:bg-slate-50">+</button>
+                                </div>
+                                <p id="alloc-minimum" class="mt-1 text-xs text-slate-500">Minimum allocation: —</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 rounded-lg border border-slate-200 p-3 flex items-center justify-between">
+                            <div class="text-xs text-slate-500">Total</div>
+                            <div id="alloc-total" class="text-base font-semibold text-slate-900">R 1,124.00</div>
+
+
+
+                        </div>
+                        <div id="fx-note" class="mt-2 text-xs text-slate-500 hidden">
+                            <span id="fx-pair">USD→ZAR</span> rate: <span id="fx-rate">—</span>
+                            <span class="mx-1">•</span><span id="fx-updated">—</span>
+                        </div>
+                        <div class="mt-3 flex items-center justify-end gap-2"> <button id="alloc-btn"
+                                class="btn bg-[var(--olive)] text-white border-none hover:opacity-90"> <i
+                                    class="fa-solid fa-circle-plus"></i> Allocate </button> </div>
+                        <div id="alloc-toast"
+                            class="hidden mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-800 text-sm">
+                            <i class="fa-solid fa-check mr-2"></i> Allocation submitted for <span
+                                id="toast-strat">—</span>: <span id="toast-amount">—</span> total.
+                        </div>
+
+
+                    </div>
+                    <div class="card p-5 border border-slate-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-medium text-slate-900">Asset class allocation</h3> <span
+                                class="text-xs text-slate-500">Total = 100%</span>
+                        </div>
+                        <div class="space-y-4" id="asset-allocation"></div>
+                    </div>
+                    <div class="card p-5 border border-slate-200">
+                        <div class="font-semibold mb-2">Strategy Overview</div>
+                        <p id="fsDesc" class="text-sm text-slate-700">—</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm mt-3">
+                            <div class="p-3 border rounded-xl">
+                                <div class="text-slate-500 text-xs">Style</div>
+                                <div id="fsStyle" class="font-semibold">—</div>
+                            </div>
+                            <div class="p-3 border rounded-xl">
+                                <div class="text-slate-500 text-xs">Universe</div>
+                                <div id="fsUniverse" class="font-semibold">—</div>
+                            </div>
+                            <div class="p-3 border rounded-xl">
+                                <div class="text-slate-500 text-xs">Avg Holding</div>
+                                <div id="fsHold" class="font-semibold">—</div>
+                            </div>
+                            <div class="p-3 border rounded-xl">
+                                <div class="text-slate-500 text-xs">Trades / Month</div>
+                                <div id="fsTrades" class="font-semibold">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                <section class="col-span-12 lg:col-span-9 min-w-0">
+                    <div class="card p-6 rounded-2xl border border-slate-200 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-slate-900">Daily Change</h3>
+                            <span id="top-gainers-updated" class="text-xs text-slate-500 hidden"></span>
+                        </div>
+                        <div id="top-gainers-empty" class="text-sm text-slate-500 text-center py-6">
+                            No daily change data yet.
+                        </div>
+                        <div id="top-gainers-marquee" class="top-gainers-marquee hidden">
+                            <div id="top-gainers-track" class="top-gainers-track"></div>
+                        </div>
+                    </div>
+                    <div class="card p-6 rounded-2xl border border-slate-200">
+                        <h3 class="text-lg font-medium text-slate-900 mb-3">Performance Summary</h3>
+                        <p class="text-xs text-slate-500 mb-4">Performance figures shown here do not include the fees presented in this factsheet.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                            <div class="ps-tile">
+                                <div class="ps-label">Best Day</div>
+                                <div id="ps-best" class="ps-value">+4.25%</div>
+                            </div>
+                            <div class="ps-tile">
+                                <div class="ps-label">Worst Day</div>
+                                <div id="ps-worst" class="ps-value">-2.67%</div>
+                            </div>
+                            <div class="ps-tile">
+                                <div class="ps-label">Avg Daily Return</div>
+                                <div id="ps-avg" class="ps-value">+0.12%</div>
+                            </div>
+                            <div class="ps-tile">
+                                <div class="ps-label">Positive Days</div>
+                                <div id="ps-pos" class="ps-value">61%</div>
+                            </div>
+                            <div class="ps-tile">
+                                <div class="ps-label">Trading Days</div>
+                                <div id="ps-days" class="ps-value">245</div>
+                            </div>
+                            <div class="ps-tile">
+                                <div class="ps-label">YTD</div>
+                                <div id="ps-ytd" class="ps-value">—</div>
+                            </div>
+
+                        </div>
+                        <div class="mt-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="text-sm font-semibold text-slate-900">Calendar Returns</div>
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"> <span
+                                        class="inline-block w-5 h-3 rounded" id="legNeg"></span><span
+                                        class="text-slate-500">Negative</span> <span
+                                        class="inline-block w-5 h-3 rounded" id="legNeu"></span><span
+                                        class="text-slate-500">Flat</span>
+                                    <span class="inline-block w-5 h-3 rounded" id="legPos"></span><span
+                                        class="text-slate-500">Positive</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end mb-2 gap-4">
+
+                                <div class="relative flex items-center justify-end">
+                                    <label class="text-sm font-medium text-slate-700 mr-2">Year:</label>
+                                    <button id="year-filter-btn"
+                                        class="input h-9 py-0 text-sm w-32 text-left flex justify-between items-center">
+                                        <span id="year-filter-label" class="truncate">All Years</span>
+                                        <i class="fa-solid fa-chevron-down text-xs mr-1"></i>
+                                    </button>
+                                    <div id="year-filter-popover"
+                                        class="hidden absolute right-0 top-10 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10 p-4">
+                                        <div class="space-y-2">
+                                            <div>
+                                                <input type="checkbox" id="year-all" class="year-filter-cb"
+                                                    data-year="All" checked>
+                                                <label for="year-all" class="ml-2 text-sm font-medium">All Years</label>
+                                            </div>
+                                            <hr class="my-2" />
+                                            <div id="year-filter-list"
+                                                class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                                            </div>
+                                            <button id="year-filter-apply"
+                                                class="btn w-full bg-slate-800 text-white border-none h-8 text-sm mt-3 hover:bg-slate-700">Apply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="relative flex items-center justify-end">
+                                    <label class="text-sm font-medium text-slate-700 mr-2">Months:</label>
+                                    <button id="month-filter-btn"
+                                        class="input h-9 py-0 text-sm w-32 text-left flex justify-between items-center">
+                                        <span id="month-filter-label" class="truncate">All Months</span>
+                                        <i class="fa-solid fa-chevron-down text-xs mr-1"></i>
+                                    </button>
+                                    <div id="month-filter-popover"
+                                        class="hidden absolute right-0 top-10 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10 p-4">
+                                        <div class="space-y-2">
+                                            <div>
+                                                <input type="checkbox" id="month-all" class="month-filter-cb"
+                                                    data-month="All" checked>
+                                                <label for="month-all" class="ml-2 text-sm font-medium">All
+                                                    Months</label>
+                                            </div>
+                                            <hr class="my-2" />
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <div><input type="checkbox" id="month-Jan" class="month-filter-cb-ind"
+                                                        data-month="Jan"><label for="month-Jan"
+                                                        class="ml-2 text-sm">Jan</label></div>
+                                                <div><input type="checkbox" id="month-Feb" class="month-filter-cb-ind"
+                                                        data-month="Feb"><label for="month-Feb"
+                                                        class="ml-2 text-sm">Feb</label></div>
+                                                <div><input type="checkbox" id="month-Mar" class="month-filter-cb-ind"
+                                                        data-month="Mar"><label for="month-Mar"
+                                                        class="ml-2 text-sm">Mar</label></div>
+                                                <div><input type="checkbox" id="month-Apr" class="month-filter-cb-ind"
+                                                        data-month="Apr"><label for="month-Apr"
+                                                        class="ml-2 text-sm">Apr</label></div>
+                                                <div><input type="checkbox" id="month-May" class="month-filter-cb-ind"
+                                                        data-month="May"><label for="month-May"
+                                                        class="ml-2 text-sm">May</label></div>
+                                                <div><input type="checkbox" id="month-Jun" class="month-filter-cb-ind"
+                                                        data-month="Jun"><label for="month-Jun"
+                                                        class="ml-2 text-sm">Jun</label></div>
+                                                <div><input type="checkbox" id="month-Jul" class="month-filter-cb-ind"
+                                                        data-month="Jul"><label for="month-Jul"
+                                                        class="ml-2 text-sm">Jul</label></div>
+                                                <div><input type="checkbox" id="month-Aug" class="month-filter-cb-ind"
+                                                        data-month="Aug"><label for="month-Aug"
+                                                        class="ml-2 text-sm">Aug</label></div>
+                                                <div><input type="checkbox" id="month-Sep" class="month-filter-cb-ind"
+                                                        data-month="Sep"><label for="month-Sep"
+                                                        class="ml-2 text-sm">Sep</label></div>
+                                                <div><input type="checkbox" id="month-Oct" class="month-filter-cb-ind"
+                                                        data-month="Oct"><label for="month-Oct"
+                                                        class="ml-2 text-sm">Oct</label></div>
+                                                <div><input type="checkbox" id="month-Nov" class="month-filter-cb-ind"
+                                                        data-month="Nov"><label for="month-Nov"
+                                                        class="ml-2 text-sm">Nov</label></div>
+                                                <div><input type="checkbox" id="month-Dec" class="month-filter-cb-ind"
+                                                        data-month="Dec"><label for="month-Dec"
+                                                        class="ml-2 text-sm">Dec</label></div>
+                                            </div>
+                                            <button id="month-filter-apply"
+                                                class="btn w-full bg-slate-800 text-white border-none h-8 text-sm mt-3 hover:bg-slate-700">Apply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <div id="calendarReturns" class="cal-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="col-span-12 lg:col-span-9 min-w-0">
+                    <div class="card p-6 rounded-2xl border border-slate-200 mb-6">
+                        <div class="flex items-center justify-between mb-5">
+                            <h3 class="text-lg font-medium text-slate-900">Portfolio Holdings</h3>
+                            <div class="text-xs text-slate-500">Top 10 by weight</div>
+                        </div>
+
+                        <div id="ph-top10" class="mt-4 -mx-2"></div>
+                    </div>
+
+                    <div class="card p-6 rounded-2xl border border-slate-200 mb-6">
+                        <h3 class="text-lg font-medium text-slate-900 mb-3">What fees can you expect</h3>
+                        <ul class="space-y-2 text-sm text-slate-700">
+                            <li class="flex flex-col sm:flex-row items-start gap-x-2">
+                                <span class="font-semibold text-slate-900 sm:min-w-[160px]">Subscription</span>
+                                <span>Intro promo: <strong>R299 / month</strong> (first 6 months)</span>
+                            </li>
+                            <li class="flex flex-col sm:flex-row items-start gap-x-2">
+                                <span class="font-semibold text-slate-900 sm:min-w-[160px]">Management / AUM</span>
+                                <span><strong>0%</strong> (we don’t charge AUM fees)</span>
+                            </li>
+                            <li class="flex flex-col sm:flex-row items-start gap-x-2">
+                                <span class="font-semibold text-slate-900 sm:min-w-[160px]">Performance fee</span>
+                                <span><strong>30%</strong> over High-Water Mark (example — adjust per strategy
+                                    T&Cs)</span>
+                            </li>
+                            <li class="flex flex-col sm:flex-row items-start gap-x-2">
+                                <span class="font-semibold text-slate-900 sm:min-w-[160px]">Funding / Payments</span>
+                                <span>Standard Wire Transfer Processing fees.</span>
+                            </li>
+                            <li class="flex flex-col sm:flex-row items-start gap-x-2">
+                                <span class="font-semibold text-slate-900 sm:min-w-[160px]">Withdrawals</span>
+                                <span>AlgoHive withdrawal processing fees and/or third-party banking charges may
+                                    apply.</span>
+                            </li>
+                        </ul>
+                        <p class="text-xs text-slate-500 mt-3">Exact fees are strategy-specific. Always review the
+                            strategy mandate before allocating.</p>
+                    </div>
+
+                    <div class="card p-6 rounded-2xl border border-slate-200">
+                        <h3 class="text-lg font-medium text-slate-900 mb-2">Regulatory Disclaimer</h3>
+                        <p class="text-xs text-slate-700 space-y-2 leading-relaxed">
+                            <span class="block">AlgoHive, FSP 55118, is an authorised financial services provider. Investing carries inherent risk and the value of investments may rise or fall. Returns are not guaranteed and past performance is not a reliable indicator of future results. Some performance figures presented may reflect simulated backtested outcomes and others may reflect live portfolio performance, and no timing distinction is shown.</span>
+                            <span class="block">These figures are provided for illustrative purposes only and do not constitute a forecast or assurance of future returns. Strategies may be rebalanced or otherwise adjusted at the discretion of the investment team as and when deemed appropriate, and such activity may give rise to transaction costs, taxes and other charges that are not fully reflected in the figures shown and that will reduce actual investor returns.</span>
+                            <span class="block">The information contained herein is of a general nature, does not purport to be comprehensive and does not take into account the financial situation, investment objectives or needs of any specific investor. It should not be regarded as personalised financial advice or a recommendation to invest. Investors should obtain independent financial, tax and legal advice before making any investment decision.</span>
+                        </p>
+                    </div>
+                </section>
+
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        </main>
+    </div>
+
+    <div id="daily-modal-overlay" class="modal-overlay"></div>
+    <div id="daily-modal-content" class="modal-content">
+        <div class="flex items-center justify-between mb-4">
+            <h3 id="daily-modal-title" class="text-lg font-medium text-slate-900">Daily Returns</h3>
+            <button id="daily-modal-close"
+                class="h-8 w-8 rounded-full grid place-items-center hover:bg-slate-100 text-slate-500">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="day-grid mb-2">
+            <div class="day-grid-header">Sun</div>
+            <div class="day-grid-header">Mon</div>
+            <div class="day-grid-header">Tue</div>
+            <div class="day-grid-header">Wed</div>
+            <div class="day-grid-header">Thu</div>
+            <div class="day-grid-header">Fri</div>
+            <div class="day-grid-header">Sat</div>
+        </div>
+        <div id="daily-modal-grid" class="day-grid">
+        </div>
+    </div>
+
+    <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div
+            class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200">
+                <div class="text-sm font-semibold text-slate-900">Account</div>
+                <div id="pm-email" class="text-xs text-slate-500 truncate">—</div>
+            </div>
+            <div class="p-2"> <a id="pm-profile" href="/settings.html#basic"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50"> <i
+                        class="fa-regular fa-user text-slate-500 w-4"></i><span>Profile settings</span> </a> <button
+                    id="pm-logout"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700"> <i
+                        class="fa-solid fa-right-from-bracket w-4"></i><span>Log out</span> </button> </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" defer
+        nonce="ALGOHIVE"></script>
+    <script
+        nonce="ALGOHIVE"> (function () { const layout = document.getElementById('layout'); const aside = document.getElementById('ah-sidebar'); const btn = document.getElementById('ah-collapse'); const saved = localStorage.getItem('ah_collapsed') === 'true'; if (saved) { aside.setAttribute('data-collapsed', 'true'); layout.classList.add('is-collapsed'); } btn.addEventListener('click', () => { const isCollapsed = aside.getAttribute('data-collapsed') === 'true'; if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open')); aside.setAttribute('data-collapsed', String(!isCollapsed)); layout.classList.toggle('is-collapsed', !isCollapsed); localStorage.setItem('ah_collapsed', String(!isCollapsed)); layout.offsetHeight; window.dispatchEvent(new Event('resize')); }); })(); </script>
+
+    <script nonce="ALGOHIVE">
+        (function () {
+            const btn = document.getElementById('ah-mobile-menu-btn');
+            const overlay = document.getElementById('ah-overlay');
+            const sidebar = document.getElementById('ah-sidebar');
+
+            function openMenu() {
+                sidebar.classList.add('is-open');
+                overlay.classList.remove('hidden');
+            }
+            function closeMenu() {
+                sidebar.classList.remove('is-open');
+                overlay.classList.add('hidden');
+            }
+
+            btn?.addEventListener('click', openMenu);
+            overlay?.addEventListener('click', closeMenu);
+
+            sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
+        })();
+    </script>
+
+    <script type="module" nonce="ALGOHIVE">
+        import { supabase } from "/js/supabase.js";
+        let strategy = null;   // <— keep hoisted so handlers can see it
+        let metrics = null;
+        const REQUIRED_PROFILE_FIELDS = [
+            "first_name", "last_name", "phone", "dob", "id_number", "nationality",
+            "country_residence", "employment_status", "occupation", "employer",
+            "income_bracket", "source_of_funds", "net_worth_range", "experience_level",
+            "risk_tolerance", "objectives",
+        ];
+        const hasValue = (value) => String(value ?? "").trim().length > 0;
+        const computeProfileComplete = (row) =>
+            REQUIRED_PROFILE_FIELDS.every((key) => hasValue(row?.[key]));
+        const resolveKycBoolean = (row) => {
+            const v = row?.kyc_status;
+            if (typeof v === "boolean") return v;
+            if (typeof v === "string")
+                return ["verified", "approved", "done", "passed", "kyc_done"].includes(v.toLowerCase());
+            return false;
+        };
+        const gateBannerMessage = (profileComplete, kycDone) => {
+            if (!profileComplete && !kycDone) return "Please finish Additional Info and complete KYC first.";
+            if (!profileComplete) return "Please finish Additional Info first.";
+            if (!kycDone) return "Please complete KYC first.";
+            return "";
+        };
+        const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        // *** ADDED: Daily Modal Function ***
+        window.showDailyModal = function (year, monthName) {
+            if (!metrics || !metrics.calendar_returns) {
+                banner('Daily performance data is not available.', 'err');
+                return;
+            }
+
+            const modalOverlay = document.getElementById('daily-modal-overlay');
+            const modalContent = document.getElementById('daily-modal-content');
+            const modalTitle = document.getElementById('daily-modal-title');
+            const modalGrid = document.getElementById('daily-modal-grid');
+            if (!modalOverlay || !modalContent || !modalTitle || !modalGrid) return;
+
+            const monthNumber = MONTH_NAMES.indexOf(monthName) + 1;
+            if (monthNumber === 0) return;
+
+            modalTitle.textContent = `Daily Returns: ${monthName} ${year}`;
+
+            // Get daily data for this month
+            const dailyData = {};
+            metrics.calendar_returns.forEach(d => {
+                if (d.year === year && d.month === monthNumber) {
+                    dailyData[d.day] = Number(d.pct);
+                }
+            });
+
+            const daysInMonth = new Date(year, monthNumber, 0).getDate();
+            const firstDayOfWeek = new Date(year, monthNumber - 1, 1).getDay(); // 0=Sun, 1=Mon...
+
+            modalGrid.innerHTML = '';
+
+            // Add empty cells for padding
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                modalGrid.insertAdjacentHTML('beforeend', '<div class="day-grid-cell is-empty"></div>');
+            }
+
+            // Add day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const v = dailyData[day];
+                let pctHtml = '—';
+                let color = '#f1f5f9'; // Flat
+
+                if (v != null) {
+                    const vNum = Number(v);
+                    pctHtml = `${vNum >= 0 ? '+' : ''}${vNum.toFixed(2)}%`;
+                    color = vNum >= 1.5 ? '#bbf7d0' // Strong pos
+                        : vNum > 0 ? '#dcfce7'     // Pos
+                            : vNum === 0 ? '#f1f5f9'   // Flat
+                                : vNum > -1 ? '#fee2e2'    // Neg
+                                    : '#fecaca';            // Strong neg
+                }
+
+                modalGrid.insertAdjacentHTML('beforeend', `
+          <div class="day-grid-cell" style="background-color: ${color};">
+            <div class="day-num">${day}</div>
+            <div class="day-pct">${pctHtml}</div>
+          </div>
+        `);
+            }
+
+            // Show modal
+            modalOverlay.classList.add('is-open');
+            modalContent.classList.add('is-open');
+        }
+
+        function closeDailyModal() {
+            document.getElementById('daily-modal-overlay')?.classList.remove('is-open');
+            document.getElementById('daily-modal-content')?.classList.remove('is-open');
+        }
+
+        document.getElementById('daily-modal-close')?.addEventListener('click', closeDailyModal);
+        document.getElementById('daily-modal-overlay')?.addEventListener('click', closeDailyModal);
+        // *** END ADDED ***
+
+        // --- MODIFIED: Added Year Filter Logic ---
+        const yearFilterBtn = document.getElementById('year-filter-btn');
+        const yearFilterPopover = document.getElementById('year-filter-popover');
+        const yearFilterApply = document.getElementById('year-filter-apply');
+        const yearAllCb = document.getElementById('year-all');
+        const yearFilterList = document.getElementById('year-filter-list');
+        const yearFilterLabel = document.getElementById('year-filter-label');
+
+        function closeYearPopover() {
+            yearFilterPopover?.classList.add('hidden');
+        }
+
+        function getSelectedYears(allYears) { // allYears is an array of strings
+            const yearIndCbs = document.querySelectorAll('.year-filter-cb-ind');
+            if (!yearAllCb) return allYears; // Safety check
+            if (yearAllCb.checked) {
+                return allYears; // Return all available years
+            }
+            const selected = [...yearIndCbs]
+                .filter(cb => cb.checked)
+                .map(cb => cb.dataset.year);
+
+            return selected.length > 0 ? selected : allYears; // Default to all if none selected
+        }
+
+        function updateYearFilterLabel() {
+            if (!yearAllCb) return;
+            const yearIndCbs = document.querySelectorAll('.year-filter-cb-ind');
+            if (yearAllCb.checked) {
+                yearFilterLabel.textContent = 'All Years';
+                return;
+            }
+            const selected = [...yearIndCbs]
+                .filter(cb => cb.checked)
+                .map(cb => cb.dataset.year);
+
+            if (selected.length === 0) {
+                yearFilterLabel.textContent = 'All Years'; // Fallback
+            } else if (selected.length === 1) {
+                yearFilterLabel.textContent = selected[0];
+            } else if (selected.length === yearIndCbs.length) {
+                yearFilterLabel.textContent = 'All Years';
+            } else {
+                yearFilterLabel.textContent = `${selected.length} Years`;
+            }
+        }
+        // --- END MODIFIED ---
+
+        // *** ADDED: Month Filter Popover Logic ***
+        const monthFilterBtn = document.getElementById('month-filter-btn');
+        const monthFilterPopover = document.getElementById('month-filter-popover');
+        const monthFilterApply = document.getElementById('month-filter-apply');
+        const monthAllCb = document.getElementById('month-all');
+        const monthIndCbs = document.querySelectorAll('.month-filter-cb-ind');
+        const monthFilterLabel = document.getElementById('month-filter-label');
+
+        function closeMonthPopover() {
+            monthFilterPopover?.classList.add('hidden');
+        }
+
+        function getSelectedMonths() {
+            if (monthAllCb.checked) {
+                return MONTH_NAMES; // Returns all 12
+            }
+            const selected = [...monthIndCbs]
+                .filter(cb => cb.checked)
+                .map(cb => cb.dataset.month);
+
+            // If no individuals are selected, default back to All
+            return selected.length > 0 ? selected : MONTH_NAMES;
+        }
+
+        function updateMonthFilterLabel() {
+            if (monthAllCb.checked) {
+                monthFilterLabel.textContent = 'All Months';
+                return;
+            }
+            const selected = [...monthIndCbs]
+                .filter(cb => cb.checked)
+                .map(cb => cb.dataset.month);
+
+            if (selected.length === 0) {
+                monthFilterLabel.textContent = 'All Months'; // Fallback
+            } else if (selected.length === 1) {
+                monthFilterLabel.textContent = selected[0];
+            } else if (selected.length === 12) {
+                monthFilterLabel.textContent = 'All Months';
+            } else {
+                monthFilterLabel.textContent = `${selected.length} Months`;
+            }
+        }
+
+        // --- MODIFIED: Event listeners for popovers ---
+        yearFilterBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            yearFilterPopover?.classList.toggle('hidden');
+            closeMonthPopover(); // Close other popover
+        });
+
+        yearFilterApply?.addEventListener('click', () => {
+            const yearIndCbs = document.querySelectorAll('.year-filter-cb-ind');
+            const anyIndChecked = [...yearIndCbs].some(cb => cb.checked);
+            if (!anyIndChecked) {
+                yearAllCb.checked = true;
+            }
+
+            const allYearsFromCbs = [...yearIndCbs].map(cb => cb.dataset.year);
+            const selectedYears = getSelectedYears(allYearsFromCbs);
+            const selectedMonths = getSelectedMonths();
+            const aggData = aggregateDailyToMonthly(metrics?.calendar_returns || []);
+            renderMonthlyCalendarGrid($('#calendarReturns'), aggData, selectedYears, selectedMonths); // Pass array of years
+
+            updateYearFilterLabel();
+            closeYearPopover();
+        });
+
+        yearAllCb?.addEventListener('click', () => {
+            if (yearAllCb.checked) {
+                document.querySelectorAll('.year-filter-cb-ind').forEach(cb => cb.checked = false);
+            }
+        });
+
+        monthFilterBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            monthFilterPopover?.classList.toggle('hidden');
+            closeYearPopover(); // Close other popover
+        });
+        // --- END MODIFIED ---
+
+        monthFilterApply?.addEventListener('click', () => {
+            // If no individuals are checked, re-check 'All'
+            const anyIndChecked = [...monthIndCbs].some(cb => cb.checked);
+            if (!anyIndChecked) {
+                monthAllCb.checked = true;
+            }
+
+            // --- MODIFIED: Get selected years ---
+            const allYearsFromCbs = [...document.querySelectorAll('.year-filter-cb-ind')].map(cb => cb.dataset.year);
+            const selectedYears = getSelectedYears(allYearsFromCbs);
+            const selectedMonths = getSelectedMonths();
+            const aggData = aggregateDailyToMonthly(metrics?.calendar_returns || []);
+            renderMonthlyCalendarGrid($('#calendarReturns'), aggData, selectedYears, selectedMonths);
+            // --- END MODIFIED ---
+
+            updateMonthFilterLabel();
+            closeMonthPopover();
+        });
+
+        monthAllCb?.addEventListener('click', () => {
+            if (monthAllCb.checked) {
+                monthIndCbs.forEach(cb => cb.checked = false);
+            }
+        });
+
+        monthIndCbs?.forEach(cb => {
+            cb.addEventListener('click', () => {
+                if (cb.checked) {
+                    monthAllCb.checked = false;
+                }
+                // If all individuals are unchecked, check 'All'
+                const anyIndChecked = [...monthIndCbs].some(c => c.checked);
+                if (!anyIndChecked) {
+                    monthAllCb.checked = true;
+                }
+            });
+        });
+
+        // --- MODIFIED: Window click listener to close BOTH popovers ---
+        window.addEventListener('click', (e) => {
+            if (!monthFilterPopover?.contains(e.target) && !monthFilterBtn?.contains(e.target)) {
+                closeMonthPopover();
+            }
+            if (!yearFilterPopover?.contains(e.target) && !yearFilterBtn?.contains(e.target)) {
+                closeYearPopover();
+            }
+        });
+        // *** END ADDED ***
+
+
+        // tiny banner
+        function banner(msg, tone = "warn") {
+            let el = document.getElementById("banner");
+            if (!el) {
+                el = document.createElement("div");
+                el.id = "banner";
+                el.className = "fixed top-3 left-1/2 -translate-x-1/2 z-[200] px-4 py-2 rounded-lg shadow text-sm";
+                document.body.appendChild(el);
+            }
+            el.className = "fixed top-3 left-1/2 -translate-x-1/2 z-[200] px-4 py-2 rounded-lg shadow text-sm";
+            el.classList.remove("bg-amber-100", "text-amber-900", "bg-emerald-100", "text-emerald-900", "bg-rose-100", "text-rose-900");
+            if (tone === "warn") { el.classList.add("bg-amber-100", "text-amber-900"); }
+            if (tone === "ok") { el.classList.add("bg-emerald-100", "text-emerald-900"); }
+            if (tone === "err") { el.classList.add("bg-rose-100", "text-rose-900"); }
+            el.textContent = msg; clearTimeout(el._t); el._t = setTimeout(() => el.remove(), 3500);
+        }
+
+        // ---- Auth guard (redirect to login if needed) ----
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            const next = encodeURIComponent(location.pathname + location.search + location.hash);
+            location.replace(`/auth.html?tab=in&redirect=${next}`);
+        }
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // ---- Ensure profile row exists / fetch it ----
+        async function ensureProfile(userId, email) {
+            let { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+            if (error && error.code !== "PGRST116") throw error; // ignore "no rows"
+            if (data) return data;
+            const payload = { id: userId, email, updated_at: new Date().toISOString() };
+            const up = await supabase.from("profiles").upsert(payload, { onConflict: "id" }).select("*").single();
+            if (up.error) throw up.error;
+            return up.data;
+        }
+        const row = await ensureProfile(user.id, user.email || null);
+
+        const profileComplete = computeProfileComplete(row || {});
+        const kycDone = resolveKycBoolean(row || {});
+
+        // ---- Hydrate header + sidebar ----
+        const hdrName = document.getElementById("hdr-name");
+        const hdrAvatar = document.getElementById("hdr-avatar");
+        const pmEmail = document.getElementById("pm-email");
+
+        document.getElementById("sidebar-acc").textContent = row?.account_number || "—";
+
+        const fn = (row?.first_name || "").trim();
+        const ln = (row?.last_name || "").trim();
+        hdrName.textContent = (fn || ln) ? `${fn} ${ln}`.trim() : (user.email?.split("@")[0] || "User");
+
+        const blankAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>";
+        hdrAvatar.src = row?.avatar_url || blankAvatar;
+
+        // ---- Profile modal / routes ----
+        const profileBtn = document.getElementById("hdr-profile-btn");
+        const modal = document.getElementById("profile-modal");
+        const btnLogout = document.getElementById("pm-logout");
+        const btnGear = document.getElementById("ah-settings");
+
+        function openModal() { pmEmail.textContent = user?.email || "—"; modal.classList.remove("hidden"); }
+        function closeModal() { modal.classList.add("hidden"); }
+
+        profileBtn?.addEventListener("click", (e) => { e.preventDefault(); openModal(); });
+        modal?.addEventListener("click", (e) => {
+            if (e.target === modal || (e.target.classList && e.target.classList.contains("bg-black/40"))) closeModal();
+        });
+        window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+        btnGear?.addEventListener("click", (e) => { e.preventDefault(); location.href = "/settings.html#basic"; });
+        btnLogout?.addEventListener("click", async () => {
+            try { await supabase.auth.signOut(); location.replace("/auth.html?tab=in"); }
+            catch { banner("Sorry, logout failed.", "err"); }
+        });
+        supabase.auth.onAuthStateChange((_ev, sess) => { if (!sess) { location.replace("/auth.html?tab=in"); } });
+
+        // ---------- tiny utils ----------
+        const $ = (q, el = document) => el.querySelector(q);
+        const $$ = (q, el = document) => Array.from(el.querySelectorAll(q));
+        const ZA = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+        const money = (n, ccy = 'ZAR') => (ccy === 'ZAR' ? 'R ' : (ccy + ' ')) + Number(n || 0).toLocaleString('en-ZA', ZA);
+        const finite = v => Number.isFinite(Number(v));
+        const escapeHtml = (value) => {
+            return (value ?? '').toString().replace(/[&<>"']/g, (ch) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[ch]);
+        };
+
+        // ---------- URL params ----------
+        const params = new URLSearchParams(location.search);
+        const stratKey = params.get('id') || params.get('strategy') || params.get('code') || null;
+
+        function renderDescAndBullets(strategy) {
+            const descEl = document.getElementById('fs-desc');
+            if (descEl) descEl.textContent = strategy?.strategy_description || '—';
+
+            const wrap = document.getElementById('fs-desc-bullets');
+            if (!wrap) return;
+            const bullets = strategy?.strategy_description_bullets;
+            wrap.innerHTML = '';
+            if (!bullets || (Array.isArray(bullets) && bullets.length === 0)) {
+                wrap.classList.add('hidden'); return;
+            }
+            wrap.classList.remove('hidden');
+            (bullets || []).forEach(b => {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-slate-700';
+                if (typeof b === 'string') {
+                    li.textContent = b;
+                } else if (b && typeof b === 'object') {
+                    const t = (b.title || b.label || '').toString().trim();
+                    const v = (b.text || b.value || '').toString().trim();
+                    if (t && v) li.innerHTML = `<strong>${t}:</strong> ${v}`;
+                    else li.textContent = v || t || '—';
+                } else {
+                    li.textContent = '—';
+                }
+                wrap.appendChild(li);
+            });
+        }
+
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function tsStamp(d = new Date()) {
+            const y = d.getFullYear(), m = pad2(d.getMonth() + 1), day = pad2(d.getDate()),
+                hh = pad2(d.getHours()), mm = pad2(d.getMinutes()), ss = pad2(d.getSeconds());
+            return `${y}${m}${day}${hh}${mm}${ss}`;
+        }
+
+        // *** PIPE-SEPARATED reference ***
+        function buildRef(profileId, strategyId) {
+            return `AH_${profileId || 'P'}_${strategyId || 'S'}_${tsStamp()}`;
+        }
+
+        function currentPageCallbackUrl() {
+            const url = new URL(location.href);
+            url.searchParams.set('pay_cb', '1'); // marker so we know it's a return
+            return url.toString();
+        }
+
+        // run on return from Paystack to verify
+        async function verifyIfReturned() {
+            const url = new URL(location.href);
+            const ref = url.searchParams.get('reference') || url.searchParams.get('trxref');
+            const cb = url.searchParams.get('pay_cb');
+            if (!ref || !cb) return;
+
+            try {
+                banner('Verifying payment…', 'warn');
+                const res = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(ref)}`);
+                const json = await res.json();
+                if (!res.ok) throw new Error(json?.error || 'Verify failed');
+
+                const tx = json?.data;
+                const expected = Number(sessionStorage.getItem('expectedAmountCents') || '0');
+
+                if (tx?.status === 'success' && (!expected || tx?.amount === expected)) {
+                    banner('Payment successful ✅', 'ok');
+                    // TODO: mark allocation paid in your backend if needed
+                } else {
+                    banner('Payment not completed or amount mismatch ❌', 'err');
+                }
+            } catch (e) {
+                console.error('[verify]', e);
+                banner('Could not verify payment. Please contact support.', 'err');
+            } finally {
+                url.searchParams.delete('reference');
+                url.searchParams.delete('trxref');
+                url.searchParams.delete('pay_cb');
+                history.replaceState({}, '', url.toString());
+                sessionStorage.removeItem('expectedAmountCents');
+            }
+        }
+
+        function renderTopGainersMarquee(freshMetrics, holdingsSrc) {
+            const marqueeWrap = document.getElementById('top-gainers-marquee');
+            const track = document.getElementById('top-gainers-track');
+            const emptyState = document.getElementById('top-gainers-empty');
+            const updatedEl = document.getElementById('top-gainers-updated');
+
+            if (!marqueeWrap || !track || !emptyState) return;
+
+            const holdings = Array.isArray(holdingsSrc)
+                ? holdingsSrc
+                : Array.isArray(freshMetrics?.portfolio_holdings) ? freshMetrics.portfolio_holdings : [];
+
+            const currency = (freshMetrics?.currency || currentCCY || 'ZAR').toUpperCase();
+
+            const entries = holdings
+                .map((h) => {
+                    const change = Number(h?.daily_change_pct);
+                    if (!Number.isFinite(change)) return null;
+
+                    const symbol = (h?.symbol || h?.name || '—').toString().trim() || '—';
+                    const name = (h?.company_name || h?.name || h?.symbol || 'Unknown').toString().trim() || 'Unknown';
+                    const valueNum = Number(h?.value);
+                    const priceNum = Number(h?.price);
+                    const weightNum = Number(h?.weight_pct);
+
+                    let valueLabel = '—';
+                    if (Number.isFinite(valueNum) && valueNum !== 0) {
+                        valueLabel = money(valueNum, currency);
+                    } else if (Number.isFinite(priceNum) && priceNum !== 0) {
+                        valueLabel = money(priceNum, currency);
+                    } else if (Number.isFinite(weightNum) && weightNum > 0) {
+                        valueLabel = `${weightNum.toFixed(2)}% weight`;
+                    }
+
+                    const changeLabel = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                    const initials = symbol.slice(0, 2).toUpperCase();
+
+                    return {
+                        symbol,
+                        name,
+                        valueLabel,
+                        change,
+                        changeLabel,
+                        logo: h?.logo_url || h?.logo || null,
+                        initials
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.change - a.change);
+
+            const holdingsAsOf = freshMetrics?.portfolio_holdings_updated_at
+                || freshMetrics?.portfolio_holdings_asof
+                || freshMetrics?.asof_date
+                || freshMetrics?.updated_at
+                || null;
+
+            if (updatedEl) {
+                if (holdingsAsOf) {
+                    const parsed = new Date(holdingsAsOf);
+                    if (!Number.isNaN(parsed.getTime())) {
+                        updatedEl.textContent = 'Updated '
+                            + parsed.toLocaleString('en-ZA', {
+                                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                            }) + ' SAST';
+                    } else {
+                        updatedEl.textContent = `Updated ${holdingsAsOf}`;
+                    }
+                    updatedEl.classList.remove('hidden');
+                } else {
+                    updatedEl.textContent = '';
+                    updatedEl.classList.add('hidden');
+                }
+            }
+
+            if (!entries.length) {
+                track.innerHTML = '';
+                marqueeWrap.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                track.classList.remove('is-looping');
+                track.style.removeProperty('--tg-duration');
+                if (updatedEl) {
+                    updatedEl.textContent = '';
+                    updatedEl.classList.add('hidden');
+                }
+                return;
+            }
+
+            const cardMarkup = entries.map((item) => {
+                const safeSymbol = escapeHtml(item.symbol);
+                const safeName = escapeHtml(item.name);
+                const safeValue = escapeHtml(item.valueLabel);
+                const safeChange = escapeHtml(item.changeLabel);
+                const logoHtml = item.logo
+                    ? `<img src="${escapeHtml(item.logo)}" alt="${safeSymbol} logo" class="tg-logo-img">`
+                    : `<div class="tg-logo-fallback">${escapeHtml(item.initials)}</div>`;
+                const changeIcon = item.change >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                const changeClass = item.change >= 0 ? 'is-up' : 'is-down';
+                return `
+            <div class="tg-card">
+                <div class="tg-card-header">
+                    ${logoHtml}
+                    <div class="tg-card-meta">
+                        <div class="tg-symbol">${safeSymbol}</div>
+                        <div class="tg-name" title="${safeName}">${safeName}</div>
+                    </div>
+                </div>
+                <div class="tg-value">${safeValue}</div>
+                <div class="tg-change ${changeClass}"><i class="fa-solid ${changeIcon}"></i>${safeChange}</div>
+            </div>`;
+            }).join('');
+
+            const shouldLoop = entries.length > 3;
+            if (shouldLoop) {
+                const duration = Math.max(18, entries.length * 4);
+                track.innerHTML = cardMarkup + cardMarkup;
+                track.classList.add('is-looping');
+                track.style.setProperty('--tg-duration', `${duration}s`);
+            } else {
+                track.innerHTML = cardMarkup;
+                track.classList.remove('is-looping');
+                track.style.removeProperty('--tg-duration');
+            }
+
+            emptyState.classList.add('hidden');
+            marqueeWrap.classList.remove('hidden');
+        }
+
+        function renderPortfolioHoldingsFromMetrics(freshMetrics) {
+            const rawHoldings = Array.isArray(freshMetrics?.portfolio_holdings) ? freshMetrics.portfolio_holdings : [];
+            renderTopGainersMarquee(freshMetrics, rawHoldings);
+
+            const top10Container = document.getElementById('ph-top10');
+            if (!top10Container) return;
+
+            const items = rawHoldings
+                .map(h => ({
+                    symbol: (h.symbol || h.name || '—').toString().trim(),
+                    name: (h.company_name || h.name || h.symbol || 'Unknown').toString().trim(),
+                    weight: Number(h.weight_pct) || 0,
+                    logo: h.logo_url || null
+                }))
+                .filter(x => x.weight > 0)
+                .sort((a, b) => b.weight - a.weight)
+                .slice(0, 10);
+
+            if (!items.length) {
+                top10Container.innerHTML = '<div class="text-sm text-slate-500 text-center py-4">No holdings data available.</div>';
+                return;
+            }
+
+            top10Container.innerHTML = items.map((h) => {
+                const initials = h.symbol.slice(0, 2).toUpperCase();
+                const logoEl = h.logo
+                    ? `<img src="${h.logo}" alt="${h.symbol} logo" class="w-8 h-8 rounded-lg object-contain bg-white border border-slate-200">`
+                    : `<div class="ph-logo-fallback">${initials}</div>`;
+
+                return `
+            <div class="ph-item">
+                <div>${logoEl}</div>
+                <div class="ph-symbol">${h.symbol}</div>
+                <div class="ph-name" title="${h.name}">${h.name}</div>
+                <div class="ph-weight">${h.weight.toFixed(2)}%</div>
+            </div>
+        `;
+            }).join('');
+        }
+
+        function renderAssetAllocationFromMetrics(freshMetrics) {
+            const wrap = document.getElementById('asset-allocation');
+            if (!wrap) return;
+
+            const NAME_MAP = { FX: 'FX', Indices: 'Indices', Equities: 'Equities', Metals: 'Metals', Energies: 'Energy', Crypto: 'Crypto', Bonds: 'Bonds', CFDs: 'CFDs', Other: 'Other' };
+
+            const allocRaw = Array.isArray(freshMetrics?.asset_allocation) ? freshMetrics.asset_allocation : [];
+            const alloc = allocRaw
+                .map(i => ({ label: NAME_MAP[i.class] ?? (i.class || 'Other'), pct: Number(i.weight_pct) || 0 }))
+                .filter(i => i.pct > 0.01)
+                .sort((a, b) => b.pct - a.pct);
+
+            if (!alloc.length) {
+                wrap.innerHTML = '<div class="text-sm text-slate-500">No allocation yet.</div>';
+                return;
+            }
+
+            const colors = ['#111827', '#2563eb', '#16a34a', '#f59e0b', '#ef4444', '#6b7280', '#10b981', '#6366f1', '#94a3b8', '#3f6212'];
+            wrap.innerHTML = alloc.map((i, idx) => {
+                const pct = i.pct; const color = colors[idx % colors.length];
+                return `
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-sm text-slate-700">${i.label}</span>
+            <span class="text-sm font-medium">${pct.toFixed(2)}%</span>
+          </div>
+          <div class="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full rounded-full" style="width:${pct}%; background:${color}"></div>
+          </div>
+        </div>`;
+            }).join('');
+        }
+
+        function applyAllocationUnitPrice(rawUnitPrice, currency) {
+            const allocPriceInput = document.getElementById('alloc-price');
+            if (!allocPriceInput) return;
+
+            const existingLocked = Number(allocPriceInput.dataset.lockedPrice);
+            const hasExistingLocked = Number.isFinite(existingLocked) && existingLocked > 0;
+            const parsedUnitPrice = Number(rawUnitPrice);
+
+            let nextUnitPrice;
+            if (Number.isFinite(parsedUnitPrice) && parsedUnitPrice > 0) {
+                nextUnitPrice = parsedUnitPrice;
+            } else if (hasExistingLocked) {
+                nextUnitPrice = existingLocked;
+            } else {
+                nextUnitPrice = 1;
+            }
+
+            nextUnitPrice = Math.max(1, Math.round(nextUnitPrice));
+
+            allocPriceInput.value = nextUnitPrice;
+            allocPriceInput.readOnly = true;
+            allocPriceInput.classList.add('bg-slate-50', 'cursor-not-allowed', 'text-slate-700');
+            allocPriceInput.dataset.lockedPrice = String(nextUnitPrice);
+
+            const priceLbl = document.querySelector('label[for="alloc-price"]');
+            if (priceLbl) {
+                priceLbl.innerHTML = `Slot Price (Min allocation, ${(currency || 'ZAR').toUpperCase()})`;
+            }
+
+            const allocAmountInput = document.getElementById('alloc-amount');
+            if (allocAmountInput) {
+                const currentVal = Number(allocAmountInput.value || 0);
+                const snapped = Number.isFinite(currentVal) && currentVal > 0
+                    ? Math.max(nextUnitPrice, Math.round(currentVal / nextUnitPrice) * nextUnitPrice)
+                    : nextUnitPrice;
+
+                allocAmountInput.min = nextUnitPrice;
+                allocAmountInput.step = nextUnitPrice;
+                allocAmountInput.readOnly = true;
+                allocAmountInput.classList.add('cursor-not-allowed');
+                allocAmountInput.placeholder = `Adjust in steps of ${money(nextUnitPrice, currency)}`;
+                allocAmountInput.value = snapped;
+            }
+
+            const minHint = document.getElementById('alloc-minimum');
+            if (minHint) {
+                minHint.textContent = `Minimum allocation: ${money(nextUnitPrice, currency)}`;
+            }
+        }
+
+        // ---------- chart setup ----------
+        let chart, currentLabels = [], currentCCY = 'ZAR';
+        function initChart() {
+            const ctx = $('#pf-chart')?.getContext('2d');
+            if (!ctx) return;
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+            gradient.addColorStop(0, 'rgba(85,107,47,0.35)');
+            gradient.addColorStop(1, 'rgba(85,107,47,0.06)');
+
+            // we'll update this global as we render different ranges
+            window.__pfHoverMeta = {
+                mode: 'pct', // 'pct' or 'currency'
+                labels: [],
+                values: [],  // y values we want in tooltip (% or currency)
+            };
+
+            // custom plugin for vertical seek line + bubble
+            const seekPlugin = {
+                id: 'seekPlugin',
+                afterDraw(chart, args, opts) {
+                    const { ctx, chartArea, tooltip } = chart;
+                    if (!tooltip || !tooltip._active || !tooltip._active.length) return;
+
+                    const activePoint = tooltip._active[0];
+                    const x = activePoint.element.x;
+                    const y = activePoint.element.y;
+
+                    // guard bounds
+                    if (x < chartArea.left || x > chartArea.right) return;
+
+                    const { top, bottom } = chartArea;
+
+                    ctx.save();
+
+                    // dashed vertical line
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, top);
+                    ctx.lineTo(x, bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // triangles (top/bottom)
+                    const triSize = 5;
+                    ctx.fillStyle = '#000';
+                    // top triangle (pointing down)
+                    ctx.beginPath();
+                    ctx.moveTo(x, top - triSize);
+                    ctx.lineTo(x - triSize, top);
+                    ctx.lineTo(x + triSize, top);
+                    ctx.closePath();
+                    ctx.fill();
+                    // bottom triangle (pointing up)
+                    ctx.beginPath();
+                    ctx.moveTo(x, bottom + triSize);
+                    ctx.lineTo(x - triSize, bottom);
+                    ctx.lineTo(x + triSize, bottom);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // white outlined circle on the line at data point
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#1e293b'; // slate-800 ring
+                    ctx.stroke();
+
+                    // draw black pill with "label  +pct"
+                    const meta = window.__pfHoverMeta || {};
+                    const idx = activePoint.index;
+
+                    const dateLabel = (meta.labels && meta.labels[idx]) ? meta.labels[idx] : '';
+                    const valLabel = (function () {
+                        const v = meta.values && meta.values[idx];
+                        if (v == null || Number.isNaN(v)) return '—';
+                        if (meta.mode === 'currency') {
+                            // currency mode shows value as money + also % vs first?
+                            // but you asked: "date and the return for that day"
+                            // so for intraday we'll just show +0.52%
+                            return v;
+                        } else {
+                            // already formatted like "+3.8%"
+                            return v;
+                        }
+                    })();
+
+                    const pillText = `${dateLabel}  ${valLabel}`;
+                    ctx.font = '600 12px Inter, system-ui, sans-serif';
+                    ctx.textBaseline = 'middle';
+
+                    const textW = ctx.measureText(pillText).width;
+                    const padX = 10;
+                    const padY = 6;
+                    const pillW = textW + padX * 2;
+                    const pillH = 28;
+                    const pillMargin = 8;
+                    const areaWidth = chartArea.right - chartArea.left;
+                    const areaHeight = chartArea.bottom - chartArea.top;
+                    let pillX = x - pillW / 2;
+                    const minPillX = chartArea.left + pillMargin;
+                    const maxPillX = chartArea.right - pillW - pillMargin;
+
+                    if (minPillX > maxPillX) {
+                        pillX = chartArea.left + (areaWidth - pillW) / 2;
+                        pillX = Math.max(chartArea.left, Math.min(pillX, chartArea.right - pillW));
+                    } else {
+                        if (pillX < minPillX) pillX = minPillX;
+                        if (pillX > maxPillX) pillX = maxPillX;
+                    }
+                    let pillY = y - pillH - 10; // above point
+                    const minPillY = chartArea.top + pillMargin;
+                    const maxPillY = chartArea.bottom - pillH - pillMargin;
+
+                    if (minPillY > maxPillY) {
+                        pillY = chartArea.top + (areaHeight - pillH) / 2;
+                        pillY = Math.max(chartArea.top, Math.min(pillY, chartArea.bottom - pillH));
+                    } else {
+                        if (pillY < minPillY) {
+                            const belowY = y + 10;
+                            const roomBelow = belowY + pillH <= chartArea.bottom - pillMargin;
+                            pillY = roomBelow ? Math.min(Math.max(belowY, minPillY), maxPillY) : minPillY;
+                        }
+                        if (pillY > maxPillY) pillY = maxPillY;
+                    }
+
+                    // pill bg
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    const radius = 14;
+                    roundRectPath(ctx, pillX, pillY, pillW, pillH, radius);
+                    ctx.fill();
+
+                    // pill text (green if positive, red if neg)
+                    let numPart = (valLabel || '').trim();
+                    // grab the last " +3.8%" bit for color check
+                    const m = numPart.match(/([+\-]\d+(\.\d+)?%)/);
+                    const pctPart = m ? m[1] : '';
+                    const pctIsPos = pctPart.startsWith('+');
+
+                    ctx.fillStyle = pctIsPos ? '#4ade80' : '#f87171';
+                    ctx.textAlign = 'center';
+                    const textCenter = pillX + pillW / 2;
+                    ctx.fillText(pillText, textCenter, pillY + pillH / 2);
+
+                    ctx.restore();
+                }
+            };
+
+            // helper to draw rounded rect path
+            function roundRectPath(ctx, x, y, w, h, r) {
+                const radius = Math.min(r, h / 2, w / 2);
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + w - radius, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+                ctx.lineTo(x + w, y + h - radius);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                ctx.lineTo(x + radius, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        tension: .35,
+                        borderWidth: 2,
+                        borderColor: '#556B2F',
+                        backgroundColor: gradient,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHitRadius: 20 // make hover easier
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: false // we draw our own pill
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            ticks: { maxTicksLimit: 6, color: '#94a3b8' },
+                            grid: { display: false }
+                        },
+                        y: {
+                            display: true,
+                            ticks: {
+                                color: '#94a3b8',
+                                maxTicksLimit: 4,
+                                callback: v => v // we'll override per range
+                            }
+                        }
+                    }
+                },
+                plugins: [seekPlugin]
+            });
+        }
+
+
+
+
+        // ---------- calendar (daily returns) ----------
+
+        // *** ADDED: New function to aggregate daily returns to monthly ***
+        function aggregateDailyToMonthly(dailyReturns) {
+            const monthlyData = {};
+            const byYearMonth = {};
+
+            // Group daily returns by year and month
+            for (const d of (dailyReturns || [])) {
+                if (!finite(d.pct)) continue;
+                const year = d.year;
+                const month = d.month; // 1-indexed
+                byYearMonth[year] ??= {};
+                byYearMonth[year][month] ??= [];
+                byYearMonth[year][month].push(Number(d.pct) / 100);
+            }
+
+            const years = Object.keys(byYearMonth).sort((a, b) => a - b);
+
+            for (const year of years) {
+                monthlyData[year] = {};
+                let yearTotalReturn = 1;
+
+                for (let m = 1; m <= 12; m++) {
+                    const monthName = MONTH_NAMES[m - 1];
+                    const dailyPcts = byYearMonth[year]?.[m];
+
+                    if (dailyPcts && dailyPcts.length > 0) {
+                        const monthTotalReturn = dailyPcts.reduce((acc, r) => acc * (1 + r), 1);
+                        const monthPct = (monthTotalReturn - 1) * 100;
+                        monthlyData[year][monthName] = monthPct;
+                        yearTotalReturn *= monthTotalReturn;
+                    } else {
+                        monthlyData[year][monthName] = null; // No data for this month
+                    }
+                }
+                monthlyData[year]['YTD'] = (yearTotalReturn - 1) * 100;
+            }
+            return monthlyData;
+        }
+
+        // *** ADDED: New function to render the monthly calendar grid from aggregated data ***
+        function renderMonthlyCalendarGrid(container, aggregatedData, filterYears, filterMonths) {
+            const grid = container;
+            if (!grid) return;
+
+            // MODIFIED: Use filterMonths, but always add YTD
+            const monthsToRender = [...filterMonths, 'YTD'];
+            // Get all years, but filter based on the dropdown
+            const allYears = Object.keys(aggregatedData).map(Number).sort((a, b) => a - b);
+            // --- MODIFIED: filterYears is now an array ---
+            const yearsToRender = allYears.filter(y => filterYears.includes(String(y)));
+
+
+            grid.innerHTML = '';
+            // --- MODIFIED: Changed 120px to 80px ---
+            grid.style.gridTemplateColumns = `80px repeat(${monthsToRender.length}, minmax(72px, 1fr))`;
+
+            const color = (v) => v == null ? '#f8fafc' // Use a lighter bg for null
+                : v >= 1.5 ? '#bbf7d0'
+                    : v > 0 ? '#dcfce7'
+                        : v === 0 ? '#f1f5f9'
+                            : v > -1 ? '#fee2e2'
+                                : '#fecaca';
+
+            // Render Header
+            const corner = document.createElement('div');
+            corner.className = 'cal-head cal-sticky';
+            grid.appendChild(corner);
+            // MODIFIED: Use monthsToRender
+            monthsToRender.forEach(m => {
+                const h = document.createElement('div');
+                h.className = 'cal-head justify-center';
+                h.textContent = m;
+                grid.appendChild(h);
+            });
+
+            // Render Rows
+            yearsToRender.forEach(y => {
+                const yr = document.createElement('div');
+                yr.className = 'cal-head cal-sticky';
+                yr.textContent = y;
+                grid.appendChild(yr);
+
+                // MODIFIED: Use monthsToRender
+                monthsToRender.forEach(m => {
+                    const v = aggregatedData[y]?.[m];
+                    const c = document.createElement('div');
+                    c.className = 'cal-cell';
+                    c.style.background = color(v);
+                    c.textContent = (v != null) ? `${v > 0 ? '+' : ''}${v.toFixed(1)}%` : '—';
+
+                    if (m !== 'YTD' && v != null) {
+                        c.style.cursor = 'pointer';
+                        c.title = `Click to view daily returns for ${m} ${y}`;
+                        c.addEventListener('click', () => {
+                            if (window.showDailyModal) {
+                                window.showDailyModal(y, m);
+                            } else {
+                                console.error('Daily modal function not found');
+                            }
+                        });
+                    }
+                    grid.appendChild(c);
+                });
+            });
+
+            document.getElementById('legNeg').style.background = '#fecaca';
+            document.getElementById('legNeu').style.background = '#f1f5f9';
+            document.getElementById('legPos').style.background = '#dcfce7';
+        }
+
+        // --- MODIFIED: Populates the new year filter checkbox list ---
+        function populateYearFilter(aggregatedData) {
+            const listContainer = document.getElementById('year-filter-list');
+            const yearAllCb = document.getElementById('year-all'); // Get 'All' checkbox
+            if (!listContainer || !yearAllCb) return;
+
+            const years = Object.keys(aggregatedData).map(Number).sort((a, b) => b - a); // Newest first [2025, 2024, 2023]
+            const allYearsStrings = years.map(String);
+
+            // Preserve checked state
+            const currentCheckedYears = getSelectedYears(allYearsStrings); // Get currently selected years (as strings)
+            const isAllChecked = yearAllCb.checked;
+
+            listContainer.innerHTML = ''; // Clear old list
+
+            years.forEach(y_num => {
+                const y_str = String(y_num);
+                const isChecked = !isAllChecked && currentCheckedYears.includes(y_str);
+                listContainer.insertAdjacentHTML('beforeend', `
+                    <div>
+                        <input type="checkbox" id="year-${y_str}" class="year-filter-cb-ind" data-year="${y_str}" ${isChecked ? 'checked' : ''}>
+                        <label for="year-${y_str}" class="ml-2 text-sm">${y_str}</label>
+                    </div>
+                `);
+            });
+
+            // Add event listeners to NEW individual checkboxes
+            document.querySelectorAll('.year-filter-cb-ind').forEach(cb => {
+                cb.addEventListener('click', () => {
+                    if (cb.checked) {
+                        yearAllCb.checked = false;
+                    }
+                    const anyIndChecked = [...document.querySelectorAll('.year-filter-cb-ind')].some(c => c.checked);
+                    if (!anyIndChecked) {
+                        yearAllCb.checked = true;
+                    }
+                });
+            });
+
+            updateYearFilterLabel(); // Update label after repopulating
+        }
+
+
+        // THIS FUNCTION IS NO LONGER USED, but we leave it in case it's needed elsewhere
+        // The new modal logic in showDailyModal() handles daily rendering.
+        function renderCalendarDaily(container, daily) {
+            container.innerHTML = '';
+            if (!daily?.length) { container.textContent = 'No daily data yet.'; return; }
+
+            const byYear = {};
+            for (const d of daily) {
+                if (!finite(d.pct)) continue;
+                byYear[d.year] ??= {};
+                byYear[d.year][d.month] ??= {};
+                byYear[d.year][d.month][d.day] = Number(d.pct);
+            }
+            const monthsAbbr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+
+            container.style.gridTemplateColumns = `120px repeat(12, minmax(72px, 1fr))`;
+            const corner = document.createElement('div'); corner.className = 'cal-head cal-sticky'; container.appendChild(corner);
+            monthsAbbr.forEach(m => { const h = document.createElement('div'); h.className = 'cal-head justify-center'; h.textContent = m; container.appendChild(h); });
+
+            years.forEach(y => {
+                const yr = document.createElement('div'); yr.className = 'cal-head cal-sticky'; yr.textContent = y; container.appendChild(yr);
+                for (let m = 1; m <= 12; m++) {
+                    const box = document.createElement('div'); box.className = 'cal-cell p-1';
+                    const inner = document.createElement('div');
+                    inner.style.display = 'grid'; inner.style.gridTemplateColumns = 'repeat(7,10px)'; inner.style.gap = '2px';
+                    const dim = new Date(y, m, 0).getDate();
+                    for (let d = 1; d <= dim; d++) {
+                        const v = byYear[y]?.[m]?.[d];
+                        const dot = document.createElement('div');
+                        dot.style.cssText = 'width:10px;height:10px;border-radius:2px;';
+                        let color = '#e5e7eb';
+                        if (v != null) {
+                            color = v >= 1.5 ? '#bbf7d0' : (v > 0 ? '#dcfce7' : (v === 0 ? '#f1f5f9' : (v > -1 ? '#fee2e2' : '#fecaca')));
+                        }
+                        dot.style.background = color;
+                        dot.title = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')} : ${v != null ? (v > 0 ? '+' : '') + v.toFixed(2) + '%' : '—'}`;
+                        inner.appendChild(dot);
+                    }
+                    box.appendChild(inner);
+                    container.appendChild(box);
+                }
+            });
+            $('#legNeg').style.background = '#fecaca';
+            $('#legNeu').style.background = '#f1f5f9';
+            $('#legPos').style.background = '#dcfce7';
+        }
+
+        // ---------- perf summary ----------
+        function fillPerfSummary(ps) {
+            const pct = v => (v == null || isNaN(v)) ? '—' : `${v >= 0 ? '+' : ''}${Number(v).toFixed(2)}%`;
+            document.getElementById('ps-best').textContent = pct(ps?.best_day_pct);
+            document.getElementById('ps-worst').textContent = pct(ps?.worst_day_pct);
+            document.getElementById('ps-avg').textContent = pct(ps?.avg_daily_return_pct);
+            document.getElementById('ps-pos').textContent = (ps?.positive_days_pct == null ? '—' : `${Number(ps.positive_days_pct).toFixed(0)}%`);
+            document.getElementById('ps-days').textContent = ps?.total_days ?? 0;
+            document.getElementById('ps-ytd').textContent = pct(ps?.ytd_return_pct);
+        }
+
+        function hydrateHeader(strategy) {
+            document.getElementById('fs-title').textContent = strategy.name || '—';
+            document.getElementById('fs-provider').textContent = strategy.creator || '—';
+            document.getElementById('fs-since').textContent = strategy.inception_date
+                ? new Date(strategy.inception_date).toLocaleString('en-ZA') : '—';
+            document.getElementById('fs-currency').textContent = strategy.currency || 'USD';
+            
+            // Dynamic risk badge
+            const riskBadge = document.getElementById('fs-risk');
+            const riskLevel = (strategy.risk_level || '').toLowerCase().trim();
+            
+            // Remove any existing risk classes
+            riskBadge.classList.remove('risk-conservative', 'risk-moderate', 'risk-high', 'risk-very-high');
+            
+            // Map risk level to CSS class - updated to handle database format "High Risk", "Very High Risk"
+            const riskClassMap = {
+                'conservative': 'risk-conservative',
+                'moderate': 'risk-moderate',
+                'high': 'risk-high',
+                'high risk': 'risk-high',
+                'very high': 'risk-very-high',
+                'very high risk': 'risk-very-high',
+                'very-high': 'risk-very-high'
+            };
+            
+            const riskClass = riskClassMap[riskLevel];
+            if (riskClass) {
+                riskBadge.classList.add(riskClass);
+            }
+            
+            riskBadge.textContent = strategy.risk_level || 'Risk —';
+
+            const ecName = document.getElementById('pf-name');
+            if (ecName) ecName.textContent = strategy.name || '—';
+
+            // ===== NEW: push strategy name into alloc card =====
+            const allocName = document.getElementById('alloc-name');
+            if (allocName) allocName.value = strategy.name || '—';
+
+            const allocTitle = document.getElementById('alloc-title');
+            if (allocTitle) allocTitle.textContent = `Allocate — ${strategy.name || 'Strategy'}`;
+
+            applyAllocationUnitPrice(strategy?.unit_price, strategy?.currency);
+
+            // ===== existing description + attrs =====
+            renderDescAndBullets(strategy);
+
+            const fsDesc = document.getElementById('fsDesc');
+            if (fsDesc) fsDesc.textContent =
+                strategy.investment_objective_description || strategy.strategy_description || '—';
+
+            const fsStyle = document.getElementById('fsStyle');
+            if (fsStyle) fsStyle.textContent = strategy.style || '—';
+
+            const fsUniverse = document.getElementById('fsUniverse');
+            if (fsUniverse) fsUniverse.textContent = strategy.asset_universe || '—';
+
+            const fsHold = document.getElementById('fsHold');
+            if (fsHold) fsHold.textContent = Number.isFinite(strategy.avg_holding_days)
+                ? `${strategy.avg_holding_days} days` : '—';
+
+            const fsTrades = document.getElementById('fsTrades');
+            if (fsTrades) fsTrades.textContent = Number.isFinite(strategy.avg_trades_per_month)
+                ? `${strategy.avg_trades_per_month}` : '—';
+        }
+
+
+        // ---------- data load ----------
+        async function fetchStrategy() {
+            if (stratKey) {
+                let r = await supabase.from('strategies').select('*').eq('id', stratKey).maybeSingle();
+                if (!r.data) r = await supabase.from('strategies').select('*').eq('code', stratKey).maybeSingle();
+                return r.data || null;
+            }
+            const { data } = await supabase.from('strategies').select('*').limit(1);
+            return data?.[0] || null;
+        }
+        async function fetchMetrics(strategyId) {
+            const { data } = await supabase.from('strategy_metrics').select('*').eq('strategy_id', strategyId).maybeSingle();
+            return data || null;
+        }
+
+        async function fetchAllocationUnitPrice(strategyId) {
+            if (!strategyId) return null;
+            const { data, error } = await supabase
+                .from('strategies')
+                .select('unit_price')
+                .eq('id', strategyId)
+                .maybeSingle();
+            if (error) throw error;
+            const price = Number(data?.unit_price);
+            return Number.isFinite(price) && price > 0 ? price : null;
+        }
+
+        // ---------- equity curve selection ---------
+        function buildCurveFromDailySeries(src) {
+            // src: [{ date: "2025-10-28", pct: 0.0123 }, ...]
+            // pct is decimal (0.0123 == +1.23%)
+
+            const labels = [];
+            const curveVals = [];
+
+            let level = 100; // start at 100
+            let firstLevel = null;
+
+            for (const point of (src || [])) {
+                const d = point.date;
+                const rDec = Number(point.pct); // decimal
+                if (!Number.isFinite(rDec)) continue;
+
+                // compound
+                level = level * (1 + rDec);
+                const lvlRounded = Number(level.toFixed(2));
+                curveVals.push(lvlRounded);
+
+                // label (show time when provided in payload, otherwise short date)
+                const dtRaw = new Date(d);
+                const dt = Number.isFinite(dtRaw.getTime()) ? dtRaw : new Date(d + "T00:00:00");
+                const hasTime = dt instanceof Date && (
+                    dt.getHours() !== 0 || dt.getMinutes() !== 0 || dt.getSeconds() !== 0 ||
+                    (typeof d === 'string' && d.includes('T'))
+                );
+                labels.push(
+                    hasTime
+                        ? dt.toLocaleString('en-ZA', {
+                            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                        })
+                        : dt.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short' })
+                );
+
+                if (firstLevel === null) firstLevel = lvlRounded;
+            }
+
+            if (!curveVals.length) {
+                return {
+                    labels: [],
+                    curve: [],
+                    headlinePct: null,
+                    headlineX: null
+                };
+            }
+
+            const lastLevel = curveVals[curveVals.length - 1];
+
+            // headline change
+            const pctChange = ((lastLevel - firstLevel) / firstLevel) * 100;
+            const mult = (lastLevel / firstLevel);
+
+            return {
+                labels,
+                curve: curveVals,      // e.g. [100,101.2,104.8,...]
+                headlinePct: pctChange, // e.g. 54.3 (%)
+                headlineX: mult         // e.g. 1.54 (x)
+            };
+        }
+
+
+
+
+        function makeLabelsMonthly(src) { return src.map(x => x.label || ''); }
+
+        // Render multi-day / multi-month performance ranges (growth %/multiplier)
+        function selectRangeAndRender(rangeKey, metrics, strategy) {
+            const pfValueEl = $('#pf-value');
+            const chgEl = $('#pf-change');
+            currentCCY = strategy.currency || 'ZAR';
+
+            // pick which series to use
+            let srcDaily = [];
+            switch (rangeKey) {
+                case '1D':
+                    srcDaily = metrics?.series_1d || [];
+                    break;
+                case '1M':
+                    srcDaily = metrics?.series_1m || [];
+                    break;
+                case '3M':
+                    srcDaily = metrics?.series_3m || [];
+                    break;
+                case '6M':
+                    srcDaily = metrics?.series_6m || [];
+                    break;
+                case 'YTD':
+                    srcDaily = metrics?.series_ytd || [];
+                    break;
+                case '1Y':
+                    srcDaily = metrics?.series_1y || [];
+                    break;
+                case '3Y':
+                    srcDaily = metrics?.series_3y || [];
+                    break;
+                case 'ALL':
+                default:
+                    srcDaily = metrics?.series_all || [];
+                    break;
+            }
+
+            const { labels, curve, headlinePct, headlineX } = buildCurveFromDailySeries(srcDaily);
+            currentLabels = labels;
+
+            if (chart) {
+                chart.data.labels = currentLabels;
+                chart.data.datasets[0].data = curve;
+
+                // y-axis tick: show "+54%" style relative to first point
+                chart.options.scales.y.ticks.callback = v => {
+                    if (!curve.length) return '';
+                    // convert absolute curve level back to % gain vs first point
+                    const base = curve[0] || 100;
+                    const relPct = ((v - base) / base) * 100;
+                    return (relPct >= 0 ? '+' : '') + relPct.toFixed(0) + '%';
+                };
+
+                chart.options.plugins.tooltip.callbacks.label = c => {
+                    const base = curve[0] || 100;
+                    const relPct = ((c.raw - base) / base) * 100;
+                    return (relPct >= 0 ? '+' : '') + relPct.toFixed(2) + '%';
+                };
+
+                chart.update();
+                // build hover meta for multi-period
+                window.__pfHoverMeta = {
+                    mode: 'pct',
+                    labels: currentLabels.map(l => l), // "2024-10" or "Oct 2024" (whatever you set in makeLabelsMonthly)
+                    values: curve.map(v => {
+                        if (!Number.isFinite(v)) return '—';
+                        const pctFromStart = v - 100;
+                        const sign = pctFromStart >= 0 ? '+' : '';
+                        return `${sign}${pctFromStart.toFixed(2)}%`;
+                    })
+                };
+
+            }
+
+            if (!curve.length) {
+                pfValueEl.textContent = '—';
+                chgEl.textContent = '—';
+                chgEl.style.color = '#64748b';
+                return;
+            }
+
+            // curve is compounded index that starts ~100 and ends e.g. 148.14
+            const firstVal = curve[0];
+            const lastVal = curve[curve.length - 1];
+
+            // % growth over the shown range
+            const pctGrowth = ((lastVal - firstVal) / firstVal) * 100;
+
+            // label should be "+48.14%"
+            const pctLabel = `${pctGrowth >= 0 ? '+' : ''}${pctGrowth.toFixed(2)}%`;
+
+            // main bold number = percent only
+            pfValueEl.textContent = pctLabel;
+
+            // no secondary number anymore
+            chgEl.textContent = '';
+            chgEl.style.color = pctGrowth >= 0 ? '#16a34a' : '#dc2626';
+            chgEl.style.minWidth = '0'; // avoid layout gap
+
+
+
+            $('#pf-updated').textContent =
+                new Date().toLocaleString('en-ZA', {
+                    month: 'long',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) + ' SAST';
+        }
+
+
+
+        // ---------- Allocation: dynamic total ----------
+        const priceEl = document.getElementById('alloc-price');
+        const amountEl = document.getElementById('alloc-amount');
+        const totalEl = document.getElementById('alloc-total');
+        const amountDecBtn = document.getElementById('alloc-decrease');
+        const amountIncBtn = document.getElementById('alloc-increase');
+
+        function getMinStep() {
+            const raw = Number(priceEl?.dataset.lockedPrice || priceEl?.value || 0);
+            return Math.max(1, Math.round(raw || 0));
+        }
+
+        // one source of truth for totals (also used by Paystack click)
+        function calcTotals() {
+            const amountField = document.getElementById('alloc-amount');
+
+            // minimum allocation (locked from backend)
+            const minAllocation = getMinStep();
+
+            // requested allocation (respect minimum)
+            const enteredAmount = Number(amountField?.value || 0);
+            const snappedAmount = Math.max(
+                minAllocation,
+                Number.isFinite(enteredAmount)
+                    ? Math.round(enteredAmount / minAllocation) * minAllocation
+                    : minAllocation
+            );
+
+            if (amountField && Number.isFinite(snappedAmount) && snappedAmount !== enteredAmount) {
+                amountField.value = snappedAmount;
+            }
+
+            const baseAmount = snappedAmount;
+
+            // base total in strategy currency
+            let total = baseAmount;
+            let ccy = (strategy?.currency || currentCCY || 'ZAR').toUpperCase();
+
+            // if strategy currency is USD we convert to ZAR for checkout using live fx
+            if (isUSD()) {
+                const rate = Number(fx.usdzar);
+                if (!Number.isFinite(rate)) {
+                    throw new Error('Live USD→ZAR rate unavailable. Please try again.');
+                }
+                total = total * rate;
+                ccy = 'ZAR';
+            }
+
+            // round to cents (what Paystack sees / what we show)
+            const totalRounded = Math.round(total * 100) / 100;
+
+            return { amount: baseAmount, minAllocation, unitPrice: minAllocation, totalRounded, ccy };
+        }
+
+
+        function refreshAllocTotal() {
+            try {
+                const { totalRounded, ccy } = calcTotals();
+                if (totalEl) totalEl.textContent = money(totalRounded, ccy);
+            } catch (e) {
+                console.warn(e);
+                if (totalEl) totalEl.textContent = '—';
+            }
+        }
+
+
+        function stepAllocation(direction = 'add') {
+            if (!amountEl) return;
+            const step = getMinStep();
+            const currentVal = Number(amountEl.value || step);
+            const normalized = Math.max(step, Number.isFinite(currentVal) ? Math.round(currentVal / step) * step : step);
+            const delta = direction === 'minus' ? -step : step;
+            const next = Math.max(step, normalized + delta);
+
+            amountEl.value = next;
+            refreshAllocTotal();
+        }
+
+
+        if (priceEl && amountEl) {
+            ['input', 'change'].forEach(ev => {
+                priceEl.addEventListener(ev, refreshAllocTotal);
+                amountEl.addEventListener(ev, refreshAllocTotal);
+            });
+        }
+        amountIncBtn?.addEventListener('click', () => stepAllocation('add'));
+        amountDecBtn?.addEventListener('click', () => stepAllocation('minus'));
+        let fx = { usdzar: null, ts: null };
+        const isUSD = () => (strategy?.currency || 'ZAR').toUpperCase() === 'USD';
+
+        async function fetchUsdZar() {
+            try {
+                // primary provider
+                const r = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=ZAR');
+                const j = await r.json();
+                let rate = Number(j?.rates?.ZAR);
+
+                // fallback provider
+                if (!Number.isFinite(rate)) {
+                    const r2 = await fetch('https://open.er-api.com/v6/latest/USD');
+                    const j2 = await r2.json();
+                    rate = Number(j2?.rates?.ZAR);
+                }
+
+                if (!Number.isFinite(rate)) throw new Error('No rate');
+
+                fx.usdzar = rate;
+                fx.ts = new Date();
+
+                const wrap = document.getElementById('fx-note');
+                if (wrap) {
+                    wrap.classList.remove('hidden');
+                    document.getElementById('fx-rate').textContent = 'R ' + rate.toFixed(4);
+                    document.getElementById('fx-updated').textContent =
+                        'updated ' + fx.ts.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }) + ' SAST';
+                }
+
+                // kick totals so they reflect the fresh rate
+                refreshAllocTotal();
+            } catch (e) {
+                console.warn('[fx] fetch failed', e);
+            }
+        }
+
+
+        // ---------- boot ----------
+        try {
+            strategy = await fetchStrategy();
+            if (!strategy) throw new Error('No strategy found');
+            metrics = await fetchMetrics(strategy.id);
+
+            // hydrate UI
+            currentCCY = strategy.currency || 'ZAR';
+            hydrateHeader(strategy);
+            initChart();
+            // Update "Slot Price (...)" label to the strategy currency
+            if (isUSD()) {
+                await fetchUsdZar();
+                setInterval(fetchUsdZar, 300000); // refresh every 5 min
+            }
+
+
+            // *** MODIFIED: Boot sequence for new calendar ***
+            const aggregatedMonthlyData = aggregateDailyToMonthly(metrics?.calendar_returns || []);
+            populateYearFilter(aggregatedMonthlyData);
+            // --- MODIFIED: Get default years/months from new filter state ---
+            const allYearsFromCbsBoot = [...document.querySelectorAll('.year-filter-cb-ind')].map(cb => cb.dataset.year);
+            const defaultYears = getSelectedYears(allYearsFromCbsBoot);
+            const defaultMonths = getSelectedMonths();
+            renderMonthlyCalendarGrid($('#calendarReturns'), aggregatedMonthlyData, defaultYears, defaultMonths);
+
+            selectRangeAndRender('6M', metrics || {}, strategy);
+            fillPerfSummary(metrics?.perf_summary || null);
+            renderPortfolioHoldingsFromMetrics(metrics || {});
+            renderAssetAllocationFromMetrics(metrics || {});
+            // *** END MODIFIED ***
+
+            // timestamp
+            $('#fs-updated').textContent = 'Updated ' + new Date().toLocaleString('en-ZA', {
+                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+
+            // kick the alloc total once we know currency
+            refreshAllocTotal();
+
+            // tabs
+            $$('#portfolio-card .tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    $$('#portfolio-card .tab').forEach(b => b.classList.remove('tab-active'));
+                    btn.classList.add('tab-active');
+                    selectRangeAndRender(btn.getAttribute('data-range'), metrics || {}, strategy);
+                });
+            });
+
+            // refresh button (re-pull metrics)
+            $('#pf-refresh')?.addEventListener('click', async (e) => {
+                e.currentTarget.classList.add('spin');
+                try {
+                    const fresh = await fetchMetrics(strategy.id);
+                    metrics = fresh || {};
+
+                    // *** MODIFIED: Refresh handler for new calendar ***
+                    const aggData = aggregateDailyToMonthly(metrics?.calendar_returns || []);
+                    populateYearFilter(aggData); // Repopulate to get new data, preserving checks
+                    // --- MODIFIED: Get current years/months from new filter state ---
+                    const allYearsFromCbsRefresh = [...document.querySelectorAll('.year-filter-cb-ind')].map(cb => cb.dataset.year);
+                    const currentYears = getSelectedYears(allYearsFromCbsRefresh);
+                    const currentMonths = getSelectedMonths();
+                    renderMonthlyCalendarGrid($('#calendarReturns'), aggData, currentYears, currentMonths);
+
+                    selectRangeAndRender($('.tab.tab-active')?.getAttribute('data-range') || '6M', metrics, strategy);
+                    fillPerfSummary(metrics?.perf_summary || null);
+                    renderPortfolioHoldingsFromMetrics(metrics || {});
+                    renderAssetAllocationFromMetrics(metrics || {});
+                    const manualUnitPrice = await fetchAllocationUnitPrice(strategy.id).catch(err => {
+                        console.warn('[manual-refresh] unit price fetch failed:', err);
+                        return null;
+                    });
+                    if (Number.isFinite(manualUnitPrice) && manualUnitPrice > 0) {
+                        strategy.unit_price = manualUnitPrice;
+                    }
+                    applyAllocationUnitPrice(strategy?.unit_price ?? manualUnitPrice, strategy?.currency);
+                    refreshAllocTotal();
+                    $('#fs-updated').textContent = 'Updated ' + new Date().toLocaleString('en-ZA', {
+                        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                } catch { /* noop */ }
+                setTimeout(() => e.currentTarget.classList.remove('spin'), 600);
+            });
+
+            // helper: light strategy fetch
+            async function fetchStrategyLite(id) {
+                const { data, error } = await supabase
+                    .from('strategies')
+                    .select('id,name,creator,inception_date,currency,risk_level,aum,strategy_description,style,asset_universe,avg_holding_days,avg_trades_per_month,unit_price,investment_objective_description,strategy_description_bullets')
+                    .eq('id', id)
+                    .maybeSingle();
+                if (error) throw error;
+                return data || null;
+            }
+
+            // auto-refresh every 2 minutes
+            const doAutoRefresh = async () => {
+                const btn = document.getElementById('pf-refresh');
+                btn?.classList.add('spin');
+                try {
+                    const [freshMetrics, freshStrategy, freshUnitPrice] = await Promise.all([
+                        fetchMetrics(strategy.id),
+                        fetchStrategyLite(strategy.id),
+                        fetchAllocationUnitPrice(strategy.id).catch(err => {
+                            console.warn('[auto-refresh] unit price fetch failed:', err);
+                            return null;
+                        }),
+                    ]);
+                    metrics = freshMetrics || metrics || {};
+                    const activeStrategy = { ...(freshStrategy || {}) };
+                    if (Number.isFinite(freshUnitPrice) && freshUnitPrice > 0) {
+                        activeStrategy.unit_price = freshUnitPrice;
+                    }
+                    strategy = { ...(strategy || {}), ...activeStrategy };
+
+                    hydrateHeader(strategy);
+                    currentCCY = strategy.currency || 'ZAR';
+
+                    const range = document.querySelector('#portfolio-card .tab.tab-active')?.getAttribute('data-range') || '6M';
+
+                    // *** MODIFIED: Auto-refresh handler for new calendar ***
+                    const aggDataRefresh = aggregateDailyToMonthly(metrics?.calendar_returns || []);
+                    populateYearFilter(aggDataRefresh); // Repopulate to get new data, preserving checks
+                    // --- MODIFIED: Get current years/months from new filter state ---
+                    const allYearsFromCbsAuto = [...document.querySelectorAll('.year-filter-cb-ind')].map(cb => cb.dataset.year);
+                    const currentYearsRefresh = getSelectedYears(allYearsFromCbsAuto);
+                    const currentMonthsRefresh = getSelectedMonths();
+                    renderMonthlyCalendarGrid($('#calendarReturns'), aggDataRefresh, currentYearsRefresh, currentMonthsRefresh);
+
+                    selectRangeAndRender(range, metrics, strategy);
+
+                    fillPerfSummary(metrics?.perf_summary || null);
+                    renderPortfolioHoldingsFromMetrics(metrics || {});
+                    renderAssetAllocationFromMetrics(metrics || {});
+
+                    document.getElementById('fs-updated').textContent =
+                        'Updated ' + new Date().toLocaleString('en-ZA', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit'
+                        });
+                } catch (e) {
+                    console.warn('[auto-refresh] failed:', e);
+                } finally {
+                    setTimeout(() => btn?.classList.remove('spin'), 600);
+                }
+                if (isUSD()) { fetchUsdZar(); } // fire-and-forget to keep the fresh rate
+
+                refreshAllocTotal();
+
+            };
+            setInterval(doAutoRefresh, 120000); // 2 minutes
+
+        } catch (err) {
+            console.error('[factsheet init] ', err);
+            // *** MODIFIED: Default to currency display on error ***
+            const pfValueEl = $('#pf-value');
+            pfValueEl.textContent = money(0);
+            $('#pf-change').textContent = '—';
+            $('#calendarReturns').textContent = 'No data.';
+            renderPortfolioHoldingsFromMetrics({});
+            renderAssetAllocationFromMetrics({});
+            refreshAllocTotal();
+        }
+
+        // ----- Allocate -> Paystack redirect -----
+        const btnAlloc = document.getElementById('alloc-btn');
+        btnAlloc?.addEventListener('click', async () => {
+            try {
+                const { amount, unitPrice, totalRounded, ccy } = calcTotals();
+                if (!amount || !unitPrice || !totalRounded) {
+                    banner('Please enter a valid allocation amount.', 'err');
+                    return;
+                }
+
+                const email = (user?.email || '').trim();
+                if (!email) { banner('No email on account. Please update your profile.', 'err'); return; }
+
+                // Always charge Paystack in ZAR — calcTotals() already converted if needed
+                const payCurrency = 'ZAR';
+                const amountCents = Math.round(totalRounded * 100);
+
+                const reference = buildRef(row?.id, strategy?.id);
+                const callback_url = currentPageCallbackUrl();
+
+                sessionStorage.setItem('expectedAmountCents', String(amountCents));
+
+                btnAlloc.disabled = true;
+                btnAlloc.classList.add('opacity-60');
+                btnAlloc.textContent = 'Redirecting…';
+
+                const resp = await fetch('/api/paystack/init', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email,
+                        amount: amountCents,        // integer cents
+                        currency: payCurrency,      // 'ZAR'
+                        reference,
+                        callback_url,
+                        channels: ['card'],
+                        metadata: {
+                            profile_id: row?.id || null,
+                            strategy_id: strategy?.id || null,
+                            strategy_name: strategy?.name || null,
+                            amount,
+                            unit_price: unitPrice,    // minimum allocation in strategy currency
+                            fx_rate: isUSD() ? Number(fx.usdzar) || null : null,
+                            shown_total: totalRounded,
+                            shown_currency: ccy       // what user saw in the UI
+                        }
+                    })
+                });
+
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data?.error || 'Failed to initialize payment');
+
+                const authUrl = data?.data?.authorization_url;
+                if (!authUrl) throw new Error('No authorization_url from Paystack');
+
+                window.location.href = authUrl;
+            } catch (e) {
+                console.error('[allocate/paystack]', e);
+                banner(e.message || 'Could not start payment.', 'err');
+                btnAlloc.disabled = false;
+                btnAlloc.classList.remove('opacity-60');
+                btnAlloc.textContent = 'Allocate';
+            }
+        });
+
+
+        verifyIfReturned();
+    </script>
+</body>
+
+</html>

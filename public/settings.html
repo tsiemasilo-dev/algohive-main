@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoHive — Settings</title>
+    <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <style>
+        :root {
+            --page: #0b1220;
+            --bg: #ffffff;
+            --muted: #64748b;
+            --ink: #0f172a;
+            --olive: #7e8d52;
+            --brand: #f59e0b;
+            --line: #e2e8f0;
+        }
+
+        html,
+        body {
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            height: 100%
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            height: 40px;
+            padding: 0 .875rem;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            font-weight: 600
+        }
+
+        .input {
+            height: 40px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 0 .75rem
+        }
+
+        .input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+        }
+
+        .field-error {
+            outline: 2px solid rgba(239, 68, 68, 0.35);
+            outline-offset: 2px;
+            border-radius: 12px;
+        }
+
+        /* UPDATED FOR RESPONSIVENESS */
+        #layout {
+            --sb: 220px;
+            display: grid;
+            grid-template-columns: 1fr;
+            /* Mobile-first: 1 column */
+            min-height: 100vh
+        }
+
+        #ah-sidebar {
+            transition: transform .3s ease, width .2s ease;
+            width: 280px;
+            /* Mobile width */
+            max-width: 85vw;
+            position: fixed;
+            /* Mobile overlay */
+            z-index: 50;
+            height: 100vh;
+            transform: translateX(-100%);
+            /* Hidden by default */
+        }
+
+        #ah-sidebar.is-open {
+            transform: translateX(0);
+            /* Show sidebar */
+        }
+
+        /* Desktop styles */
+        @media (min-width: 768px) {
+            #layout {
+                grid-template-columns: var(--sb) 1fr
+                    /* 2-col grid on desktop */
+            }
+
+            #layout.is-collapsed {
+                --sb: 64px
+            }
+
+            #ah-sidebar {
+                position: sticky;
+                /* Back to sticky */
+                top: 0;
+                width: var(--sb);
+                /* Use variable width */
+                max-width: none;
+                transform: translateX(0);
+                /* Always visible */
+                z-index: auto;
+            }
+        }
+
+        /* END RESPONSIVE UPDATES */
+
+        #layout.is-collapsed {
+            --sb: 64px
+        }
+
+        #ah-sidebar[data-collapsed="true"] .label,
+        #ah-sidebar[data-collapsed="true"] .chevron {
+            display: none
+        }
+
+        #ah-sidebar[data-collapsed="true"] details>.sub {
+            display: none !important
+        }
+
+        #ah-sidebar[data-collapsed="true"] nav a,
+        #ah-sidebar[data-collapsed="true"] details>summary {
+            justify-content: center;
+            gap: .25rem
+        }
+
+        #ah-sidebar .footer {
+            transition: all .2s ease
+        }
+
+        #ah-sidebar[data-collapsed="true"] .footer {
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .btn-collapse :is(svg, i) {
+            transition: transform .25s ease
+        }
+
+        #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+            transform: rotate(180deg)
+        }
+
+        /* Hide desktop collapse button on mobile */
+        #ah-collapse {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            #ah-collapse {
+                display: inline-flex;
+            }
+
+            /* Show on desktop */
+        }
+
+        .btn-olive {
+            background: var(--olive);
+            color: #fff;
+            border: 0;
+        }
+
+        .btn-olive:hover {
+            filter: brightness(0.92);
+        }
+
+        .btn-olive:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        /* Disabled link look */
+        .link-disabled {
+            opacity: .5;
+            pointer-events: none;
+        }
+
+        /* Active state for the Settings gear */
+        .btn-active {
+            background: #f1f5f9 !important;
+            color: var(--olive) !important;
+            border: 1px solid var(--olive) !important;
+        }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+            #layout { grid-template-columns: 1fr; }
+            #layout.is-collapsed { --sb: 275px; }
+            #ah-sidebar {
+                position: fixed;
+                top: 0;
+                width: 350px;
+                max-width: 85vw;
+                height: 100vh;
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            #ah-sidebar.is-open { transform: translateX(0); }
+            #ah-collapse { display: none; }
+            #ah-mobile-menu-btn { display: inline-flex !important; }
+            #ah-overlay { display: none; }
+            #ah-overlay:not(.hidden) { display: block; }
+        }
+    </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+    <div id="layout">
+        <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+        <aside id="ah-sidebar" data-collapsed="false"
+            class="border-r border-slate-200 h-[100vh] bg-white flex flex-col overflow-hidden">
+            <div class="px-4 py-4 flex items-center gap-3 border-b border-slate-200">
+                <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png"
+                    alt="AlgoHive Logo" class="w-10 h-10 object-contain" />
+                <div class="min-w-0">
+                    <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+                    <div class="text-[11px] text-slate-500 label">where smart capital gathers</div>
+                </div>
+            </div>
+
+            <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900"
+                    href="home.html" title="Home">
+                    <i class="fa-solid fa-house text-slate-500 w-4 shrink-0"></i><span class="label">Home</span>
+                </a>
+
+                <details class="group mt-1">
+                    <summary
+                        class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+                        <span class="flex items-center gap-3">
+                            <i class="fa-regular fa-user w-4 text-slate-500"></i><span class="label">Portfolio</span>
+                        </span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+                    </summary>
+                    <div class="ml-8 mt-1 flex flex-col sub">
+                        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2"
+                            href="my-strategies.html"><i class="fa-solid fa-chart-pie w-4 text-slate-500"></i><span
+                                class="label">My Strategies</span></a>
+                    </div>
+                </details>
+
+                <details class="group mt-1">
+                    <summary
+                        class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+                        <span class="flex items-center gap-3">
+                            <i class="fa-solid fa-link w-4 text-slate-500"></i><span class="label">Invest</span>
+                        </span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+                    </summary>
+                    <div class="ml-8 mt-1 flex flex-col sub">
+                        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2"
+                            href="strategies.html"><i class="fa-solid fa-chart-line w-4 text-slate-500"></i><span
+                                class="label">OpenStrategies</span></a>
+                    </div>
+                </details>
+
+
+
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="news-insights.html"><i
+                        class="fa-solid fa-newspaper w-4 text-slate-500"></i><span class="label">News &amp; Insights</span></a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="support.html"><i
+                        class="fa-solid fa-life-ring w-4 text-slate-500"></i><span class="label">Support</span></a>
+                <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="legal.html"><i
+                        class="fa-solid fa-scale-balanced w-4 text-slate-500"></i><span class="label">Legal</span></a>
+            </nav>
+
+            <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+                <button id="ah-settings" aria-current="page"
+                    class="btn btn-settings btn-active h-10 w-10 p-0 rounded-xl border-0" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+
+                <button id="ah-collapse"
+                    class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0"
+                    title="Collapse">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-w-0">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0"
+                        title="Open Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="relative w-full hidden md:block max-w-[460px]">
+                        <input class="input w-full pl-9" placeholder="Search" />
+                        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <img id="hdr-avatar"
+                        src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>"
+                        alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+                    <button id="hdr-profile-btn"
+                        class="flex items-center gap-2 text-slate-900 font-medium hover:text-slate-700">
+                        <span id="hdr-name">—</span>
+                        <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <section id="settings" class="px-6 py-8">
+                <h1 class="text-2xl font-semibold text-slate-900">Profile Settings</h1>
+                <hr class="mt-6 mb-8 border-slate-200" />
+
+                <div class="grid grid-cols-12 gap-8">
+                    <aside class="col-span-12 md:col-span-3">
+                        <nav id="settings-nav" class="space-y-1">
+                            <a href="#basic" data-tab="basic"
+                                class="w-full block text-left px-4 py-2 rounded-lg text-slate-800 bg-slate-100">Basic
+                                Info</a>
+                            <a href="#extra" data-tab="extra"
+                                class="w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Additional
+                                Info</a>
+                            <a href="#docs" data-tab="docs"
+                                class="w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">KYC
+                                Verification</a>
+                            <a href="#manage" data-tab="manage"
+                                class="w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Manage
+                                Accounts</a>
+                            <a href="#subs" data-tab="subs"
+                                class="w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">
+                                Subscriptions
+                            </a>
+
+
+
+                            <a href="#security" data-tab="security"
+                                class="w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Security</a>
+                        </nav>
+                    </aside>
+
+
+                    <div class="col-span-12 md:col-span-9">
+                        <div id="basic" data-panel="basic" class="card border border-slate-200 rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold text-slate-900">Details</h2>
+
+                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
+                                <label class="text-slate-600">Account Number</label>
+                                <div class="sm:col-span-2 text-slate-600 font-medium" id="acc-number">—</div>
+                            </div>
+
+                            <h3 class="mt-10 text-xl font-semibold text-slate-900">Update Details</h3>
+
+                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
+                                <label for="email" class="text-slate-600">Email</label>
+                                <div class="sm:col-span-2">
+                                    <input id="email" class="input w-full" type="email" placeholder="name@domain.com"
+                                        disabled />
+                                    <p id="email-note" class="mt-2 text-sm text-slate-500">Please contact support to
+                                        change the email for
+                                        business accounts.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <button id="save-basic" class="btn btn-olive cursor-not-allowed opacity-60"
+                                    disabled>Save
+                                    changes</button>
+                            </div>
+                        </div>
+
+                        <div id="manage" data-panel="manage"
+                            class="hidden card border border-slate-200 rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-xl font-semibold text-slate-900">Manage Accounts</h2>
+                                <div class="flex gap-2">
+                                    <button id="btn-refresh-accounts" class="btn hover:bg-slate-50">Refresh</button>
+                                    <button id="btn-add-account" class="btn btn-olive">Add Account</button>
+                                </div>
+                            </div>
+
+                            <div id="accounts-loading" class="mt-6 text-sm text-slate-500">Loading accounts…</div>
+                            <div id="accounts-empty" class="mt-6 hidden rounded-xl border border-slate-200 p-6">
+                                <div class="font-medium text-slate-900 mb-1">No accounts yet</div>
+                                <div class="text-sm text-slate-500">Click “Add Account” to connect one.</div>
+                            </div>
+
+                            <div id="accounts-wrap" class="mt-6 space-y-8"></div>
+                        </div>
+                        <div id="subs" data-panel="subs"
+                            class="hidden card border border-slate-200 rounded-2xl p-0 overflow-hidden">
+                            <div class="relative p-6 sm:p-10">
+                                <div class="pointer-events-none absolute -top-64 left-1/2 -translate-x-1/2 w-[140%] h-[420px]
+      bg-[radial-gradient(120%_140%_at_50%_0%,rgba(126,141,82,0.20),rgba(126,141,82,0.10)_40%,transparent_70%)]"></div>
+                                <div class="pointer-events-none absolute -bottom-40 left-1/2 -translate-x-1/2 w-[120%] h-[300px]
+      bg-[radial-gradient(80%_80%_at_50%_100%,rgba(126,141,82,0.10),transparent_60%)]"></div>
+
+                                <div class="relative text-center">
+                                    <span
+                                        class="inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 text-xs text-black/60">
+                                        Simple, transparent pricing — no AUM fees
+                                    </span>
+                                    <h2
+                                        class="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--ink)]">
+                                        Pick the plan that matches your goals
+                                    </h2>
+                                    <p class="mt-3 text-[15px] sm:text-lg text-[var(--muted)]">
+                                        Start free. Upgrade when you’re ready. Cancel anytime.
+                                    </p>
+                                </div>
+
+                                <div class="relative pb-2">
+                                    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 items-stretch">
+                                        <article
+                                            class="h-full flex flex-col rounded-2xl border border-black/10 bg-white p-6">
+                                            <div class="flex items-baseline justify-between">
+                                                <h3 class="text-lg font-bold text-[var(--ink)]">Silver</h3>
+                                                <span
+                                                    class="text-xs rounded-full px-2 py-1 bg-black/[0.05] text-slate-600 border border-black/10">Silver</span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-slate-600">Starter features for tracking and
+                                                exploring.</p>
+                                            <div class="mt-5">
+                                                <div class="text-3xl font-extrabold">R0<span
+                                                        class="text-sm font-semibold text-slate-500"> / month</span>
+                                                </div>
+                                            </div>
+                                            <ul class="mt-5 space-y-3 text-sm text-[var(--ink)]">
+                                                <li class="flex gap-2">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" class="mt-0.5">
+                                                        <path fill="#7e8d52"
+                                                            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                                                    </svg>
+                                                    Track <b>1 strategy</b>, no AUM fees
+                                                </li>
+                                                <li class="flex gap-2">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" class="mt-0.5">
+                                                        <path fill="#7e8d52"
+                                                            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                                                    </svg>
+                                                    Access to portfolio-linked credit (Coming Soon)
+                                                </li>
+                                            </ul>
+                                            <a id="btn-silver"
+                                                class="mt-auto inline-flex w-full items-center justify-center rounded-xl border border-black/15 px-4 py-2 text-sm font-semibold text-[var(--ink)] hover:bg-black/5">
+                                                Get Silver
+                                            </a>
+                                        </article>
+
+                                        <article
+                                            class="relative h-full flex flex-col rounded-2xl border-2 border-[var(--olive)] bg-white p-6 shadow-[0_10px_30px_rgba(126,141,82,0.12)]">
+                                            <div
+                                                class="absolute -top-3 right-4 text-xs rounded-full bg-[var(--olive)] text-white px-2 py-0.5 shadow">
+                                                Most Popular</div>
+                                            <div class="flex items-baseline justify-between">
+                                                <h3 class="text-lg font-bold text-[var(--ink)]">Gold</h3>
+                                                <span
+                                                    class="text-xs rounded-full px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200">Gold</span>
+                                            </div>
+                                            <p class="mt-1 text-sm text-slate-600">For growing investors who want
+                                                sharper insights and multiple strategies.</p>
+                                            <div class="mt-5">
+                                                <div class="text-3xl font-extrabold">
+                                                    R299 <span class="text-slate-500 line-through">R450</span>
+                                                    <span class="text-sm font-semibold text-slate-500"> / month</span>
+                                                </div>
+                                            </div>
+                                            <ul class="mt-5 space-y-3 text-sm text-[var(--ink)]">
+                                                <li class="flex gap-2">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" class="mt-0.5">
+                                                        <path fill="#7e8d52"
+                                                            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                                                    </svg>
+                                                    Track up to <b>6 strategies</b>, no AUM fees
+                                                </li>
+                                                <li class="flex gap-2">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" class="mt-0.5">
+                                                        <path fill="#7e8d52"
+                                                            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                                                    </svg>
+                                                    Day-ahead newsletter (news + economic events)
+                                                </li>
+                                                <li class="flex gap-2">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" class="mt-0.5">
+                                                        <path fill="#7e8d52"
+                                                            d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                                                    </svg>
+                                                    <b>Premium</b> Wealth Tracker Tools
+                                                </li>
+                                            </ul>
+                                            <button id="btn-buy-gold"
+                                                class="mt-auto inline-flex w-full items-center justify-center rounded-xl bg-[var(--olive)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+>
+                                                Choose Gold
+                                            </button>
+
+                                        </article>
+                                    </div>
+
+                                    <p class="mt-8 text-center text-[11px] text-slate-600">
+                                        VAT may apply. Some perks require identity and suitability checks. No financial
+                                        advice.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <script nonce="ALGOHIVE">
+  document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('btn-buy-gold');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      // new tab:
+
+      // or same tab:
+       window.location.href = 'https://paystack.shop/pay/eo1b1n9h45' ;
+    });
+  });
+</script>
+
+
+                        <div id="docs" data-panel="docs" class="hidden card border border-slate-200 rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-xl font-semibold text-slate-900">KYC Verification</h2>
+                                <span id="kyc-state"
+                                    class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-900">
+                                    Complete your KYC
+                                </span>
+                            </div>
+                            <p class="mt-2 text-sm text-slate-500">
+                                We’ll take you to our verification partner. It takes ~3–5 minutes.
+                            </p>
+
+                            <div id="kyc-start-wrap" class="mt-6">
+                                <button id="btn-kyc-start"
+                                    class="btn-olive inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold">
+                                    <i class="fa-solid fa-id-card"></i>
+                                    Get Started
+                                </button>
+                                <span id="kyc-error" class="hidden ml-3 text-sm text-rose-700">Sorry, couldn’t start
+                                    KYC. Try
+                                    again.</span>
+                            </div>
+
+                            <div id="kyc-done-msg"
+                                class="hidden mt-6 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-900 p-4">
+                                <div class="font-medium">You’re all set 🎉</div>
+                                <div class="text-sm mt-1">KYC done. Thanks! You can continue using AlgoHive.</div>
+                            </div>
+                        </div>
+
+
+                        <div id="extra" data-panel="extra" class="hidden card border border-slate-200 rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold text-slate-900">Additional Info</h2>
+                            <p class="mt-2 text-sm text-slate-500">Update your personal details, avatar and KYC
+                                suitability.</p>
+
+                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <label class="block">
+                                    <span class="text-sm text-slate-600">First name</span>
+                                    <input id="first_name" class="input w-full" placeholder="First name" />
+                                </label>
+                                <label class="block">
+                                    <span class="text-sm text-slate-600">Last name</span>
+                                    <input id="last_name" class="input w-full" placeholder="Last name" />
+                                </label>
+                            </div>
+
+                            <div class="mt-6">
+                                <div class="flex items-center gap-4">
+                                    <img id="avatar-preview"
+                                        class="h-16 w-16 rounded-full object-cover border border-slate-200 bg-slate-50"
+                                        alt="avatar" />
+                                    <div class="space-y-2">
+                                        <label class="block">
+                                            <span class="text-sm text-slate-600">Avatar</span>
+                                            <input id="avatar-file" type="file" accept="image/*"
+                                                class="block text-xs" />
+                                        </label>
+                                        <button id="remove-avatar" type="button"
+                                            class="hidden text-xs underline text-rose-700">Remove
+                                            avatar</button>
+                                        <p class="text-[11px] text-slate-500">JPG/PNG, &lt; 2MB. Best results:
+                                            512×512px.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <div class="font-semibold text-slate-900">Contact</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Phone</span>
+                                        <input id="phone" class="input w-full" placeholder="+27 ..." inputmode="tel" />
+                                    </label>
+                                    <div></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <div class="font-semibold text-slate-900">Identity</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Date of birth</span>
+                                        <input id="dob" type="date" class="input w-full" />
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">ID / Passport number</span>
+                                        <input id="id_number" class="input w-full" placeholder="e.g. 910101..." />
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Nationality</span>
+                                        <input id="nationality" class="input w-full" />
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Country of residence</span>
+                                        <input id="country_residence" class="input w-full" placeholder="South Africa" />
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <div class="font-semibold text-slate-900">Employment & suitability</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Employment status</span>
+                                        <select id="employment_status" class="input w-full">
+                                            <option value="">Select…</option>
+                                            <option>Employed</option>
+                                            <option>Self-employed</option>
+                                            <option>Student</option>
+                                            <option>Unemployed</option>
+                                            <option>Retired</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Occupation</span>
+                                        <input id="occupation" class="input w-full" />
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Employer</span>
+                                        <input id="employer" class="input w-full" />
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Annual income bracket</span>
+                                        <select id="income_bracket" class="input w-full">
+                                            <option value="">Select…</option>
+                                            <option>&lt; R250k</option>
+                                            <option>R250k–R500k</option>
+                                            <option>R500k–R1m</option>
+                                            <option>R1m–R2m</option>
+                                            <option>&gt; R2m</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Source of funds</span>
+                                        <select id="source_of_funds" class="input w-full">
+                                            <option value="">Select…</option>
+                                            <option>Salary</option>
+                                            <option>Business</option>
+                                            <option>Investments</option>
+                                            <option>Inheritance</option>
+                                            <option>Gift</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Net worth range</span>
+                                        <select id="net_worth_range" class="input w-full">
+                                            <option value="">Select…</option>
+                                            <option>&lt; R500k</option>
+                                            <option>R500k–R1m</option>
+                                            <option>R1m–R5m</option>
+                                            <option>R5m–R10m</option>
+                                            <option>&gt; R10m</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Experience level</span>
+                                        <select id="experience_level" class="input w-full">
+                                            <option value="">Select…</option>
+                                            <option>None</option>
+                                            <option>Beginner</option>
+                                            <option>Intermediate</option>
+                                            <option>Advanced</option>
+                                        </select>
+                                    </label>
+                                    <label class="block">
+                                        <span class="text-sm text-slate-600">Risk tolerance</span>
+                                        <select id="risk_tolerance" class="input w/full">
+                                            <option value="">Select…</option>
+                                            <option>Low</option>
+                                            <option>Moderate</option>
+                                            <option>High</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <span class="text-sm text-slate-600 block mb-2">Investment objectives</span>
+                                <div id="objectives-group" class="grid grid-cols-2 gap-2 text-sm">
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="objectives"
+                                            value="Growth">
+                                        Growth</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="objectives"
+                                            value="Income">
+                                        Income</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="objectives"
+                                            value="Preservation">
+                                        Capital preservation</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="objectives"
+                                            value="Speculation">
+                                        Speculation</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="objectives"
+                                            value="Hedging">
+                                        Hedging</label>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <div class="font-semibold text-slate-900">Compliance</div>
+                                <div class="mt-3 space-y-2 text-sm">
+                                    <label class="flex items-center gap-2"><input id="pep" type="checkbox"> Politically
+                                        Exposed Person
+                                        (PEP)</label>
+                                    <label class="flex items-center gap-2"><input id="fatca_crs" type="checkbox"> I
+                                        confirm FATCA/CRS
+                                        declarations as needed</label>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <button id="save-extra" class="btn btn-olive">Save additional info</button>
+                                <span id="extra-saved" class="hidden text-sm text-emerald-700 ml-2">Saved ✔</span>
+                            </div>
+                        </div>
+
+
+
+                        <div id="security" data-panel="security"
+                            class="hidden card border border-slate-200 rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold text-slate-900">Security</h2>
+                            <div class="mt-6 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-slate-900">Two-factor authentication</div>
+                                        <div class="text-sm text-slate-500">Protect your account with an extra step at
+                                            login.</div>
+                                    </div>
+                                    <button class="btn hover:bg-slate-50">Manage</button>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-slate-900">Change password</div>
+                                        <div class="text-sm text-slate-500">Update your password regularly.</div>
+                                    </div>
+                                    <button class="btn hover:bg-slate-50">Update</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="apps" data-panel="apps" class="hidden card border border-slate-200 rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold text-slate-900">Connected Apps</h2>
+                            <p class="mt-4 text-sm text-slate-500">No apps connected.</p>
+                        </div>
+
+                        <div id="ip" data-panel="ip" class="hidden card border border-slate-200 rounded-2xl p-6">
+                            <h2 class="text-xl font-semibold text-slate-900">IP Allowlist</h2>
+                            <p class="mt-4 text-sm text-slate-500">Add IPs to restrict API access.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div
+            class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200">
+                <div class="text-sm font-semibold text-slate-900">Account</div>
+                <div id="pm-email" class="text-xs text-slate-500 truncate">—</div>
+            </div>
+            <div class="p-2">
+                <a href="#basic" id="pm-profile"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+                    <i class="fa-regular fa-user text-slate-500 w-4"></i>
+                    <span>Profile settings</span>
+                </a>
+                <button id="pm-logout"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+                    <i class="fa-solid fa-right-from-bracket w-4"></i>
+                    <span>Log out</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script nonce="ALGOHIVE">
+        // Sidebar collapse memory
+        (function () {
+            const layout = document.getElementById('layout');
+            const aside = document.getElementById('ah-sidebar');
+            const btn = document.getElementById('ah-collapse');
+            const saved = localStorage.getItem('ah_collapsed') === 'true';
+            if (saved) { aside.setAttribute('data-collapsed', 'true'); layout.classList.add('is-collapsed'); }
+            btn?.addEventListener('click', () => {
+                const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+                if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+                aside.setAttribute('data-collapsed', String(!isCollapsed));
+                layout.classList.toggle('is-collapsed', !isCollapsed);
+                localStorage.setItem('ah_collapsed', String(!isCollapsed));
+            });
+        })();
+
+        // ===== Hash-aware tab switcher (+ #kyc alias) =====
+        (function () {
+            const nav = document.getElementById('settings-nav');
+            const links = Array.from(nav.querySelectorAll('a[data-tab]'));
+            const panels = Array.from(document.querySelectorAll('[data-panel]'));
+
+            function show(tab) {
+                links.forEach(a => {
+                    const active = a.dataset.tab === tab;
+                    a.classList.toggle('bg-slate-100', active);
+                    a.classList.toggle('text-slate-800', active);
+                    a.classList.toggle('text-slate-700', !active);
+                });
+                panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== tab));
+                const el = document.getElementById(tab);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function normalizeHash(h) {
+                const id = (h.startsWith('#') ? h.slice(1) : h).toLowerCase();
+                return (id === 'kyc') ? 'docs' : id; // alias
+            }
+
+            function parseHash() {
+                const id = normalizeHash((location.hash || '').trim() || '#basic');
+                const allowed = new Set(links.map(a => a.dataset.tab));
+                return allowed.has(id) ? id : 'basic';
+            }
+
+            window.addEventListener('hashchange', () => show(parseHash()));
+            show(parseHash());
+        })();
+    </script>
+
+    <script nonce="ALGOHIVE">
+        (function () {
+            const btn = document.getElementById('ah-mobile-menu-btn');
+            const overlay = document.getElementById('ah-overlay');
+            const sidebar = document.getElementById('ah-sidebar');
+
+            function openMenu() {
+                sidebar.classList.add('is-open');
+                overlay.classList.remove('hidden');
+            }
+            function closeMenu() {
+                sidebar.classList.remove('is-open');
+                overlay.classList.add('hidden');
+            }
+
+            btn?.addEventListener('click', openMenu);
+            overlay?.addEventListener('click', closeMenu);
+
+            sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
+        })();
+    </script>
+
+<script src="https://js.paystack.co/v1/inline.js" nonce="ALGOHIVE"></script>
+
+    <script type="module" nonce="ALGOHIVE">
+        import { supabase } from "/js/supabase.js";
+
+        // ---------- toast banner ----------
+        function banner(msg, tone = "warn") {
+            let el = document.getElementById("banner");
+            if (!el) {
+                el = document.createElement("div");
+                el.id = "banner";
+                el.className = "fixed top-3 left-1/2 -translate-x-1/2 z-[200] px-4 py-2 rounded-lg shadow text-sm";
+                document.body.appendChild(el);
+            }
+            el.className = "fixed top-3 left-1/2 -translate-x-1/2 z-[200] px-4 py-2 rounded-lg shadow text-sm";
+            if (tone === "warn") el.classList.add("bg-amber-100", "text-amber-900");
+            if (tone === "err") el.classList.add("bg-rose-100", "text-rose-900");
+            if (tone === "ok") el.classList.add("bg-emerald-100", "text-emerald-900");
+            el.textContent = msg;
+            clearTimeout(el._t);
+            el._t = setTimeout(() => el.remove(), 4000);
+        }    
+        // ---------- profile helpers ----------
+        const REQUIRED_FIELDS = [
+            "first_name",
+            "last_name",
+            "phone",
+            "dob",
+            "id_number",
+            "nationality",
+            "country_residence",
+            "employment_status",
+            "occupation",
+            "employer",
+            "income_bracket",
+            "source_of_funds",
+            "net_worth_range",
+            "experience_level",
+            "risk_tolerance",
+            "objectives"
+        ];
+        const OBJECTIVES_FIELD_KEY = "objectives";
+        const FORM_REQUIRED_FIELDS = REQUIRED_FIELDS.filter(k => k !== OBJECTIVES_FIELD_KEY);
+
+        const hasValue = (value) => String(value ?? "").trim().length > 0;
+        function computeProfileComplete(row) { return REQUIRED_FIELDS.every(k => hasValue(row?.[k])); }
+        function gateBannerMessage(profileComplete, kycDone) {
+            if (!profileComplete && !kycDone) return "Please finish Additional Info and complete KYC first.";
+            if (!profileComplete) return "Please finish Additional Info first.";
+            if (!kycDone) return "Please complete KYC first.";
+            return "";
+        }
+
+        const objectivesGroup = document.getElementById("objectives-group");
+
+        function clearFieldErrors() {
+            FORM_REQUIRED_FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove("input-error");
+            });
+            objectivesGroup?.classList.remove("field-error");
+        }
+
+        function syncObjectivesHighlight() {
+            const checked = document.querySelectorAll('input[name="objectives"]:checked').length > 0;
+            objectivesGroup?.classList.toggle("field-error", !checked);
+            return checked;
+        }
+
+        FORM_REQUIRED_FIELDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const handle = () => { if (hasValue(el.value)) el.classList.remove("input-error"); };
+            el.addEventListener("input", handle);
+            el.addEventListener("change", handle);
+        });
+        document.querySelectorAll('input[name="objectives"]').forEach(cb => {
+            cb.addEventListener("change", () => { syncObjectivesHighlight(); });
+        });
+
+        function validateAdditionalInfoForm() {
+            clearFieldErrors();
+            const missing = [];
+            FORM_REQUIRED_FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (!hasValue(el.value)) {
+                    missing.push(id);
+                    el.classList.add("input-error");
+                }
+            });
+            if (!syncObjectivesHighlight()) missing.push(OBJECTIVES_FIELD_KEY);
+            return missing;
+        }
+
+        async function ensureProfile(userId, email) {
+            let { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+            if (error && error.code !== "PGRST116") throw error;
+            if (data) return data;
+            const up = await supabase.from("profiles").upsert({ id: userId, email, updated_at: new Date().toISOString() }, { onConflict: "id" }).select("*").single();
+            if (up.error) throw up.error;
+            return up.data;
+        }
+
+
+        // ---------- KYC helpers ----------
+        function resolveKycBoolean(row) {
+            const v = row?.kyc_status;
+            if (typeof v === "boolean") return v;
+            if (typeof v === "string") return ["verified", "approved", "done", "passed", "kyc_done"].includes(v.toLowerCase());
+            return false;
+        }
+        function setKycState(isDone) {
+            const kycStateEl = document.getElementById("kyc-state");
+            const startWrap = document.getElementById("kyc-start-wrap");
+            const doneMsg = document.getElementById("kyc-done-msg");
+            if (!kycStateEl) return;
+            if (isDone) {
+                kycStateEl.textContent = "KYC done";
+                kycStateEl.className = "inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-900";
+                startWrap?.classList.add("hidden"); doneMsg?.classList.remove("hidden");
+            } else {
+                kycStateEl.textContent = "Complete your KYC";
+                kycStateEl.className = "inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-900";
+                startWrap?.classList.remove("hidden"); doneMsg?.classList.add("hidden");
+            }
+        }
+
+        // ---------- auth guard ----------
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            const next = encodeURIComponent(location.pathname + location.search + location.hash);
+            location.replace(`/auth.html?tab=in&redirect=${next}`);
+        }
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // ---------- hydrate ----------
+        const row = await ensureProfile(user.id, user.email || null);
+
+        let profileComplete = computeProfileComplete(row || {});
+        let kycDone = resolveKycBoolean(row || {});
+
+        // email + account no
+        const emailInput = document.getElementById("email");
+        if (emailInput) emailInput.value = user.email || "";
+        const acct = row?.account_number || "949915944";
+        document.getElementById("acc-number").textContent = acct;
+
+        // map fields
+        const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ""; };
+        setVal("first_name", row?.first_name);
+        setVal("last_name", row?.last_name);
+        setVal("phone", row?.phone);
+        setVal("dob", row?.dob);
+        setVal("id_number", row?.id_number);
+        setVal("nationality", row?.nationality);
+        setVal("country_residence", row?.country_residence);
+        setVal("employment_status", row?.employment_status);
+        setVal("occupation", row?.occupation);
+        setVal("employer", row?.employer);
+        setVal("income_bracket", row?.income_bracket);
+        setVal("source_of_funds", row?.source_of_funds);
+        setVal("net_worth_range", row?.net_worth_range);
+        setVal("experience_level", row?.experience_level);
+        setVal("risk_tolerance", row?.risk_tolerance);
+
+        // ===== load Investment objectives (CSV -> checkboxes) =====
+        (function hydrateObjectives() {
+            const csv = (row?.objectives || "").trim();
+            const set = new Set(csv ? csv.split(",").map(s => s.trim()).filter(Boolean) : []);
+            document.querySelectorAll('input[name="objectives"]').forEach(cb => { cb.checked = set.has(cb.value); });
+        })();
+
+        // ===== load Compliance switches =====
+        const pepEl = document.getElementById("pep");
+        const fatEl = document.getElementById("fatca_crs");
+        if (pepEl) pepEl.checked = !!row?.pep;
+        if (fatEl) fatEl.checked = !!row?.fatca_crs;
+
+        // avatar + name
+        const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>";
+        const avPrev = document.getElementById("avatar-preview");
+        const hdrAvatar = document.getElementById("hdr-avatar");
+        const avRemove = document.getElementById("remove-avatar");
+        const startAvatarUrl = row?.avatar_url || BLANK_AVATAR;
+
+        function setAvatarSrc(url) {
+            const finalUrl = url ? (url + (url.includes("?") ? "&" : "?") + "v=" + Date.now()) : BLANK_AVATAR;
+            if (avPrev) avPrev.src = finalUrl;
+            if (hdrAvatar) hdrAvatar.src = finalUrl;
+        }
+        setAvatarSrc(startAvatarUrl);
+        avRemove?.classList.toggle("hidden", !row?.avatar_url);
+
+        const fn = (row?.first_name || "").trim(), ln = (row?.last_name || "").trim();
+        const fallback = user.email?.split("@")[0] || "User";
+        document.getElementById("hdr-name").textContent = (fn || ln) ? `${fn} ${ln}`.trim() : fallback;
+
+        // KYC + gating
+        setKycState(kycDone);
+        
+        // Account setup tracking
+        let accountsSetup = false;
+        
+        // Function to check if accounts are set up
+        async function checkAccountsSetup() {
+            try {
+                const { data, error } = await supabase
+                    .from('investment_accounts')
+                    .select('id')
+                    .eq('profile_id', user.id)
+                    .limit(1);
+                
+                if (error) throw error;
+                return data && data.length > 0;
+            } catch (e) {
+                console.warn('Could not check accounts setup:', e);
+                return false;
+            }
+        }
+        
+        // Initialize account setup status
+        if (profileComplete && kycDone) {
+            accountsSetup = await checkAccountsSetup();
+        }
+
+        // DIDIT callback handler (runs after auth/user + setKycState exist)
+        async function handleDiditCallbackAfterAuth() {
+            const url = new URL(location.href);
+            const diditId = url.searchParams.get('verificationSessionId');
+            const diditStatus = (url.searchParams.get('status') || '').toLowerCase();
+            if (!diditId) return;
+
+            // land on the KYC tab
+            if (!location.hash || location.hash.toLowerCase() === '#basic') location.hash = '#docs';
+
+            try {
+                if (diditStatus === 'approved') {
+                    await supabase.from('profiles')
+                        .update({
+                            kyc_status: 'verified'
+                        })
+                        .eq('id', user.id);
+
+                    setKycState(true);
+                    banner('🎉 KYC Approved! All features unlocked.', 'ok');
+                } else if (['declined', 'rejected'].includes(diditStatus)) {
+                    setKycState(false);
+                    banner('❌ KYC was declined. Please contact support.', 'err');
+                } else {
+                    banner(`KYC status: ${diditStatus || 'pending'}`);
+                }
+            } catch (e) {
+                console.error(e);
+                banner('Could not update your KYC status', 'err');
+            } finally {
+                // clean the URL, keep #docs
+                url.searchParams.delete('verificationSessionId');
+                url.searchParams.delete('status');
+                history.replaceState({}, '', url.toString());
+            }
+        }
+        await handleDiditCallbackAfterAuth();
+
+        // ---------- When returning from KYC, auto-check status ----------
+        (async function handleKycReturn() {
+            const url = new URL(location.href);
+            const sessionId =
+                url.searchParams.get('kyc_session') ||
+                sessionStorage.getItem('lastKycSessionId');
+
+            // Only do this on the KYC tab
+            const onDocsTab = (location.hash.toLowerCase().replace('#', '') || 'basic') === 'docs';
+            if (!sessionId || !onDocsTab) return;
+
+            try {
+                banner('Checking KYC status…');
+                const r = await fetch(`/api/kyc/session/${encodeURIComponent(sessionId)}`);
+                const j = await r.json();
+
+                if (j.status?.toLowerCase() === 'approved') {
+                    // Mark in Supabase (idempotent)
+                    await supabase.from('profiles')
+                        .update({ kyc_status: 'verified', kyc_approved_at: new Date().toISOString() })
+                        .eq('id', user.id);
+
+                    setKycState(true);
+                    refreshGates();
+                    banner('🎉 KYC Approved! All features unlocked.', 'ok');
+                } else if (['rejected', 'declined'].includes((j.status || '').toLowerCase())) {
+                    banner('❌ KYC was declined. Please contact support.', 'err');
+                } else {
+                    banner(`KYC status: ${j.status || 'pending'}`);
+                }
+            } catch (e) {
+                console.error(e);
+                banner('Could not check KYC status', 'err');
+            } finally {
+                // Clean URL params (keep the #docs anchor)
+                url.searchParams.delete('kyc_session');
+                history.replaceState({}, '', url.toString());
+                sessionStorage.removeItem('lastKycSessionId');
+            }
+        })();
+
+function renderPlanButtons(currentTier) {
+  // --- GOLD button ---
+  const goldBtn = document.getElementById('btn-buy-gold');
+  if (goldBtn) {
+    goldBtn.disabled = false;
+    goldBtn.textContent = 'Choose Gold';
+    goldBtn.classList.remove('opacity-60','cursor-not-allowed');
+
+    if (currentTier === 'gold') {
+      goldBtn.textContent = 'Current Plan';
+      goldBtn.disabled = true;
+      goldBtn.classList.add('opacity-60','cursor-not-allowed');
+      goldBtn.replaceWith(goldBtn.cloneNode(true)); // remove any previous listeners
+    } else {
+      const freshGoldBtn = goldBtn.cloneNode(true);
+      goldBtn.parentNode.replaceChild(freshGoldBtn, goldBtn);
+      freshGoldBtn.addEventListener('click', () => {
+        window.location.href = 'https://paystack.shop/pay/eo1b1n9h45';
+      }, { once: true });
+    }
+  }
+
+  // --- SILVER button (free plan) ---
+  const silverEl = document.getElementById('btn-silver');
+  if (silverEl) {
+    // baseline
+    silverEl.textContent = 'Choose Silver';
+    silverEl.classList.remove('opacity-60','cursor-not-allowed','pointer-events-none');
+    silverEl.setAttribute('href', 'auth.html');
+    silverEl.removeAttribute('aria-disabled');
+    silverEl.tabIndex = 0;
+
+    if (currentTier === 'free' || currentTier === 'silver') {
+      silverEl.textContent = 'Current Plan';
+      silverEl.classList.add('opacity-60','cursor-not-allowed','pointer-events-none');
+      silverEl.removeAttribute('href');
+      silverEl.setAttribute('aria-disabled', 'true');
+      silverEl.tabIndex = -1;
+    }
+  }
+}
+
+// initial paint
+renderPlanButtons(row?.subscription || 'free');
+
+
+
+
+        // ---------- KYC button handler ----------
+        // ---------- KYC return detection ----------
+        function checkKycReturn() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isKycReturn = urlParams.get('kyc_return') === 'true';
+            const sessionId = localStorage.getItem('kyc_session_id');
+
+            if (isKycReturn && sessionId) {
+                console.log('🔄 Detected KYC return, checking status...');
+                handleKycReturn(sessionId);
+
+                // Clean up URL
+                const cleanUrl = window.location.pathname + window.location.hash.split('?')[0];
+                history.replaceState(null, '', cleanUrl);
+            }
+        }
+
+        async function handleKycReturn(sessionId) {
+            try {
+                banner('Checking KYC verification status...', 'info');
+
+                // Poll the API to get final status
+                let attempts = 0;
+                const maxAttempts = 10;
+                let finalStatus = null;
+
+                while (attempts < maxAttempts) {
+                    try {
+                        const response = await fetch(`/api/kyc/session/${sessionId}`);
+                        const data = await response.json();
+
+                        console.log(`📊 KYC Status (attempt ${attempts + 1}):`, data);
+
+                        if (data.status && data.status !== 'In Progress' && data.status !== 'Pending') {
+                            finalStatus = data.status;
+                            break;
+                        }
+
+                        // Wait 2 seconds before next attempt
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        attempts++;
+                    } catch (error) {
+                        console.error('❌ Status polling error:', error);
+                        attempts++;
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+
+                // Handle final status
+                if (finalStatus === 'Approved' || finalStatus === 'approved') {
+                    console.log('✅ KYC Approved!');
+
+                    // Update Supabase
+                    const userId = localStorage.getItem('kyc_user_id') || user.id;
+                    await supabase.from('profiles')
+                        .update({
+                            kyc_status: 'verified',
+                            kyc_approved_at: new Date().toISOString(),
+                            kyc_session_id: sessionId
+                        })
+                        .eq('id', userId);
+
+                    // Update local state
+                    kycDone = true;
+                    setKycState(kycDone);
+                    refreshGates();
+
+                    banner('🎉 KYC Verification Approved! Account setup now unlocked!', 'ok');
+
+                    // Navigate to account setup section after approval
+                    location.hash = '#manage';
+
+                } else if (finalStatus === 'Rejected' || finalStatus === 'rejected' || finalStatus === 'Declined') {
+                    console.log('❌ KYC Rejected');
+                    banner('❌ KYC verification was declined. Please contact support or try again.', 'err');
+
+                    // Stay on KYC tab for declined cases
+                    location.hash = '#docs';
+
+                } else {
+                    console.log('⏳ KYC Still Processing');
+                    banner('⏳ KYC verification is still being processed. We\'ll notify you via email once complete.', 'info');
+
+                    // Stay on KYC tab for processing cases
+                    location.hash = '#docs';
+                }
+
+                // Clean up localStorage
+                try {
+                    localStorage.removeItem('kyc_session_id');
+                    localStorage.removeItem('kyc_user_id');
+                    localStorage.removeItem('kyc_started_at');
+                } catch (e) { /* ignore */ }
+
+            } catch (error) {
+                console.error('❌ KYC return handling error:', error);
+                banner('Error checking KYC status. Please refresh the page or contact support.', 'err');
+            }
+        }
+
+        // ---------- KYC Session Management ----------
+        // Clean up any existing KYC session when navigating away or closing
+        function cleanupKycSession() {
+            try {
+                sessionStorage.removeItem('lastKycSessionId');
+                localStorage.removeItem('kyc_session_id');
+                localStorage.removeItem('kyc_user_id');
+                localStorage.removeItem('kyc_started_at');
+                console.log('KYC session cleaned up');
+            } catch (e) {
+                console.warn('Error cleaning up KYC session:', e);
+            }
+        }
+
+        // Add beforeunload listener to cleanup if user navigates away without completing KYC
+        window.addEventListener('beforeunload', cleanupKycSession);
+
+        // ---------- KYC button handler (REDIRECT FLOW) ----------
+        const btnKycStart = document.getElementById("btn-kyc-start");
+        btnKycStart?.addEventListener("click", async () => {
+            try {
+                btnKycStart.disabled = true;
+                btnKycStart.textContent = "Starting…";
+
+                // Clear any existing KYC session data to start fresh
+                cleanupKycSession();
+                console.log("Starting fresh KYC session...");
+
+                // When user returns, we’ll read ?kyc_session=... from URL and check status
+                const returnUrl = `${location.origin}/settings.html#docs`;
+
+                // Call our server to create the Didit session (and embed the redirect back)
+                const resp = await fetch('/api/kyc/create-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        email: user.email,
+                        phone: row?.phone || undefined,
+                        redirect_url: returnUrl
+                    })
+                });
+
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data?.error || 'Could not start KYC');
+
+                // TEST mode → just show message
+                if (data.mode === 'TEST') {
+                    banner('Server OK (TEST mode). Configure DIDIT_API_KEY & DIDIT_WORKFLOW_ID for live.', 'ok');
+                    btnKycStart.disabled = false;
+                    btnKycStart.textContent = "Get Started";
+                    return;
+                }
+
+                if (!data.sessionUrl) throw new Error('No session URL from KYC provider');
+
+                // Best practice: add sessionId to the return URL as a query (so we can poll when we land back)
+                const back = new URL(data.redirectUrl || returnUrl);
+                back.searchParams.set('kyc_session', data.sessionId);
+
+                // If Didit respects redirect_url we already sent, great.
+                // Some providers accept extra params; if not, we’ll still land on returnUrl from their side.
+                // Either way, keep our own “state” locally in case we need to poll after return.
+                sessionStorage.setItem('lastKycSessionId', data.sessionId);
+
+                // Store session info for return handling
+                try {
+                    localStorage.setItem('kyc_session_id', data.sessionId);
+                    localStorage.setItem('kyc_user_id', user.id);
+                    localStorage.setItem('kyc_started_at', Date.now().toString());
+                } catch (e) {
+                    console.warn('Could not persist KYC session to localStorage', e);
+                }
+
+                // Create return URL pointing back to settings.html after KYC completion
+                const kycReturnUrl = encodeURIComponent(`${window.location.origin}/settings.html#docs?kyc_return=true`);
+
+                // Append return URL to verification URL if Didit supports it
+                const finalUrl = data.sessionUrl.includes('?')
+                    ? `${data.sessionUrl}&return_url=${kycReturnUrl}`
+                    : `${data.sessionUrl}?return_url=${kycReturnUrl}`;
+
+                banner('Redirecting to KYC verification...', 'info');
+
+                // Off you go 🚀
+                window.location.href = finalUrl;
+
+            } catch (e) {
+                console.error(e);
+                banner(e.message || 'Could not start KYC', 'err');
+                btnKycStart.disabled = false;
+                btnKycStart.textContent = "Get Started";
+            }
+        });
+
+
+
+
+
+
+        const allowedTabsWhenGated = new Set(["extra", "docs", "subs"]);
+        function isGated() {
+            // Users are gated until profile, KYC, AND account setup are complete
+            // After KYC completion, only "Manage Accounts" is unlocked
+            // After account setup, everything is unlocked
+            return !(profileComplete && kycDone && accountsSetup);
+        }
+
+        function isTabAllowed(tabName) {
+            // Always allow viewing subscription plans
+            if (tabName === "subs" && (!profileComplete || !kycDone)) return true;
+            
+            // Stage 1: Profile incomplete - only basic tabs
+            if (!profileComplete) return allowedTabsWhenGated.has(tabName);
+            
+            // Stage 2: Profile complete, KYC incomplete - only basic tabs  
+            if (profileComplete && !kycDone) return allowedTabsWhenGated.has(tabName);
+            
+            // Stage 3: Profile complete, KYC complete, accounts not set up - allow manage accounts
+            if (profileComplete && kycDone && !accountsSetup) {
+                return ["extra", "docs", "manage"].includes(tabName);
+            }
+            
+            // Stage 4: Everything complete - allow all tabs including subs
+            if (profileComplete && kycDone && accountsSetup) {
+                return ["extra", "docs", "manage", "subs"].includes(tabName);
+            }
+            
+            return false;
+        }
+        function gateReason() {
+            if (!profileComplete && !kycDone) return "Please finish Additional Info and complete KYC first.";
+            if (!profileComplete) return "Please finish Additional Info first.";
+            if (!kycDone) return "Please complete KYC first.";
+            if (!accountsSetup) return "Please set up your investment account in Manage Accounts to continue.";
+            return "Setup complete! You now have full access.";
+        }
+        // Store prevent nav handlers so we can remove them
+        const preventNavHandlers = new WeakMap();
+        
+        function lockMainNav() {
+            const mainNav = document.getElementById("main-nav");
+            if (!mainNav) return;
+            
+            mainNav.querySelectorAll('a[href]').forEach(a => {
+                const href = (a.getAttribute("href") || "").trim();
+                const isSettings = href.startsWith("#") || /settings\.html/i.test(href) || href === "";
+                
+                // Remove old handler if it exists
+                const oldHandler = preventNavHandlers.get(a);
+                if (oldHandler) {
+                    a.removeEventListener("click", oldHandler);
+                    preventNavHandlers.delete(a);
+                }
+                
+                if (isGated() && !isSettings) {
+                    const preventNav = function(e) {
+                        e.preventDefault();
+                        banner(gateReason(), "warn");
+                        // Determine where to redirect based on completion status
+                        if (!profileComplete) {
+                            location.hash = "#extra";
+                        } else if (!kycDone) {
+                            location.hash = "#kyc";
+                        } else if (!accountsSetup) {
+                            location.hash = "#manage";
+                        } else {
+                            // Everything complete, allow access
+                            return;
+                        }
+                    };
+                    
+                    a.classList.add("link-disabled"); a.setAttribute("aria-disabled", "true");
+                    a.title = "Locked until profile + KYC are complete and account is set up";
+                    a.addEventListener("click", preventNav, { passive: false });
+                    preventNavHandlers.set(a, preventNav);
+                } else {
+                    a.classList.remove("link-disabled"); a.removeAttribute("aria-disabled"); a.removeAttribute("title");
+                }
+            });
+            
+            // Handle dropdown menus (details > summary)
+            mainNav.querySelectorAll('details > summary').forEach(sum => {
+                // Remove old handler if it exists
+                const oldSumHandler = preventNavHandlers.get(sum);
+                if (oldSumHandler) {
+                    sum.removeEventListener("click", oldSumHandler);
+                    preventNavHandlers.delete(sum);
+                }
+                
+                if (isGated()) {
+                    const onSumClick = function() {
+                        setTimeout(() => {
+                            banner(gateReason(), "warn");
+                            if (!profileComplete) {
+                                location.hash = "#extra";
+                            } else if (!kycDone) {
+                                location.hash = "#kyc";
+                            } else if (!accountsSetup) {
+                                location.hash = "#manage";
+                            }
+                        }, 0);
+                    };
+                    sum.addEventListener("click", onSumClick);
+                    preventNavHandlers.set(sum, onSumClick);
+                }
+            });
+        }
+        function enforceSettingsGuard() {
+            if (!isGated()) return;
+            const hash = (location.hash || "#basic").toLowerCase();
+            const wanted = hash.replace(/^#/, "");
+            if (!isTabAllowed(wanted)) {
+                let target;
+                if (!profileComplete) {
+                    target = "#extra";
+                } else if (!kycDone) {
+                    target = "#kyc";
+                } else if (!accountsSetup) {
+                    target = "#manage";
+                } else {
+                    target = "#extra"; // fallback
+                }
+                if (hash !== target) { banner(gateReason(), "warn"); location.hash = target; }
+            }
+        }
+        async function refreshAccountSetup() {
+            if (profileComplete && kycDone) {
+                accountsSetup = await checkAccountsSetup();
+            }
+        }
+        
+        function refreshGates() { lockMainNav(); enforceSettingsGuard(); }
+        lockMainNav(); enforceSettingsGuard(); window.addEventListener("hashchange", enforceSettingsGuard);
+        const _origSetKycState = setKycState;
+        setKycState = (isDone) => {
+            _origSetKycState(isDone);
+            kycDone = !!isDone;
+            refreshGates();
+
+            // Redirect to accounts when KYC is completed
+            if (isDone && profileComplete) {
+                setTimeout(() => {
+                    location.hash = "#manage";
+                    banner("KYC completed! Please set up your account to continue.", "ok");
+                }, 500);
+            }
+        };
+
+        // Check for KYC return after page setup
+        checkKycReturn();
+
+        // ---- Paystack return → set subscription=gold ----
+(async function handleSubscriptionReturn() {
+  try {
+    // Normalize the common mistake "...?substatus=approved?reference=..."
+    // by converting the 2nd "?" to "&" (idempotent if already correct).
+    if (location.search.includes('substatus=') && location.search.includes('?reference=')) {
+      const fixed = location.href.replace('?reference=', '&reference=');
+      if (fixed !== location.href) history.replaceState({}, '', fixed);
+    }
+
+    const url = new URL(location.href);
+    const substatus = (url.searchParams.get('substatus') || '').toLowerCase();
+    const reference = (url.searchParams.get('reference') || '').trim();
+
+    // Only proceed on explicit approval
+    if (substatus !== 'approved') return;
+
+    // Optional: guard so we don’t spam DB on reloads
+    const alreadyHandledRef = sessionStorage.getItem('ah_last_sub_ref');
+    if (alreadyHandledRef && alreadyHandledRef === reference) return;
+
+    // Update only if not already gold
+    if (row?.subscription !== 'gold') {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          subscription: 'gold',
+          updated_at: new Date().toISOString(),
+          // If you later add these columns, you can persist them too:
+          // subscription_status: 'active',
+          // paystack_reference: reference,
+          // subscription_started_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Subscription update failed', error);
+        banner('Sorry, could not activate Gold. Please contact support.', 'err');
+        return;
+      }
+    }
+
+    banner('✅ Gold activated. Welcome!', 'ok');
+    sessionStorage.setItem('ah_last_sub_ref', reference || `gold-${Date.now()}`);
+
+    // Clean noisy params from URL but keep the current hash
+    url.searchParams.delete('substatus');
+    url.searchParams.delete('reference');
+    history.replaceState({}, '', url.toString());
+    // Optionally jump to the Subscriptions tab:
+    if (!location.hash || location.hash === '#basic') location.hash = '#subs';
+
+  } catch (e) {
+    console.error(e);
+    banner('Could not finalize your subscription.', 'err');
+  }
+})();
+
+
+        // ---------- profile modal ----------
+        const profileModal = document.getElementById("profile-modal");
+        const hdrProfileBtn = document.getElementById("hdr-profile-btn");
+        const pmEmail = document.getElementById("pm-email");
+        const btnLogout = document.getElementById("pm-logout");
+        function openProfileModal() { profileModal.classList.remove("hidden"); }
+        function closeProfileModal() { profileModal.classList.add("hidden"); }
+        hdrProfileBtn?.addEventListener("click", (e) => { e.preventDefault(); pmEmail.textContent = user?.email || "—"; openProfileModal(); });
+        profileModal.addEventListener("click", (e) => { if (e.target === profileModal || e.target.classList.contains("bg-black/40")) closeProfileModal(); });
+        window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeProfileModal(); });
+        btnLogout?.addEventListener("click", async () => { try { await supabase.auth.signOut(); location.replace("/auth.html?tab=in"); } catch { banner("Sorry, logout failed.", "err"); } });
+
+        // ---------- Save Additional Info (objectives + compliance persisted) ----------
+        function setBusy(btn, on, label = "Save additional info") {
+            if (!btn) return;
+            btn.disabled = on;
+            btn.textContent = on ? "Saving…" : label;
+        }
+        const extraSaveBtn = document.getElementById("save-extra");
+        const extraSavedTick = document.getElementById("extra-saved");
+
+        extraSaveBtn?.addEventListener("click", async () => {
+            extraSavedTick?.classList.add("hidden");
+
+            const missing = validateAdditionalInfoForm();
+            if (missing.length) {
+                const firstKey = missing[0];
+                if (firstKey !== OBJECTIVES_FIELD_KEY) {
+                    document.getElementById(firstKey)?.focus();
+                }
+                const scrollTarget = firstKey === OBJECTIVES_FIELD_KEY ? objectivesGroup : document.getElementById(firstKey);
+                scrollTarget?.scrollIntoView({ behavior: "smooth", block: "center" });
+                banner("Please fill in the highlighted fields.", "err");
+                return;
+            }
+
+            setBusy(extraSaveBtn, true);
+
+            try {
+                const payload = {
+                    id: user.id,
+                    // basic
+                    first_name: (document.getElementById("first_name")?.value || "").trim(),
+                    last_name: (document.getElementById("last_name")?.value || "").trim(),
+                    phone: (document.getElementById("phone")?.value || "").trim(),
+                    dob: document.getElementById("dob")?.value || null,
+                    id_number: (document.getElementById("id_number")?.value || "").trim() || null,
+                    nationality: (document.getElementById("nationality")?.value || "").trim() || null,
+                    country_residence: (document.getElementById("country_residence")?.value || "").trim() || null,
+
+                    // employment/suitability
+                    employment_status: document.getElementById("employment_status")?.value || null,
+                    occupation: (document.getElementById("occupation")?.value || "").trim() || null,
+                    employer: (document.getElementById("employer")?.value || "").trim() || null,
+                    income_bracket: document.getElementById("income_bracket")?.value || null,
+                    source_of_funds: document.getElementById("source_of_funds")?.value || null,
+                    net_worth_range: document.getElementById("net_worth_range")?.value || null,
+                    experience_level: document.getElementById("experience_level")?.value || null,
+                    risk_tolerance: document.getElementById("risk_tolerance")?.value || null,
+
+                    // objectives (CSV)
+                    objectives: Array.from(document.querySelectorAll('input[name="objectives"]:checked')).map(cb => cb.value).join(", "),
+
+                    // compliance
+                    pep: !!document.getElementById("pep")?.checked,
+                    fatca_crs: !!document.getElementById("fatca_crs")?.checked,
+
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data: saved, error } = await supabase
+                    .from("profiles")
+                    .upsert(payload, { onConflict: "id" })
+                    .select("*")
+                    .single();
+
+                if (error) throw error;
+
+                // reflect header name
+                const fn = (saved.first_name || "").trim();
+                const ln = (saved.last_name || "").trim();
+                document.getElementById("hdr-name").textContent = (fn || ln) ? `${fn} ${ln}`.trim() : (user.email || "User").split("@")[0];
+
+                // confirm UI and gating
+                extraSavedTick?.classList.remove("hidden");
+                banner("Additional info saved ✅", "ok");
+
+                profileComplete = computeProfileComplete(saved);
+                if (typeof saved.kyc_status !== "undefined") {
+                    kycDone = resolveKycBoolean(saved);
+                    setKycState(kycDone);
+                }
+                refreshGates();
+                if (profileComplete && !kycDone) {
+                    location.hash = "#docs";
+                    banner("Great! Next step: please complete your KYC ✅", "ok");
+                }
+
+
+                // fire event
+                document.dispatchEvent(new Event("ah:profile-saved"));
+
+            } catch (e) {
+                console.error(e);
+                banner(e.message || "Save failed", "err");
+            } finally {
+                setBusy(extraSaveBtn, false);
+            }
+        });
+
+        // ---------- Avatar upload / remove ----------
+        const AVATAR_BUCKET = "avatars";
+        const avInput = document.getElementById("avatar-file");
+
+        async function uploadAvatar(file) {
+            if (!file) throw new Error("Pick an image");
+            if (!file.type.startsWith("image/")) throw new Error("Pick a valid image");
+            if (file.size > 2 * 1024 * 1024) throw new Error("Image too large (max 2MB)");
+
+            // optimistic preview
+            if (avPrev) avPrev.src = URL.createObjectURL(file);
+
+            const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const path = `${user.id}/avatar_${Date.now()}.${ext}`;
+
+            const { error: upErr } = await supabase
+                .storage.from(AVATAR_BUCKET)
+                .upload(path, file, { upsert: true, cacheControl: "3600", contentType: file.type });
+            if (upErr) throw upErr;
+
+            const { data: pub } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+            const avatar_url = pub?.publicUrl;
+            if (!avatar_url) throw new Error("Could not get public URL");
+
+            const { error: dbErr } = await supabase
+                .from("profiles")
+                .upsert({ id: user.id, avatar_url, updated_at: new Date().toISOString() }, { onConflict: "id" });
+            if (dbErr) throw dbErr;
+
+            setAvatarSrc(avatar_url);
+            avRemove?.classList.remove("hidden");
+            banner("Avatar updated ✅", "ok");
+        }
+
+        avInput?.addEventListener("change", async () => {
+            const f = avInput.files?.[0];
+            if (!f) return;
+            try {
+                await uploadAvatar(f);
+            } catch (e) {
+                console.error(e);
+                banner(e.message || "Avatar upload failed", "err");
+                // restore previous
+                setAvatarSrc(row?.avatar_url || BLANK_AVATAR);
+            } finally {
+                avInput.value = "";
+            }
+        });
+
+        avRemove?.addEventListener("click", async () => {
+            try {
+                const { error } = await supabase
+                    .from("profiles")
+                    .upsert({ id: user.id, avatar_url: null, updated_at: new Date().toISOString() }, { onConflict: "id" });
+                if (error) throw error;
+                setAvatarSrc(BLANK_AVATAR);
+                avRemove.classList.add("hidden");
+                banner("Avatar removed", "ok");
+            } catch (e) {
+                console.error(e);
+                banner(e.message || "Could not remove avatar", "err");
+            }
+        });
+
+        // ---------- Manage Accounts ----------
+        const fmtMoney = (amt, ccy = 'ZAR') => { try { return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: ccy }).format(Number(amt || 0)); } catch { return `${ccy} ${Number(amt || 0).toFixed(2)}`; } };
+        const maskAcct = (s = '') => s?.length > 4 ? '•••• ' + s.slice(-4) : s || '—';
+        const pill = (status) => {
+            const s = String(status || '').toUpperCase();
+            const base = 'inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium';
+            if (s === 'ACTIVE') return `${base} bg-emerald-100 text-emerald-900`;
+            if (s === 'PENDING') return `${base} bg-amber-100 text-amber-900`;
+            if (['SUSPENDED', 'ERROR', 'DISCONNECTED'].includes(s)) return `${base} bg-rose-100 text-rose-900`;
+            return `${base} bg-slate-100 text-slate-700`;
+        };
+
+        function renderAccountCard(row) {
+            const card = document.createElement('div');
+            card.className = 'rounded-xl border border-slate-200 p-5';
+            card.innerHTML = `
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div class="text-sm text-slate-500">${row.broker || 'Account'}</div>
+          <div class="mt-1 font-semibold text-slate-900">${maskAcct(row.account_number)}</div>
+          <div class="mt-2 flex items-center gap-2">
+            <span class="${pill(row.status)}">${String(row.status || '').toUpperCase()}</span>
+            <span class="text-xs text-slate-400">Updated ${new Date(row.updated_at).toLocaleString()}</span>
+          </div>
+        </div>
+        <button class="btn text-rose-700 hover:bg-rose-50 border-rose-200" data-action="delete" data-id="${row.id}">
+          Delete Account
+        </button>
+      </div>
+      <div class="mt-5 grid grid-cols-2 gap-4">
+        <div>
+          <div class="text-xs text-slate-500 mb-1">Balance</div>
+          <div class="text-[15px] font-semibold">${fmtMoney(row.balance, row.currency || 'ZAR')}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-500 mb-1">Equity</div>
+          <div class="text-[15px] font-semibold">${fmtMoney(row.equity, row.currency || 'ZAR')}</div>
+        </div>
+      </div>`;
+            return card;
+        }
+
+        async function loadAccounts() {
+            const loading = document.getElementById('accounts-loading');
+            const empty = document.getElementById('accounts-empty');
+            const list = document.getElementById('accounts-wrap');
+
+            loading?.classList.remove('hidden');
+            empty?.classList.add('hidden');
+            list.innerHTML = '';
+
+            try {
+                const { data, error } = await supabase
+                    .from('investment_accounts')
+                    .select('id, profile_id, broker, account_number, currency, status, balance, equity, updated_at, meta')
+                    .eq('profile_id', user.id)
+                    .order('status', { ascending: true })
+                    .order('updated_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) { empty?.classList.remove('hidden'); return; }
+                data.forEach(row => list.appendChild(renderAccountCard(row)));
+            } catch (e) {
+                console.error(e);
+                banner(e.message || 'Could not load accounts', 'err');
+            } finally {
+                loading?.classList.add('hidden');
+            }
+        }
+
+        // delete action
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-action="delete"]');
+            if (!btn) return;
+            const id = btn.getAttribute('data-id');
+            if (!confirm('Delete this account? This cannot be undone.')) return;
+            const { error } = await supabase.from('investment_accounts').delete().eq('id', id);
+            if (error) return banner(error.message, 'err');
+            banner('Account deleted', 'ok');
+            loadAccounts();
+            await refreshAccountSetup();
+            refreshGates();
+        });
+
+        // Load when Manage tab is visible
+        function maybeLoadAccountsOnTab() {
+            const current = (location.hash || '#basic').toLowerCase().replace('#', '');
+            if (current === 'manage') loadAccounts();
+        }
+        window.addEventListener('hashchange', maybeLoadAccountsOnTab);
+        maybeLoadAccountsOnTab();
+
+        // ---------- Add Account modal (broker locked, auto 10-digit number) ----------
+        const BROKER_LOCKED = "AlgoHive Markets";
+
+        const openAdd = async () => {
+            const m = document.getElementById('add-account-modal');
+            if (!m) return;
+
+            const brokerEl = document.getElementById('aac-broker');
+            if (brokerEl) brokerEl.value = BROKER_LOCKED;
+
+            const numEl = document.getElementById('aac-number');
+            if (numEl) {
+                numEl.value = "generating…";
+                const acct = await ensureUniqueAccountNumber();
+                numEl.value = acct;
+                numEl.dataset.generated = acct;
+            }
+
+            m.classList.remove('hidden');
+        };
+        const closeAdd = () => document.getElementById('add-account-modal')?.classList.add('hidden');
+
+        document.getElementById('btn-add-account')?.addEventListener('click', openAdd);
+        document.getElementById('aac-close')?.addEventListener('click', closeAdd);
+        document.getElementById('aac-cancel')?.addEventListener('click', closeAdd);
+
+        function genAccountNumber() {
+            const first = String(Math.floor(Math.random() * 9) + 1);
+            let rest = "";
+            for (let i = 0; i < 9; i++) rest += Math.floor(Math.random() * 10);
+            return first + rest;
+        }
+        async function existsForBroker(account_number) {
+            const { count, error } = await supabase
+                .from('investment_accounts')
+                .select('id', { count: 'exact', head: true })
+                .eq('broker', BROKER_LOCKED)
+                .eq('account_number', account_number);
+            if (error) throw error;
+            return (count || 0) > 0;
+        }
+        async function ensureUniqueAccountNumber(maxAttempts = 10) {
+            for (let i = 0; i < maxAttempts; i++) {
+                const cand = genAccountNumber();
+                const taken = await existsForBroker(cand);
+                if (!taken) return cand;
+            }
+            throw new Error("Could not generate unique account number. Please try again.");
+        }
+
+        document.getElementById('aac-save')?.addEventListener('click', async () => {
+            const currency = (document.getElementById('aac-currency').value || 'ZAR').trim().toUpperCase();
+            const numberEl = document.getElementById('aac-number');
+            const account_number = numberEl?.dataset.generated || numberEl?.value;
+
+            if (!account_number || !/^\d{10}$/.test(account_number)) {
+                return banner('Account number generation failed. Please close and try again.', 'err');
+            }
+
+            const btn = document.getElementById('aac-save');
+            try {
+                btn.disabled = true;
+
+                const payload = {
+                    profile_id: user.id,
+                    broker: BROKER_LOCKED,
+                    account_number,
+                    currency,
+                    status: 'ACTIVE',
+                    balance: 0,
+                    equity: 0,
+                    meta: {}
+                };
+
+                const { error } = await supabase.from('investment_accounts').insert(payload);
+                if (error) {
+                    if (error.code === '23505') {
+                        banner('That auto-generated account number was just taken. Please try again.', 'warn');
+                    } else {
+                        banner(error.message || 'Add failed', 'err');
+                    }
+                    return;
+                }
+
+                banner('Account added', 'ok');
+                closeAdd();
+                loadAccounts();
+                await refreshAccountSetup();
+                refreshGates();
+
+            } catch (e) {
+                console.error(e);
+                banner(e.message || 'Add failed', 'err');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+
+    <div id="add-account-modal" class="fixed inset-0 z-[120] hidden">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div
+            class="absolute left-1/2 top-24 -translate-x-1/2 w-[520px] max-w-[95vw] rounded-2xl bg-white shadow-xl border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-slate-900">Add Account</h3>
+                <button id="aac-close" class="btn h-9 w-9 p-0">✕</button>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label class="block">
+                    <span class="text-sm text-slate-600">Broker</span>
+                    <input id="aac-broker" class="input w-full" value="AlgoHive Markets" disabled />
+                </label>
+                <label class="block">
+                    <span class="text-sm text-slate-600">Account number</span>
+                    <input id="aac-number" class="input w-full" value="generating…" disabled />
+                </label>
+                <label class="block">
+                    <span class="text-sm text-slate-600">Currency</span>
+                    <select id="aac-currency" class="input w-full">
+                        <option value="ZAR">ZAR</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2">
+                <button id="aac-cancel" class="btn">Cancel</button>
+                <button id="aac-save" class="btn btn-olive">Save</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive – Create Model</title>
+
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg: #fff;
+      --line: #e2e8f0;
+      --ink: #0f172a;
+      --olive: #556B2F;
+    }
+
+    html,
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink)
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      height: 40px;
+      padding: 0 .875rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-weight: 600
+    }
+
+    .input {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 .75rem
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="bg-slate-50/70 border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 py-6 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="h-10 w-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold shadow-sm">A</span>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-500">Admin</p>
+          <h1 class="text-2xl font-bold">Create Model</h1>
+          <p class="text-sm text-slate-500">Add a new strategy to the library and seed its metrics.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/admin/models.html" class="btn bg-white hover:bg-slate-50"><i class="fa-solid fa-arrow-left"></i>Back to models</a>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <div class="card p-6 shadow-sm">
+      <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-500">New entry</p>
+          <h2 class="text-xl font-semibold">Strategy &amp; metrics</h2>
+          <p class="text-sm text-slate-500">All fields map directly to Supabase <code>strategies</code> and <code>strategy_metrics</code>.</p>
+        </div>
+        <span id="status-chip" class="text-xs font-semibold text-slate-500"></span>
+      </div>
+
+      <form id="create-form" class="space-y-6">
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Name
+            <input required name="name" class="input w-full" placeholder="Strategy name" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Currency
+            <input required name="currency" class="input w-full" placeholder="USD" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Risk level
+            <input name="risk_level" class="input w-full" placeholder="Conservative / Balanced / Aggressive" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Risk score
+            <input name="risk_score" class="input w-full" placeholder="e.g. 4" />
+          </label>
+        </div>
+
+        <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Description
+          <textarea name="strategy_description" class="input w-full h-20 resize-none" placeholder="Short description of the strategy"></textarea>
+        </label>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Code
+            <input name="code" class="input w-full" placeholder="Unique code" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Style
+            <input name="style" class="input w-full" placeholder="Quant / Discretionary" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Asset universe
+            <input name="asset_universe" class="input w-full" placeholder="FX / Equities" />
+          </label>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Avg. holding period (days)
+            <input name="avg_holding_days" type="number" min="0" class="input w-full" placeholder="e.g. 10" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Avg. trades per month
+            <input name="avg_trades_per_month" type="number" min="0" class="input w-full" placeholder="e.g. 25" />
+          </label>
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Total units
+            <input name="total_units" type="number" min="0" class="input w-full" placeholder="e.g. 100" />
+          </label>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Data source
+            <select name="data_source" class="input w-full">
+              <option value="Massive">Massive (default)</option>
+              <option value="Alpaca">Alpaca</option>
+              <option value="JSE">JSE</option>
+            </select>
+          </label>
+          <div></div>
+        </div>
+
+        <div class="flex flex-col gap-6">
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-semibold text-slate-800">Holdings</p>
+                <p class="text-xs text-slate-500">Search <code>trading_universe</code> (filtered by data source) or add a new symbol.</p>
+              </div>
+              <button type="button" id="add-holding" class="btn bg-white hover:bg-slate-100"><i class="fa-solid fa-plus"></i>Add holding</button>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Search / Symbol
+                <div class="relative">
+                  <input id="holding-symbol" class="input w-full" placeholder="Type a symbol" autocomplete="off" />
+                  <div id="symbol-suggestions" class="absolute z-10 left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100 hidden"></div>
+                </div>
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Name
+                <input id="holding-name" class="input w-full" placeholder="Company name" />
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Exchange
+                <input id="holding-exchange" class="input w-full" placeholder="NASDAQ" />
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Currency
+                <input id="holding-currency" class="input w-full" placeholder="USD" />
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Logo URL
+                <input id="holding-logo" class="input w-full" placeholder="https://...svg" />
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Weight (%)
+                <input id="holding-weight" type="number" min="0" step="0.01" class="input w-full" placeholder="10.5" />
+              </label>
+              <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Daily change (%)
+                <input id="holding-delta" type="number" step="0.0001" class="input w-full" placeholder="0.12" />
+              </label>
+            </div>
+            <div class="overflow-hidden border border-slate-200 rounded-xl w-full">
+              <table class="w-full min-w-full divide-y divide-slate-200 text-sm table-fixed">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-600 w-24">Symbol</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-600">Name</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-600 w-24">Weight %</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-600">Logo</th>
+                    <th class="px-3 py-2 text-left font-semibold text-slate-600 w-24">Daily Δ%</th>
+                    <th class="px-3 py-2 w-16"></th>
+                  </tr>
+                </thead>
+                <tbody id="holdings-body" class="divide-y divide-slate-200 bg-white"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <label class="flex flex-col gap-1 text-sm font-medium text-slate-700">Asset allocation (JSON array)
+            <textarea name="asset_allocation" class="input w-full h-24 resize-none" placeholder='[{"asset_class":"Equity","weight":0.6}]'></textarea>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <p id="form-status" class="text-sm text-slate-500"></p>
+          <div class="flex items-center gap-2">
+            <a href="/admin/models.html" class="btn bg-white hover:bg-slate-100">Cancel</a>
+            <button type="submit" class="btn bg-amber-500 text-white border-transparent shadow-md hover:shadow-lg transition"><i class="fa-solid fa-floppy-disk"></i>Save model</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    const form = document.getElementById('create-form');
+    const formStatus = document.getElementById('form-status');
+    const statusChip = document.getElementById('status-chip');
+
+    const addHoldingBtn = document.getElementById('add-holding');
+    const holdingsBody = document.getElementById('holdings-body');
+    const symbolInput = document.getElementById('holding-symbol');
+    const nameInput = document.getElementById('holding-name');
+    const exchangeInput = document.getElementById('holding-exchange');
+    const currencyInput = document.getElementById('holding-currency');
+    const logoInput = document.getElementById('holding-logo');
+    const weightInput = document.getElementById('holding-weight');
+    const deltaInput = document.getElementById('holding-delta');
+    const dataSourceSelect = form.querySelector('[name="data_source"]');
+    const suggestionsEl = document.getElementById('symbol-suggestions');
+
+    const holdingsState = [];
+    let tradingUniverse = [];
+
+    const redirectToAuth = () => {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+    };
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      redirectToAuth();
+      throw new Error('redirecting');
+    }
+    supabase.auth.onAuthStateChange((_ev, sess) => { if (!sess) redirectToAuth(); });
+
+    const num = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const parseJsonArray = (text, label) => {
+      if (!text || !text.trim()) return [];
+      try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : (() => { throw new Error(`${label} must be a JSON array`); })();
+      } catch (err) {
+        throw new Error(`${label} is not valid JSON`);
+      }
+    };
+
+    const renderHoldings = () => {
+      holdingsBody.innerHTML = '';
+      holdingsState.forEach((h, idx) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-3 py-2 font-semibold">${h.symbol}</td>
+          <td class="px-3 py-2">${h.name || ''}</td>
+          <td class="px-3 py-2">${h.weight_pct ?? ''}</td>
+          <td class="px-3 py-2 truncate max-w-[160px]"><a class="text-amber-700 underline" href="${h.logo_url || '#'}" target="_blank" rel="noreferrer">${h.logo_url || ''}</a></td>
+          <td class="px-3 py-2">${h.daily_change_pct ?? ''}</td>
+          <td class="px-3 py-2 text-right"><button type="button" class="text-rose-600 hover:underline" data-idx="${idx}">Remove</button></td>
+        `;
+        row.querySelector('button')?.addEventListener('click', () => {
+          holdingsState.splice(idx, 1);
+          renderHoldings();
+        });
+        holdingsBody.appendChild(row);
+      });
+    };
+
+    const clearHoldingInputs = () => {
+      symbolInput.value = '';
+      nameInput.value = '';
+      exchangeInput.value = '';
+      currencyInput.value = '';
+      logoInput.value = '';
+      weightInput.value = '';
+      deltaInput.value = '';
+      suggestionsEl.classList.add('hidden');
+      suggestionsEl.innerHTML = '';
+    };
+
+    const loadTradingUniverse = async () => {
+      const source = dataSourceSelect.value;
+      const query = supabase.from('trading_universe').select('id,symbol,name,exchange,data_source,currency,logo');
+      if (source) query.eq('data_source', source);
+      const { data, error } = await query.order('symbol');
+      if (error) {
+        console.error('Failed to fetch trading universe', error);
+        formStatus.textContent = 'Could not load trading universe symbols.';
+        return;
+      }
+      tradingUniverse = data || [];
+    };
+
+    const renderSuggestions = (term) => {
+      if (!term || !tradingUniverse.length) {
+        suggestionsEl.classList.add('hidden');
+        suggestionsEl.innerHTML = '';
+        return;
+      }
+      const t = term.toUpperCase();
+      const matches = tradingUniverse.filter((item) => item.symbol.toUpperCase().includes(t) || (item.name || '').toUpperCase().includes(t)).slice(0, 8);
+      if (!matches.length) {
+        suggestionsEl.classList.add('hidden');
+        suggestionsEl.innerHTML = '';
+        return;
+      }
+      suggestionsEl.innerHTML = matches.map(m => `<button type="button" class="w-full px-3 py-2 text-left hover:bg-slate-50" data-symbol="${m.symbol}"><span class="font-semibold">${m.symbol}</span> <span class="text-slate-500">${m.name || ''}</span> <span class="text-xs text-amber-700">${m.data_source}</span></button>`).join('');
+      suggestionsEl.classList.remove('hidden');
+      suggestionsEl.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sym = btn.dataset.symbol;
+          const hit = tradingUniverse.find(tu => tu.symbol === sym);
+          if (hit) {
+            symbolInput.value = hit.symbol;
+            nameInput.value = hit.name || '';
+            exchangeInput.value = hit.exchange || '';
+            currencyInput.value = hit.currency || '';
+            logoInput.value = hit.logo || '';
+          }
+          suggestionsEl.classList.add('hidden');
+          suggestionsEl.innerHTML = '';
+        });
+      });
+    };
+
+    symbolInput.addEventListener('input', (e) => {
+      renderSuggestions(e.target.value);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!suggestionsEl.contains(e.target) && e.target !== symbolInput) {
+        suggestionsEl.classList.add('hidden');
+      }
+    });
+
+    const ensureUniverseSymbol = async ({ symbol, name, exchange, currency, logo }) => {
+      const selectedSource = dataSourceSelect.value || 'Massive';
+      const upperSymbol = symbol?.toUpperCase();
+      if (!upperSymbol) throw new Error('Symbol is required for a holding');
+
+      const existing = tradingUniverse.find(u => u.symbol.toUpperCase() === upperSymbol && u.data_source === selectedSource);
+      if (existing) return existing;
+
+      const shouldAdd = confirm(`Symbol ${upperSymbol} is not in trading_universe for ${selectedSource}. Add it now?`);
+      if (!shouldAdd) throw new Error('Symbol must exist in trading_universe to add a holding.');
+
+      const newEntry = {
+        symbol: upperSymbol,
+        name: name || null,
+        exchange: exchange || null,
+        currency: currency || 'USD',
+        data_source: selectedSource,
+        logo: logo || null,
+        closes_30d: []
+      };
+
+      const { data, error } = await supabase
+        .from('trading_universe')
+        .insert(newEntry)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Failed to insert trading_universe record', error);
+        throw new Error('Could not add symbol to trading_universe.');
+      }
+      tradingUniverse.push(data);
+      return data;
+    };
+
+    const addHolding = async () => {
+      formStatus.textContent = '';
+      const symbol = symbolInput.value.trim();
+      const name = nameInput.value.trim();
+      const exchange = exchangeInput.value.trim();
+      const currency = currencyInput.value.trim();
+      const logo = logoInput.value.trim();
+      const weight = num(weightInput.value);
+      const delta = num(deltaInput.value);
+
+      if (!symbol) {
+        formStatus.textContent = 'Symbol is required.';
+        return;
+      }
+      if (dataSourceSelect.value === 'Alpaca') {
+        const match = tradingUniverse.find(u => u.symbol.toUpperCase() === symbol.toUpperCase());
+        if (match && match.data_source !== 'Alpaca') {
+          formStatus.textContent = 'For Alpaca strategies, choose symbols with data_source = Alpaca.';
+          return;
+        }
+      }
+
+      let universeEntry;
+      try {
+        universeEntry = await ensureUniverseSymbol({ symbol, name, exchange, currency, logo });
+      } catch (err) {
+        formStatus.textContent = err.message;
+        return;
+      }
+
+      holdingsState.push({
+        symbol: universeEntry.symbol,
+        name: name || universeEntry.name || '',
+        logo_url: logo || universeEntry.logo || '',
+        weight_pct: weight,
+        daily_change_pct: delta,
+      });
+      renderHoldings();
+      clearHoldingInputs();
+    };
+
+    addHoldingBtn.addEventListener('click', addHolding);
+    dataSourceSelect.addEventListener('change', () => {
+      loadTradingUniverse();
+    });
+
+    await loadTradingUniverse();
+
+    async function createModel(event) {
+      event.preventDefault();
+      formStatus.textContent = 'Saving model to Supabase…';
+      statusChip.textContent = '';
+
+      const formData = new FormData(form);
+
+      const strategyPayload = {
+        name: formData.get('name')?.trim(),
+        currency: formData.get('currency')?.trim() || 'USD',
+        risk_level: formData.get('risk_level')?.trim() || null,
+        strategy_description: formData.get('strategy_description')?.trim() || null,
+        code: formData.get('code')?.trim() || null,
+        style: formData.get('style')?.trim() || null,
+        asset_universe: formData.get('asset_universe')?.trim() || null,
+        avg_holding_days: num(formData.get('avg_holding_days')),
+        avg_trades_per_month: num(formData.get('avg_trades_per_month')),
+        total_units: num(formData.get('total_units')),
+        risk_score: formData.get('risk_score')?.trim() || null,
+        data_source: formData.get('data_source') || 'Massive'
+      };
+
+      let allocation = [];
+
+      try {
+        allocation = parseJsonArray(formData.get('asset_allocation') || '', 'Asset allocation');
+      } catch (err) {
+        formStatus.textContent = err.message;
+        statusChip.textContent = 'Fix validation errors';
+        statusChip.className = 'text-xs font-semibold text-rose-600';
+        return;
+      }
+
+      const { data: strategy, error: strategyError } = await supabase
+        .from('strategies')
+        .insert(strategyPayload)
+        .select()
+        .single();
+
+      if (strategyError) {
+        console.error('Failed to create strategy', strategyError);
+        formStatus.textContent = 'Failed to save strategy. Please try again.';
+        statusChip.textContent = 'Save failed';
+        statusChip.className = 'text-xs font-semibold text-rose-600';
+        return;
+      }
+
+      const { error: metricsError } = await supabase
+        .from('strategy_metrics')
+        .insert({
+          strategy_id: strategy.id,
+          portfolio_holdings: holdingsState,
+          asset_allocation: allocation
+        });
+
+      if (metricsError) {
+        console.error('Failed to create metrics', metricsError);
+        formStatus.textContent = 'Strategy saved but metrics failed. Please retry metrics.';
+        statusChip.textContent = 'Partial save';
+        statusChip.className = 'text-xs font-semibold text-amber-600';
+        return;
+      }
+
+      formStatus.textContent = 'Saved! Redirecting to models…';
+      statusChip.textContent = 'Created';
+      statusChip.className = 'text-xs font-semibold text-emerald-600';
+      setTimeout(() => location.assign('/admin/models.html'), 900);
+    }
+
+    form.addEventListener('submit', createModel);
+  </script>
+</body>
+</html>

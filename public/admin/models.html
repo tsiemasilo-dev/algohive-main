@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive – Models</title>
+
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg: #fff;
+      --line: #e2e8f0;
+      --ink: #0f172a;
+      --olive: #556B2F;
+    }
+
+    html,
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink)
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      height: 40px;
+      padding: 0 .875rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-weight: 600
+    }
+
+    .input {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 .75rem
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .35rem .65rem;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: .75rem;
+      font-weight: 600;
+      background: #fff
+    }
+
+    .badge.risk-low {
+      background: #ecfdf3;
+      border-color: #22c55e;
+      color: #15803d;
+    }
+
+    .badge.risk-moderate {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #d97706;
+    }
+
+    .badge.risk-elevated {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #b91c1c;
+    }
+
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="bg-slate-50/70 border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="h-10 w-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold shadow-sm">A</span>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-500">Admin</p>
+          <h1 class="text-2xl font-bold">Model Library</h1>
+          <p class="text-sm text-slate-500">Visualise every live and experimental strategy in one place.</p>
+        </div>
+      </div>
+      <a href="/admin/create-model.html" class="btn bg-amber-500 text-white border-transparent shadow-md hover:shadow-lg transition"> <i class="fa-solid fa-plus"></i>New Model</a>
+    </div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <section class="grid md:grid-cols-3 gap-4">
+      <div class="card p-5 flex flex-col gap-3 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs text-slate-500">Total Models</p>
+            <h3 id="stat-total" class="text-2xl font-extrabold">—</h3>
+          </div>
+          <span class="badge risk-low"><i class="fa-solid fa-circle-check"></i>Synced</span>
+        </div>
+        <p class="text-sm text-slate-500 leading-relaxed">Strategies fetched directly from Supabase (strategies + strategy_metrics).</p>
+      </div>
+
+      <div class="card p-5 flex flex-col gap-3 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs text-slate-500">Assets Under Management</p>
+            <h3 id="stat-aum" class="text-2xl font-extrabold">—</h3>
+          </div>
+          <span class="badge" style="color:#7c2d12;border-color:#fcd34d;background:#fef3c7"><i class="fa-solid fa-arrow-trend-up"></i>Updated</span>
+        </div>
+        <p class="text-sm text-slate-500 leading-relaxed">Aggregated AUM across every strategy record.</p>
+        <div class="flex items-center gap-2 text-emerald-600 text-sm font-semibold" id="stat-aum-note"></div>
+      </div>
+
+      <div class="card p-5 flex flex-col gap-3 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs text-slate-500">Avg. YTD Return</p>
+            <h3 id="stat-ytd" class="text-2xl font-extrabold">—</h3>
+          </div>
+          <span class="badge" style="color:#3730a3;border-color:#c7d2fe;background:#eef2ff"><i class="fa-solid fa-gauge-high"></i>Perf.</span>
+        </div>
+        <p class="text-sm text-slate-500 leading-relaxed">Mean YTD across strategies with available performance summaries.</p>
+        <div class="flex items-center gap-2 text-emerald-600 text-sm font-semibold" id="stat-ytd-note"></div>
+      </div>
+    </section>
+
+    <section class="card p-6 shadow-sm">
+      <div class="flex items-center justify-between flex-wrap gap-3 mb-5">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wide">Models</p>
+          <h2 class="text-2xl font-bold">Strategy catalogue</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3 top-3"></i>
+            <input type="text" id="search" placeholder="Search models" class="input pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white" />
+          </div>
+          <button class="btn bg-white hover:bg-slate-50" id="refresh"><i class="fa-solid fa-arrow-rotate-right"></i>Refresh</button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-4 text-sm" id="legend"></div>
+
+      <div id="model-grid" class="grid md:grid-cols-2 gap-4"></div>
+      <div id="empty" class="hidden text-sm text-slate-500 text-center py-6">No models found. Try refreshing.</div>
+    </section>
+  </main>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    const statTotal = document.getElementById('stat-total');
+    const statAum = document.getElementById('stat-aum');
+    const statAumNote = document.getElementById('stat-aum-note');
+    const statYtd = document.getElementById('stat-ytd');
+    const statYtdNote = document.getElementById('stat-ytd-note');
+    const modelGrid = document.getElementById('model-grid');
+    const emptyState = document.getElementById('empty');
+    const legend = document.getElementById('legend');
+
+    const redirectToAuth = () => {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+    };
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      redirectToAuth();
+      throw new Error('redirecting');
+    }
+    supabase.auth.onAuthStateChange((_ev, sess) => { if (!sess) redirectToAuth(); });
+
+    const riskThemes = {
+      "Conservative": { badge: 'bg-emerald-50 text-emerald-700 border border-emerald-100', chip: 'risk-low' },
+      "Balanced": { badge: 'bg-amber-50 text-amber-700 border border-amber-100', chip: 'risk-moderate' },
+      "Aggressive": { badge: 'bg-rose-50 text-rose-700 border border-rose-100', chip: 'risk-elevated' }
+    };
+
+    const fmtCurrency = (value, currency = 'USD') => {
+      if (value == null || isNaN(value)) return '—';
+      try {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
+      } catch (e) {
+        return `$${Number(value).toLocaleString()}`;
+      }
+    };
+
+    const fmtPct = (value, dp = 1) => value == null || isNaN(value)
+      ? '—'
+      : `${value >= 0 ? '+' : ''}${Number(value).toFixed(dp)}%`;
+
+    const num = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const mapStrategyRow = (row) => {
+      const metrics = Array.isArray(row.strategy_metrics) ? row.strategy_metrics[0] : (row.strategy_metrics || {});
+      const perf = metrics?.perf_summary || {};
+
+      const latestDate = metrics?.latest_eod_date || metrics?.asof_date || null;
+      const inception = row.inception_date ? new Date(row.inception_date).toLocaleDateString('en-CA') : null;
+
+      return {
+        id: row.id,
+        name: row.name || 'Unnamed Strategy',
+        code: row.code || '',
+        description: row.strategy_description || 'No description provided.',
+        risk: row.risk_level || perf.risk_level || 'Unspecified',
+        style: row.style || '',
+        asset: row.asset_universe || '',
+        currency: row.currency || 'USD',
+        aum: num(row.aum),
+        ytd: num(perf.ytd_return_pct),
+        avgDaily: num(perf.avg_daily_return_pct),
+        inception: inception,
+        latestLabel: latestDate ? `Updated ${new Date(latestDate).toLocaleDateString('en-CA')}` : 'No metrics yet'
+      };
+    }
+
+    function renderLegend(models) {
+      const riskCounts = models.reduce((acc, m) => {
+        const key = m.risk || 'Unspecified';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+      legend.innerHTML = '';
+      Object.entries(riskCounts).forEach(([risk, count]) => {
+        const theme = riskThemes[risk] || { badge: 'bg-slate-50 text-slate-700 border border-slate-200' };
+        const chip = document.createElement('span');
+        chip.className = `badge ${theme.badge}`;
+        chip.textContent = `${risk} · ${count}`;
+        legend.appendChild(chip);
+      });
+    }
+
+    function renderStats(models) {
+      statTotal.textContent = models.length || '0';
+
+      const aums = models.map(m => m.aum).filter(v => v != null);
+      const totalAum = aums.reduce((a, b) => a + b, 0);
+      statAum.textContent = aums.length ? fmtCurrency(totalAum, models[0]?.currency || 'USD') : '—';
+      statAumNote.textContent = aums.length ? `${aums.length} strategies reported AUM` : '';
+
+      const ytds = models.map(m => m.ytd).filter(v => v != null);
+      const avgYtd = ytds.length ? ytds.reduce((a, b) => a + b, 0) / ytds.length : null;
+      statYtd.textContent = fmtPct(avgYtd, 2);
+      statYtdNote.textContent = ytds.length ? `${ytds.length} with perf summaries` : '';
+    }
+
+    function renderModels(models, filter = '') {
+      const term = filter.trim().toLowerCase();
+      modelGrid.innerHTML = '';
+
+      const filtered = term
+        ? models.filter(m => (m.name + m.description + m.style + m.code).toLowerCase().includes(term))
+        : models;
+
+      emptyState.classList.toggle('hidden', filtered.length > 0);
+
+      filtered.forEach(model => {
+        const theme = riskThemes[model.risk] || { badge: 'bg-slate-50 text-slate-700 border border-slate-200', chip: '' };
+        const card = document.createElement('article');
+        card.className = 'card p-5 flex flex-col gap-4 hover:shadow-lg transition-shadow duration-150';
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex flex-col gap-1">
+              <h3 class="text-lg font-semibold">${model.name}</h3>
+              <p class="text-sm text-slate-500">${model.description}</p>
+              <div class="flex gap-2 flex-wrap text-xs text-slate-500">
+                ${model.code ? `<span class="badge bg-slate-50 text-slate-700 border-slate-200"><i class="fa-solid fa-hashtag"></i>${model.code}</span>` : ''}
+                ${model.style ? `<span class="badge bg-slate-50 text-slate-700 border-slate-200"><i class="fa-solid fa-atom"></i>${model.style}</span>` : ''}
+                ${model.asset ? `<span class="badge bg-slate-50 text-slate-700 border-slate-200"><i class="fa-solid fa-layer-group"></i>${model.asset}</span>` : ''}
+              </div>
+            </div>
+            <span class="badge ${theme.badge}">${model.risk || 'Unspecified'}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm text-slate-600">
+            <div class="flex flex-col">
+              <span class="text-xs text-slate-500">AUM</span>
+              <span class="font-semibold">${fmtCurrency(model.aum, model.currency)}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-xs text-slate-500">YTD</span>
+              <span class="font-semibold text-emerald-600">${fmtPct(model.ytd, 2)}</span>
+            </div>
+            <div class="flex flex-col items-end">
+              <span class="text-xs text-slate-500">Avg Daily</span>
+              <span class="badge ${theme.chip}">${fmtPct(model.avgDaily, 2)}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+              <i class="fa-regular fa-calendar"></i>
+              <span>${model.inception || '—'}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>${model.latestLabel}</span>
+            </div>
+          </div>
+        `;
+        modelGrid.appendChild(card);
+      });
+    }
+
+    async function fetchModels() {
+      const { data, error } = await supabase
+        .from('strategies')
+        .select(`
+          id, name, currency, creator, inception_date, risk_level, aum, strategy_description, style, code, asset_universe, data_source,
+          strategy_metrics:strategy_metrics!strategy_metrics_strategy_id_fkey (
+            perf_summary, live_equity, live_balance, live_margin, live_floating_pnl, latest_eod_equity, latest_eod_date, asof_date
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to load strategies', error);
+        statTotal.textContent = 'Error';
+        statAum.textContent = 'Error';
+        statYtd.textContent = 'Error';
+        emptyState.classList.remove('hidden');
+        emptyState.textContent = 'Unable to load models from Supabase.';
+        return [];
+      }
+
+      return (data || []).map(mapStrategyRow);
+    }
+
+    let cache = [];
+
+    async function hydrate() {
+      const loader = document.createElement('div');
+      loader.className = 'text-sm text-slate-500 py-2';
+      loader.textContent = 'Loading strategies from Supabase…';
+      modelGrid.innerHTML = '';
+      modelGrid.appendChild(loader);
+
+      cache = await fetchModels();
+      renderStats(cache);
+      renderLegend(cache);
+      renderModels(cache);
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => renderModels(cache, e.target.value));
+    document.getElementById('refresh').addEventListener('click', hydrate);
+
+    hydrate();
+  </script>
+</body>
+</html>

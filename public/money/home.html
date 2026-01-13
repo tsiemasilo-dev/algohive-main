@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoMoney — Home</title>
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <script nonce="ALGOHIVE">
+    // Silence the production warning from the Tailwind CDN helper for this demo environment.
+    (function () {
+      const originalWarn = console.warn;
+      console.warn = function (msg, ...rest) {
+        if (typeof msg === 'string' && msg.includes('cdn.tailwindcss.com should not be used in production')) return;
+        originalWarn.call(console, msg, ...rest);
+      };
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" nonce="ALGOHIVE"></script>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --primary: #1a73e8;
+      --primary-dark: #0c5ac9;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --line: #e5e7ef;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Demo sidebar styling */
+    #layout {
+      --sb: 275px;
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh;
+    }
+
+    #ah-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+    }
+
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 350px;
+      max-width: 85vw;
+      position: fixed;
+      top: 0;
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%);
+      background: #fff;
+    }
+
+    #ah-sidebar.is-open {
+      transform: translateX(0);
+    }
+
+    @media (min-width: 768px) {
+      #layout {
+        grid-template-columns: var(--sb) 1fr;
+      }
+
+      #ah-sidebar {
+        position: sticky;
+        top: 0;
+        width: var(--sb);
+        max-width: none;
+        height: 100vh;
+        transform: translateX(0);
+        z-index: auto;
+      }
+    }
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron {
+      display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #main-nav {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details > .sub {
+      display: none !important;
+    }
+
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details > summary {
+      justify-content: center;
+      gap: 0.25rem;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details > summary span {
+      gap: 0;
+    }
+
+    #ah-sidebar .footer {
+      transition: all 0.2s ease;
+    }
+
+    #ah-sidebar[data-collapsed="true"] .footer {
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+      transform: rotate(180deg);
+    }
+
+    #ah-collapse {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      #ah-collapse {
+        display: inline-flex;
+      }
+    }
+
+    /* Brand switcher */
+    #ah-brand-switcher { position: relative; }
+    #ah-brand-switcher summary { list-style: none; }
+    #ah-brand-switcher summary::-webkit-details-marker { display: none; }
+
+    .brand-toggle {
+      margin: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff);
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #ah-brand-switcher[open] .brand-toggle {
+      border-color: #cbd5e1;
+      background: #fff;
+      box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55);
+    }
+
+    .brand-marker {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .brand-menu {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: calc(100% - 6px);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .brand-menu-header {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: #475569;
+      padding: 4px 4px 2px;
+    }
+
+    .brand-option {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
+    }
+
+    .brand-option:hover { background: linear-gradient(135deg, #556b2f, #000000); }
+    .brand-option:hover .algomoney-word { color: #fff; }
+
+    .brand-option img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 6px;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle { justify-content: center; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down { display: none; }
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker { margin: 0; }
+
+    /* Page visuals */
+    .card-visual {
+      height: 240px;
+      background: url('https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Bank%20Cards/Bank%20Card%20purple.png') center /
+        cover no-repeat;
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.25);
+      border-radius: 18px;
+    }
+
+    .card-visual.light {
+      background: url('https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Bank%20Cards/Light%20Bank%20Card.png')
+        center / cover no-repeat;
+      box-shadow: 0 14px 28px rgba(124, 58, 237, 0.18);
+    }
+
+    .action-btn {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 10px 20px rgba(124, 58, 237, 0.18);
+    }
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 30px rgba(124, 58, 237, 0.28);
+    }
+    .nav-icon { color: #94a3b8; }
+    .nav-active { color: var(--primary); background: #e5f0ff; }
+    .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    .visa-logo {
+      height: 26px;
+      mix-blend-mode: multiply;
+      filter: brightness(1.05);
+    }
+
+    .meter-card {
+      background: linear-gradient(160deg, #f7f8ff 0%, #eef2ff 30%, #f6f6ff 100%);
+    }
+    .meter-tabs button[data-active="true"] {
+      background: linear-gradient(120deg, #4c1d95, #6d28d9);
+      color: #fff;
+    }
+
+    #tx-modal {
+      transition: opacity 0.25s ease;
+    }
+    #tx-modal[data-state="closed"] { opacity: 0; pointer-events: none; }
+    #tx-modal[data-state="open"] { opacity: 1; pointer-events: auto; }
+    #tx-modal[data-state="closing"] { opacity: 0; pointer-events: none; }
+    .tx-modal-panel {
+      transform: scale(0.96);
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    #tx-modal[data-state="open"] .tx-modal-panel {
+      transform: scale(1);
+      opacity: 1;
+      animation: modalIn 0.25s ease;
+    }
+    #tx-modal[data-state="closing"] .tx-modal-panel {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+
+    .tx-detail-label { color: #94a3b8; font-size: 13px; font-weight: 600; }
+    .tx-detail-value { color: #0f172a; font-size: 15px; font-weight: 700; }
+
+    .card-stack {
+      position: relative;
+      min-height: 270px;
+      cursor: pointer;
+      padding-inline: 8px;
+    }
+    .card-stack .card-visual {
+      transition: transform 0.28s ease, box-shadow 0.28s ease, top 0.28s ease;
+      position: absolute;
+      left: 50%;
+      width: calc(100% - 16px);
+      max-width: 430px;
+      transform: translateX(-50%);
+    }
+    .card-stack:not(.expanded) .card-visual:nth-child(1) { top: 0; z-index: 20; }
+    .card-stack:not(.expanded) .card-visual:nth-child(2) { top: 18px; z-index: 10; transform: translateX(-50%); }
+    .card-stack.expanded .card-visual { position: relative; top: 0; transform: none; left: 0; width: 100%; }
+    .card-stack.expanded .card-visual + .card-visual { margin-top: 16px; }
+
+    @media (min-width: 768px) {
+      .card-stack { padding-inline: 0; }
+      .card-stack .card-visual { width: 100%; max-width: none; }
+    }
+
+    .tx-map {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      background-size: cover;
+      background-position: center;
+      min-height: 160px;
+    }
+    .tx-map::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22px;
+      height: 22px;
+      transform: translate(-50%, -70%);
+      background: radial-gradient(circle at 30% 30%, #fdf4ff, #a855f7 60%, #7c3aed);
+      border: 2px solid white;
+      border-radius: 50% 50% 50% 0;
+      box-shadow: 0 8px 18px rgba(124,58,237,0.35);
+      rotate: -45deg;
+    }
+
+    @keyframes modalIn {
+      from { transform: scale(0.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden bg-[var(--bg)]">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoMoney</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch</div>
+          <a href="/demo/dashboard.html" class="brand-option">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Markets Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoHive Markets</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 nav-active" href="/money/home.html" title="Home" aria-current="page">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Accounts">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Accounts</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Pay</p>
+        <details class="group rounded-lg">
+          <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-send-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+            <span class="label flex-1 flex items-center justify-between">Make a Payment <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+          </summary>
+          <div class="sub ml-9 mt-1 flex flex-col gap-1">
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#geo" title="GeoPay">
+              <span class="label">GeoPay</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#bill-split" title="Bill Split">
+              <span class="label">Bill Split</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#eft" title="EFT">
+              <span class="label">EFT</span>
+            </a>
+          </div>
+        </details>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Receive a Payment">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-receive-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Receive a Payment</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Credit</p>
+        <details class="group rounded-lg">
+          <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+            <span class="label flex-1 flex items-center justify-between">Personal Credit <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+          </summary>
+          <div class="sub ml-9 mt-1 flex flex-col gap-1">
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="#" title="Unsecured Credit">
+              <span class="label">Unsecured Credit</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/instant-liquidity.html" title="Portfolio Credit">
+              <span class="label">Portfolio Credit</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="#" title="Instant Liquidity">
+              <span class="label">Instant Liquidity</span>
+            </a>
+          </div>
+        </details>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/business/apply.html" title="For my business">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">For my business</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Documents</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/demo/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      </div>
+    </aside>
+
+    <main class="relative flex-1 min-w-0 bg-[var(--bg)]">
+      <div class="max-w-7xl mx-auto px-3 md:px-5 pb-24 lg:pb-12 pt-6 lg:pt-8 space-y-6">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <button id="ah-mobile-menu-btn" aria-label="Open menu" class="md:hidden btn h-11 w-11 p-0 rounded-xl border-0">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 relative">
+            <button class="inline-flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50" aria-label="Notifications">
+              <i class="fa-regular fa-bell text-base"></i>
+            </button>
+            <button id="profile-menu-trigger" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+              <img data-profile-avatar src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+              <span class="text-sm font-semibold text-slate-900 hidden sm:inline" data-profile-name>Ronaldinho Fazio</span>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+            </button>
+            <div id="profile-menu" class="absolute right-0 top-[calc(100%+8px)] w-64 rounded-xl border border-slate-200 bg-white shadow-xl hidden z-20 overflow-hidden">
+              <div class="px-4 py-3 border-b border-slate-200">
+                <p class="text-sm font-semibold text-slate-900" data-profile-name>Ronaldinho Fazio</p>
+                <p class="text-xs text-slate-500">Profile controls</p>
+              </div>
+              <button id="geopay-toggle" class="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <span>Enable GeoPay</span>
+                <div id="geopay-toggle-track" class="relative inline-flex h-5 w-10 items-center rounded-full border border-slate-200 bg-slate-200 transition-colors">
+                  <span id="geopay-toggle-knob" class="h-4 w-4 rounded-full bg-white shadow-sm transition-transform translate-x-1"></span>
+                </div>
+              </button>
+              <button id="sign-out-btn" class="flex items-center gap-2 w-full px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 border-t border-slate-200">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p class="text-lg md:text-xl font-semibold text-slate-600">Welcome Back 👋</p>
+            <p class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#6d28d9] text-transparent bg-clip-text leading-tight" data-profile-name>Ronaldinho Fazio</p>
+          </div>
+          <div class="flex items-center gap-3 text-slate-600"></div>
+        </header>
+
+        <section class="space-y-6">
+          <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-6 items-start">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <p class="text-base font-semibold text-slate-900">My Cards</p>
+                  <div class="inline-flex items-center gap-1 text-[12px] text-slate-500">
+                    <i class="fa-solid fa-circle text-[6px]"></i>
+                    <span>2 Active</span>
+                  </div>
+                </div>
+                <button class="inline-flex items-center gap-2 text-sm font-semibold text-sky-700 hover:text-sky-800">
+                  <i class="fa-solid fa-plus"></i>
+                  Add Card
+                </button>
+              </div>
+
+              <div id="card-stack" class="card-stack max-w-lg mx-auto md:mx-0 md:ml-3 md:mr-auto">
+                <div class="card-visual light relative overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/20"></div>
+                  <div class="relative h-full grid grid-rows-[auto_1fr_auto] text-slate-900 px-6 py-5">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="space-y-1">
+                        <p class="text-base font-semibold leading-tight" data-profile-name>Ronaldinho Fazio</p>
+                        <p class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Card: •••• •••• •••• 2341</p>
+                      </div>
+                      <div class="text-right space-y-1">
+                        <p class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Credit Card</p>
+                        <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Media%20Assets/557662bd-eaee-478f-9da3-5b3eb08bf658logo.jpg" alt="Visa" class="visa-logo object-contain ml-auto" />
+                      </div>
+                    </div>
+                    <div></div>
+                    <div class="grid grid-cols-2 gap-4 items-end">
+                      <div>
+                        <p class="text-3xl font-extrabold leading-tight text-slate-900">R1 023.00</p>
+                        <p class="text-[11px] uppercase tracking-[0.22em] text-slate-500">Available Balance</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-sm font-semibold text-slate-600">Valid Thru</p>
+                        <p class="text-lg font-bold leading-tight text-slate-900">07/24</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-visual relative overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-br from-black/40 via-[#1b1630]/35 to-[#0a0818]/60"></div>
+                  <div class="relative h-full grid grid-rows-[auto_1fr_auto] text-white px-6 py-5">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="space-y-1">
+                        <p class="text-base font-semibold leading-tight" data-profile-name>Ronaldinho Fazio</p>
+                        <p class="text-[11px] uppercase tracking-[0.16em] text-white/70">Card: •••• •••• •••• 5901</p>
+                      </div>
+                      <div class="text-right">
+                        <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Media%20Assets/557662bd-eaee-478f-9da3-5b3eb08bf658logo.jpg" alt="Visa" class="visa-logo object-contain ml-auto" />
+                      </div>
+                    </div>
+                    <div></div>
+                    <div class="grid grid-cols-2 gap-4 items-end">
+                      <div>
+                        <p class="text-3xl font-extrabold leading-tight">R15 000</p>
+                        <p class="text-[11px] uppercase tracking-[0.22em] text-white/70">Available Balance</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-3xl font-extrabold leading-tight">R35 000</p>
+                        <p class="text-[11px] uppercase tracking-[0.22em] text-white/70">Pre-Qualified Amount</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-3 max-w-lg mx-auto md:mx-0 md:ml-3 md:mr-auto">
+                <a href="pay.html" class="action-btn bg-white text-sky-700 font-semibold rounded-xl py-3 shadow-sm grid place-items-center">
+                  Pay
+                </a>
+                <button class="action-btn bg-white text-sky-700 font-semibold rounded-xl py-3 shadow-sm">
+                  Receive
+                </button>
+                <button class="action-btn bg-white text-sky-700 font-semibold rounded-xl py-3 shadow-sm">
+                  Other
+                </button>
+              </div>
+
+              <div class="px-1 md:px-3">
+                <div class="flex items-center justify-between mb-3">
+                  <p class="text-base font-semibold">Beneficiaries</p>
+                  <a href="#" class="text-sm font-semibold text-sky-700">View all</a>
+                </div>
+                <div class="flex gap-4 overflow-x-auto pb-1">
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-100 overflow-hidden shadow-sm">
+                      <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover" alt="Sam" />
+                    </div>
+                    <span class="text-xs font-semibold">Sam</span>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-100 overflow-hidden shadow-sm">
+                      <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover" alt="Adnan" />
+                    </div>
+                    <span class="text-xs font-semibold">Adnan</span>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-100 overflow-hidden shadow-sm">
+                      <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80&sat=-30" class="w-full h-full object-cover" alt="Jaya" />
+                    </div>
+                    <span class="text-xs font-semibold">Jaya</span>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-100 overflow-hidden shadow-sm">
+                      <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover" alt="Enrico" />
+                    </div>
+                    <span class="text-xs font-semibold">Enrico</span>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-100 overflow-hidden shadow-sm">
+                      <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover" alt="Malik" />
+                    </div>
+                    <span class="text-xs font-semibold">Malik</span>
+                  </div>
+                  <div class="flex flex-col items-center gap-2">
+                    <div class="w-12 h-12 rounded-full border-4 border-blue-100 overflow-hidden shadow-sm">
+                      <img src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=200&q=80&sat=-20" class="w-full h-full object-cover" alt="Adit" />
+                    </div>
+                    <span class="text-xs font-semibold">Adit</span>
+                  </div>
+                  <button class="w-12 h-12 rounded-full border-4 border-dashed border-blue-200 bg-white text-blue-500 font-bold shadow-sm grid place-items-center text-xl">
+                    +
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <aside class="meter-card rounded-2xl shadow-sm border border-slate-100 p-5 space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">AlgoMoney Score</p>
+                  <p class="text-xs text-slate-500">Updated 5 min ago</p>
+                </div>
+                <span class="text-[13px] font-semibold text-sky-700">View active loans</span>
+              </div>
+              <div class="text-center space-y-2">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm meter-tabs">
+                  <button data-meter-tab="score" data-active="true" class="text-xs font-semibold px-3 py-1 rounded-full">Score</button>
+                  <button data-meter-tab="util" class="text-xs font-semibold text-slate-500 px-3 py-1 rounded-full hover:bg-slate-100">Utilisation</button>
+                  <button data-meter-tab="loans" class="text-xs font-semibold text-slate-500 px-3 py-1 rounded-full hover:bg-slate-100">Total Loans</button>
+                </div>
+              </div>
+              <div class="relative">
+                <svg viewBox="0 0 400 220" class="w-full h-56">
+                  <defs>
+                    <linearGradient id="meterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#4c1d95"/>
+                      <stop offset="50%" stop-color="#6d28d9"/>
+                      <stop offset="100%" stop-color="#6366f1"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M40 170 A160 160 0 0 1 360 170" fill="none" stroke="#e5e7eb" stroke-width="18" stroke-linecap="round" opacity="0.8"/>
+                  <path id="meter-active" d="M40 170 A160 160 0 0 1 360 170" fill="none" stroke="url(#meterGradient)" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 1"/>
+                  <text id="meter-value" x="200" y="155" text-anchor="middle" font-size="52" font-weight="800" fill="#0f172a">803</text>
+                  <text id="meter-label" x="200" y="180" text-anchor="middle" font-size="13" fill="#64748b">AlgoMoney Score</text>
+                </svg>
+              </div>
+              <p id="meter-note" class="text-center text-xs font-semibold text-slate-600">+6 pts since last update</p>
+              <div class="flex items-center justify-center">
+                <button id="toggle-loans" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold shadow">
+                  <i class="fa-solid fa-eye"></i>
+                  <span>View active loans</span>
+                </button>
+              </div>
+              <div id="loans-list" class="space-y-3 hidden">
+                <div class="flex items-center justify-between bg-white rounded-xl border border-slate-200 p-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">Home Improvement</p>
+                    <p class="text-xs text-slate-500">Repayment: 12 Dec 2024</p>
+                  </div>
+                  <p class="text-sm font-semibold text-slate-900">R450/mo</p>
+                </div>
+                <div class="flex items-center justify-between bg-white rounded-xl border border-slate-200 p-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">Auto Upgrade</p>
+                    <p class="text-xs text-slate-500">Repayment: 02 Jan 2025</p>
+                  </div>
+                  <p class="text-sm font-semibold text-slate-900">R320/mo</p>
+                </div>
+                <div class="flex items-center justify-between bg-white rounded-xl border border-slate-200 p-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">Education</p>
+                    <p class="text-xs text-slate-500">Repayment: 18 Feb 2025</p>
+                  </div>
+                  <p class="text-sm font-semibold text-slate-900">R210/mo</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+            <p class="text-base font-semibold">Latest Transactions</p>
+            <a href="#" class="text-sm font-semibold text-sky-700">View statements</a>
+          </div>
+          <div class="px-4 py-3">
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-xs font-semibold text-slate-500 border-b border-slate-100 pb-2 px-2">
+              <div>Transaction</div>
+              <div class="text-right">Amount</div>
+            </div>
+            <div class="divide-y divide-slate-100 text-sm" id="tx-table"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom navigation for mobile -->
+  <nav class="lg:hidden fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto grid grid-cols-4">
+      <button class="flex flex-col items-center gap-1 py-3 nav-active">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[11px] font-semibold">Home</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-chart-bar text-lg"></i>
+        <span class="text-[11px] font-semibold">Statistics</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-credit-card text-lg"></i>
+        <span class="text-[11px] font-semibold">Cards</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-user text-lg"></i>
+        <span class="text-[11px] font-semibold">Account</span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="tx-modal" data-state="closed" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
+    <div id="tx-modal-overlay" class="absolute inset-0 bg-black/40"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 w-[90%] max-w-md space-y-4 tx-modal-panel">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img id="tx-modal-logo" src="" alt="Company" class="w-10 h-10 rounded-full bg-slate-100 object-contain">
+          <div>
+            <p id="tx-modal-name" class="text-base font-bold text-slate-900"></p>
+            <p id="tx-modal-company" class="text-xs text-slate-500"></p>
+          </div>
+        </div>
+        <button id="tx-modal-close" class="h-9 w-9 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-600">Amount</span>
+          <span id="tx-modal-amount" class="text-lg font-bold text-slate-900"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-600">Reference</span>
+          <span id="tx-modal-ref" class="font-semibold text-slate-900"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-600">Date / Time</span>
+          <span id="tx-modal-date" class="font-semibold text-slate-900"></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-600">Status</span>
+          <span id="tx-modal-status" class="font-semibold text-slate-900"></span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="p-3 rounded-xl border border-slate-100 bg-slate-50/70">
+          <p class="text-xs text-slate-500">Service fee</p>
+          <p id="tx-modal-fee" class="text-base font-bold text-slate-900">R0.00</p>
+        </div>
+        <div class="p-3 rounded-xl border border-slate-100 bg-slate-50/70">
+          <p class="text-xs text-slate-500">Running balance</p>
+          <p id="tx-modal-balance" class="text-base font-bold text-slate-900">R0.00</p>
+        </div>
+      </div>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-sm">
+          <p class="text-slate-600 font-semibold">Location</p>
+          <p id="tx-modal-location" class="text-slate-900 font-semibold"></p>
+        </div>
+        <div id="tx-modal-map" class="tx-map"></div>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="ALGOHIVE">
+    const sidebar = document.getElementById('ah-sidebar');
+    const overlay = document.getElementById('ah-overlay');
+    const mobileBtn = document.getElementById('ah-mobile-menu-btn');
+    const layout = document.getElementById('layout');
+    const cardStack = document.getElementById('card-stack');
+    const toggleLoansBtn = document.getElementById('toggle-loans');
+    const loansList = document.getElementById('loans-list');
+    const meterTabs = document.querySelectorAll('[data-meter-tab]');
+    const meterValue = document.getElementById('meter-value');
+    const meterLabel = document.getElementById('meter-label');
+    const meterNote = document.getElementById('meter-note');
+    const meterActivePath = document.getElementById('meter-active');
+    let meterPathLength = 0;
+    const txModal = document.getElementById('tx-modal');
+    const txModalOverlay = document.getElementById('tx-modal-overlay');
+    const txModalClose = document.getElementById('tx-modal-close');
+    const txModalLogo = document.getElementById('tx-modal-logo');
+    const txModalName = document.getElementById('tx-modal-name');
+    const txModalCompany = document.getElementById('tx-modal-company');
+    const txModalAmount = document.getElementById('tx-modal-amount');
+    const txModalRef = document.getElementById('tx-modal-ref');
+    const txModalDate = document.getElementById('tx-modal-date');
+    const txModalStatus = document.getElementById('tx-modal-status');
+    const txModalFee = document.getElementById('tx-modal-fee');
+    const txModalBalance = document.getElementById('tx-modal-balance');
+    const txModalLocation = document.getElementById('tx-modal-location');
+    const txModalMap = document.getElementById('tx-modal-map');
+    const txTable = document.getElementById('tx-table');
+    const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
+    const supabaseClient = window.supabase?.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
+      {
+        global: {
+          fetch: (url, options = {}) =>
+            fetch(url, {
+              mode: 'cors',
+              cache: 'no-store',
+              ...options,
+            }),
+        },
+      }
+    );
+    const profileNameEls = document.querySelectorAll('[data-profile-name]');
+    const profileAvatarEls = document.querySelectorAll('[data-profile-avatar]');
+    const PROFILE_AVATAR_FALLBACK = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80';
+    const profileMenu = document.getElementById('profile-menu');
+    const profileTrigger = document.getElementById('profile-menu-trigger');
+    const signOutBtn = document.getElementById('sign-out-btn');
+    const geoToggle = document.getElementById('geopay-toggle');
+    const geoToggleTrack = document.getElementById('geopay-toggle-track');
+    const geoToggleKnob = document.getElementById('geopay-toggle-knob');
+    const GEO_PREF_KEY = 'algomoney_geo_pay_enabled';
+    let geoPayEnabled = true;
+    let currentUser = null;
+    let currentCoords = null;
+    const toCoordNumber = (value) => {
+      const parsed = typeof value === 'string' ? Number.parseFloat(value) : value;
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const setProfileName = (value) => {
+      const resolved = (typeof value === 'string' && value.trim()) ? value.trim() : 'AlgoMoney Member';
+      profileNameEls.forEach(el => {
+        el.textContent = resolved;
+        el.title = resolved;
+      });
+    };
+
+    const setProfileAvatar = (url) => {
+      const resolved = (typeof url === 'string' && url.trim().startsWith('http')) ? url.trim() : PROFILE_AVATAR_FALLBACK;
+      profileAvatarEls.forEach(img => { img.src = resolved; });
+    };
+
+    const setGeoToggle = (enabled) => {
+      geoPayEnabled = !!enabled;
+      if (!geoToggleTrack || !geoToggleKnob) return;
+      geoToggleTrack.classList.toggle('bg-indigo-600', enabled);
+      geoToggleTrack.classList.toggle('border-indigo-600', enabled);
+      geoToggleTrack.classList.toggle('bg-slate-200', !enabled);
+      geoToggleTrack.classList.toggle('border-slate-200', !enabled);
+      geoToggleKnob.classList.toggle('translate-x-5', enabled);
+      geoToggleKnob.classList.toggle('translate-x-1', !enabled);
+    };
+
+    const requestLocation = () => new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        console.warn('GeoPay requires location support.');
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+        (err) => {
+          console.warn('Geo location denied', err);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, maximumAge: 15000, timeout: 12000 }
+      );
+    });
+
+    const updateProfileGeoState = async (enabled, coords = null) => {
+      try {
+        const payload = {
+          geopay_enabled: enabled,
+          geo_lat: enabled && coords ? coords.latitude : null,
+          geo_lng: enabled && coords ? coords.longitude : null,
+          geo_updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient
+          .from('profiles')
+          .update(payload)
+          .eq('id', currentUser?.id);
+        if (error) throw error;
+      } catch (err) {
+        console.warn('Unable to save GeoPay preference', err);
+      }
+    };
+
+    const persistGeoPreference = async (enabled) => {
+      const nextValue = !!enabled;
+      localStorage.setItem(GEO_PREF_KEY, nextValue ? 'true' : 'false');
+      setGeoToggle(nextValue);
+      if (typeof window.onGeoPreferenceChanged === 'function') {
+        window.onGeoPreferenceChanged(nextValue);
+      }
+
+      if (!currentUser || !supabaseClient) return;
+      if (nextValue) {
+        const coords = await requestLocation();
+        if (!coords) {
+          setGeoToggle(false);
+          localStorage.setItem(GEO_PREF_KEY, 'false');
+          return;
+        }
+        currentCoords = coords;
+        await updateProfileGeoState(true, coords);
+      } else {
+        currentCoords = null;
+        await updateProfileGeoState(false, null);
+      }
+    };
+
+    const loadGeoPreference = async (profileRow) => {
+      const storedRaw = localStorage.getItem(GEO_PREF_KEY);
+      const storedEnabled = storedRaw !== 'false';
+      const profileEnabled = profileRow?.geopay_enabled === true;
+      const lat = toCoordNumber(profileRow?.geo_lat);
+      const lng = toCoordNumber(profileRow?.geo_lng);
+      const initialEnabled = profileEnabled || storedEnabled;
+      if (profileEnabled && lat !== null && lng !== null) {
+        currentCoords = { latitude: lat, longitude: lng };
+        setGeoToggle(true);
+        if (typeof window.onGeoPreferenceChanged === 'function') {
+          window.onGeoPreferenceChanged(true);
+        }
+      } else if (initialEnabled) {
+        await persistGeoPreference(true);
+      } else {
+        setGeoToggle(false);
+        if (typeof window.onGeoPreferenceChanged === 'function') {
+          window.onGeoPreferenceChanged(false);
+        }
+      }
+    };
+
+    const toggleProfileMenu = () => {
+      profileMenu?.classList.toggle('hidden');
+    };
+
+    const closeProfileMenu = () => profileMenu?.classList.add('hidden');
+
+    const redirectToAuth = () => {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+    };
+
+    const ensureSession = async () => {
+      if (!supabaseClient) {
+        console.warn('Supabase unavailable; cannot enforce auth');
+        redirectToAuth();
+        return null;
+      }
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) console.warn('Error fetching session', error.message);
+        if (!session) {
+          redirectToAuth();
+          return null;
+        }
+        return session;
+      } catch (err) {
+        console.warn('Unable to enforce session guard', err);
+        redirectToAuth();
+        return null;
+      }
+    };
+
+    const hydrateProfileFromSupabase = async (user) => {
+      if (!supabaseClient || !user) return null;
+      let profileRow = null;
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('first_name,last_name,avatar_url,geopay_enabled,geo_lat,geo_lng')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (error && error.code !== 'PGRST116') throw error;
+        profileRow = data || null;
+      } catch (err) {
+        console.warn('Unable to load profile', err);
+      }
+
+      const fullName = [profileRow?.first_name, profileRow?.last_name].filter(Boolean).join(' ').trim();
+      const metaFullName = [user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(' ').trim();
+      const displayName = fullName
+        || metaFullName
+        || (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim())
+        || 'AlgoMoney Member';
+
+      setProfileName(displayName);
+      setProfileAvatar(profileRow?.avatar_url || user.user_metadata?.avatar_url);
+      return profileRow;
+    };
+
+    const handleSignOut = async () => {
+      try {
+        await supabaseClient?.auth.signOut();
+      } catch (err) {
+        console.warn('Unable to sign out', err);
+      }
+      redirectToAuth();
+    };
+
+    (async () => {
+      const session = await ensureSession();
+      if (!session) return;
+      currentUser = session.user;
+      const profileRow = await hydrateProfileFromSupabase(session.user);
+      await loadGeoPreference(profileRow);
+    })();
+
+    profileTrigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleProfileMenu();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileMenu?.contains(e.target) && !profileTrigger?.contains(e.target)) {
+        closeProfileMenu();
+      }
+    });
+
+    signOutBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSignOut();
+      closeProfileMenu();
+    });
+
+    geoToggle?.addEventListener('click', (e) => {
+      e.preventDefault();
+      persistGeoPreference(!geoPayEnabled);
+    });
+
+    mobileBtn?.addEventListener('click', () => {
+      sidebar?.classList.add('is-open');
+      overlay?.classList.remove('hidden');
+    });
+
+    overlay?.addEventListener('click', () => {
+      sidebar?.classList.remove('is-open');
+      overlay?.classList.add('hidden');
+    });
+
+    cardStack?.addEventListener('click', () => {
+      const cards = cardStack.querySelectorAll('.card-visual');
+      if (cards.length > 1) {
+        const first = cards[0];
+        cardStack.appendChild(first);
+      }
+    });
+
+    const meterData = {
+      score: { value: 803, label: 'AlgoMoney Score', note: '+6 pts since last update', percent: 80 },
+      util: { value: 42, label: 'Utilisation: 42%', note: 'Used R42,000 of R100,000', percent: 42 },
+      loans: { value: 5, label: 'Total Loans', note: '1 in arrears, 4 on track', percent: 62 }
+    };
+
+    const animateMeter = (targetPercent) => {
+      if (!meterActivePath || !meterPathLength) return;
+      const currentDash = parseFloat(meterActivePath.getAttribute('data-current') || '0');
+      const targetDash = (targetPercent / 100) * meterPathLength;
+      const duration = 400;
+      const start = performance.now();
+
+      const step = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const next = currentDash + (targetDash - currentDash) * progress;
+        meterActivePath.setAttribute('stroke-dasharray', `${next} ${meterPathLength}`);
+        meterActivePath.setAttribute('data-current', next.toString());
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+
+    const selectTab = (key) => {
+      meterTabs.forEach(btn => {
+        const active = btn.dataset.meterTab === key;
+        btn.dataset.active = active ? 'true' : 'false';
+      });
+      const data = meterData[key];
+      if (meterValue && meterLabel && meterNote) {
+        meterValue.textContent = key === 'util' ? `${data.value}%` : data.value.toString();
+        meterLabel.textContent = data.label;
+        meterNote.textContent = data.note;
+      }
+      animateMeter(data.percent);
+    };
+
+    if (meterActivePath) {
+      meterPathLength = meterActivePath.getTotalLength();
+      meterActivePath.setAttribute('stroke-dasharray', `0 ${meterPathLength}`);
+      meterActivePath.setAttribute('data-current', '0');
+      // initial animate
+      animateMeter(meterData.score.percent);
+    }
+
+    meterTabs.forEach(btn => {
+      btn.addEventListener('click', () => selectTab(btn.dataset.meterTab));
+    });
+
+    const fallbackCompanies = [
+      { symbol: 'AAPL', name: 'Apple Inc.', logo: 'https://logo.clearbit.com/apple.com', exchange: 'NASDAQ' },
+      { symbol: 'MSFT', name: 'Microsoft Corporation', logo: 'https://logo.clearbit.com/microsoft.com', exchange: 'NASDAQ' },
+      { symbol: 'NVDA', name: 'NVIDIA Corporation', logo: 'https://logo.clearbit.com/nvidia.com', exchange: 'NASDAQ' },
+      { symbol: 'AMZN', name: 'Amazon.com, Inc.', logo: 'https://logo.clearbit.com/amazon.com', exchange: 'NASDAQ' },
+      { symbol: 'TSLA', name: 'Tesla, Inc.', logo: 'https://logo.clearbit.com/tesla.com', exchange: 'NASDAQ' },
+      { symbol: 'JPM', name: 'JPMorgan Chase & Co.', logo: 'https://logo.clearbit.com/jpmorganchase.com', exchange: 'NYSE' }
+    ];
+
+    const safeLogo = (url) => (typeof url === 'string' && url.trim().startsWith('http')
+      ? url.trim()
+      : 'https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg');
+
+    const formatZAR = (value) => {
+      const formatter = new Intl.NumberFormat('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const sign = value >= 0 ? '+' : '-';
+      return `${sign}R${formatter.format(Math.abs(value))}`;
+    };
+
+    const formatBalance = (value) => `R${new Intl.NumberFormat('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.max(value, 0))}`;
+
+    const formatDateLabel = (baseDate, offsetDays) => {
+      const date = new Date(baseDate);
+      date.setDate(date.getDate() - offsetDays);
+      const d = date.toLocaleDateString('en-ZA', { month: 'short', day: '2-digit', year: 'numeric' });
+      const t = date.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', hour12: false });
+      return `${d} • ${t}`;
+    };
+
+    const buildTxRow = (tx) => {
+      const amountTone = tx.amount.startsWith('-') ? 'text-rose-600' : 'text-emerald-600';
+      const row = document.createElement('div');
+      row.className = 'grid grid-cols-[minmax(0,1fr)_auto] items-center py-3 gap-3 tx-row cursor-pointer rounded-xl px-2 hover:bg-slate-50 transition-colors';
+      row.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden grid place-items-center">
+            <img src="${tx.logo}" alt="${tx.company}" class="w-8 h-8 object-contain" />
+          </div>
+          <div>
+            <p class="font-semibold text-slate-900">${tx.name}</p>
+            <p class="text-xs text-slate-500">${tx.company}</p>
+          </div>
+        </div>
+        <div class="text-right font-semibold ${amountTone}">${tx.amount}</div>
+      `;
+
+      row.dataset.details = JSON.stringify({
+        name: tx.name,
+        company: tx.company,
+        amount: tx.amount,
+        currency: 'ZAR',
+        date: tx.date,
+        reference: tx.reference,
+        status: tx.status,
+        logo: tx.logo,
+        serviceFee: tx.serviceFee,
+        runningBalance: tx.runningBalance,
+        location: tx.location,
+        mapTile: tx.mapTile
+      });
+
+      row.addEventListener('click', () => {
+        const data = row.dataset.details ? JSON.parse(row.dataset.details) : null;
+        if (data) openTxModal(data);
+      });
+
+      return row;
+    };
+
+    const renderTransactions = (rows) => {
+      if (!txTable) return;
+      txTable.innerHTML = '';
+
+      if (!rows.length) {
+        txTable.innerHTML = '<div class="py-4 text-sm text-slate-600">No transactions available.</div>';
+        return;
+      }
+
+      rows.forEach(row => txTable.appendChild(buildTxRow(row)));
+    };
+
+    const prepareTransactions = (companies) => {
+      const now = new Date();
+      const statuses = ['Processing', 'Success', 'Success', 'Declined', 'Success', 'Pending'];
+      const locations = ['Sandton, Johannesburg', 'Cape Town', 'Umhlanga, Durban', 'Hatfield, Pretoria', 'Gqeberha', 'Stellenbosch'];
+      const mapTiles = [
+        'https://a.tile.openstreetmap.org/14/9230/12306.png',
+        'https://a.tile.openstreetmap.org/13/4639/3057.png',
+        'https://a.tile.openstreetmap.org/14/17184/12224.png',
+        'https://a.tile.openstreetmap.org/14/9039/12413.png',
+        'https://a.tile.openstreetmap.org/13/4641/3329.png',
+        'https://a.tile.openstreetmap.org/15/17611/12341.png'
+      ];
+
+      return companies.slice(0, 6).map((company, idx) => {
+        const baseAmount = 4500 + idx * 3200;
+        const direction = idx % 2 === 0 ? 1 : -1;
+        const amountValue = direction * (baseAmount + (idx % 3) * 410.5);
+        const referenceSymbol = (company.symbol || company.name || 'AHM').replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase() || 'AHM';
+        const name = company.name || company.symbol || 'Trading Universe Company';
+        const companyLabel = company.symbol && company.exchange
+          ? `${company.symbol} • ${company.exchange}`
+          : company.symbol || company.exchange || 'trading_universe';
+
+        return {
+          name,
+          company: companyLabel,
+          logo: safeLogo(company.logo),
+          reference: `${referenceSymbol}-${8700 + idx * 9}`,
+          amount: formatZAR(amountValue),
+          date: formatDateLabel(now, idx * 7 + 1),
+          status: statuses[idx % statuses.length],
+          serviceFee: formatBalance(Math.abs(amountValue) * 0.0015),
+          runningBalance: formatBalance(185000 + amountValue),
+          location: locations[idx % locations.length],
+          mapTile: mapTiles[idx % mapTiles.length]
+        };
+      });
+    };
+
+    const loadTradingUniverseTransactions = async () => {
+      if (!txTable) return;
+      txTable.innerHTML = '<div class="py-4 text-sm text-slate-600">Loading transactions...</div>';
+
+      let companies = [];
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('trading_universe')
+            .select('symbol,name,logo,exchange')
+            .limit(6);
+
+          if (error) {
+            console.warn('Unable to load trading_universe companies', error.message);
+          } else if (Array.isArray(data)) {
+            companies = data.filter(item => item && (item.name || item.symbol));
+          }
+        } catch (err) {
+          console.warn('Error reading trading_universe data', err);
+        }
+      }
+
+      if (!companies.length) {
+        companies = fallbackCompanies;
+      }
+
+      const rows = prepareTransactions(companies);
+      renderTransactions(rows);
+    };
+
+    loadTradingUniverseTransactions();
+
+    const openTxModal = (details) => {
+      if (!txModal) return;
+      txModalLogo.src = details.logo;
+      txModalLogo.alt = details.company;
+      txModalName.textContent = details.name;
+      txModalCompany.textContent = details.company;
+      txModalAmount.textContent = `${details.amount}`;
+      txModalAmount.className = `text-lg font-bold ${details.amount.trim().startsWith('-') ? 'text-rose-600' : 'text-emerald-600'}`;
+      txModalRef.textContent = details.reference;
+      txModalDate.textContent = details.date;
+      txModalStatus.textContent = details.status;
+      txModalFee.textContent = details.serviceFee || 'R0.00';
+      txModalBalance.textContent = details.runningBalance || 'R0.00';
+      txModalLocation.textContent = details.location || '—';
+      if (txModalMap) {
+        txModalMap.style.backgroundImage = details.mapTile ? `url('${details.mapTile}')` : 'linear-gradient(135deg, #e0e7ff, #f8fafc)';
+      }
+      txModal.dataset.state = 'open';
+    };
+
+    const closeTxModal = () => {
+      if (!txModal) return;
+      txModal.dataset.state = 'closing';
+      setTimeout(() => { txModal.dataset.state = 'closed'; }, 180);
+    };
+    txModalOverlay?.addEventListener('click', closeTxModal);
+    txModalClose?.addEventListener('click', closeTxModal);
+
+    toggleLoansBtn?.addEventListener('click', () => {
+      const isHidden = loansList?.classList.contains('hidden');
+      loansList?.classList.toggle('hidden');
+      toggleLoansBtn.querySelector('i')?.classList.toggle('fa-eye');
+      toggleLoansBtn.querySelector('i')?.classList.toggle('fa-eye-slash');
+      const label = toggleLoansBtn.querySelector('span');
+      if (label) label.textContent = isHidden ? 'Hide active loans' : 'View active loans';
+    });
+  </script>
+</body>
+</html>

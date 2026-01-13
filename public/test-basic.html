@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SamSub KYC - Automated Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .response {
+            margin-top: 24px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .success {
+            background: white;
+            border: 2px solid #48bb78;
+        }
+        
+        .error {
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            padding: 20px;
+            text-align: center;
+            color: #c53030;
+            font-weight: 500;
+        }
+        
+        .verification-result {
+            background: white;
+            border: 2px solid #48bb78;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .success-title {
+            color: #48bb78;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .verification-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+        
+        .verification-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .user-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #718096;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 500;
+        }
+    </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 KYC Verification</h1>
+        <p class="subtitle">Generate secure verification links instantly</p>
+        <div class="form-group">
+            <label for="autoExternalUserId">User ID</label>
+            <input type="text" id="autoExternalUserId" placeholder="user_123456" value="test-user-12345">
+        </div>
+        <div class="form-group">
+            <label for="autoLevelName">Verification Level</label>
+            <select id="autoLevelName">
+                <option value="idv-and-phone-verification" selected>IDV + Phone Verification</option>
+                <option value="basic-kyc-level">Basic KYC Level</option>
+                <option value="test-level">Test Level</option>
+            </select>
+        </div>
+        <button class="generate-btn" onclick="initAutomatedVerification()">Generate Verification Link</button>
+        <div id="automatedResponse" class="response" style="display:none;"></div>
+    </div>
+
+    <script>
+
+        async function initAutomatedVerification() {
+            const externalUserId = document.getElementById('autoExternalUserId').value;
+            const levelName = document.getElementById('autoLevelName').value;
+            const responseDiv = document.getElementById('automatedResponse');
+
+            if (!externalUserId) {
+                alert('Please enter an External User ID');
+                return;
+            }
+
+            try {
+                responseDiv.style.display = 'block';
+                responseDiv.className = 'loading';
+                responseDiv.innerHTML = '<div class="loading">⏳ Generating verification link...</div>';
+
+                const parseJson = async (response) => {
+                    const text = await response.text();
+                    if (!text) return {};
+                    try {
+                        return JSON.parse(text);
+                    } catch (err) {
+                        console.error('Failed to parse response', err, text);
+                        return { raw: text };
+                    }
+                };
+
+                const applicantResponse = await fetch('/api/samsub/kyc/create-applicant', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        externalUserId,
+                        levelName
+                    })
+                });
+
+                const applicantData = await parseJson(applicantResponse);
+                if (!applicantResponse.ok) {
+                    throw new Error(applicantData.error?.message || applicantData.error || 'Could not create applicant');
+                }
+
+                const applicantId = applicantData.id || applicantData.applicantId || applicantData.applicant_id || applicantData?.applicant?.id;
+                if (!applicantId) {
+                    throw new Error('SamSub did not return an applicant ID');
+                }
+
+                const linkResponse = await fetch('/api/samsub/kyc/websdk-link', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        applicantId,
+                        externalUserId,
+                        levelName,
+                        ttlInSecs: 600
+                    })
+                });
+
+                const linkData = await parseJson(linkResponse);
+                if (!linkResponse.ok) {
+                    throw new Error(linkData.error?.message || linkData.error || 'Could not generate WebSDK link');
+                }
+
+                const url = linkData.url || linkData.link || linkData.raw;
+                if (!url || !String(url).includes('web.sumsub.com')) {
+                    throw new Error('SamSub did not return a verification link');
+                }
+
+                responseDiv.className = 'response';
+                responseDiv.innerHTML = `
+                    <div class="verification-result">
+                        <div class="success-title">✅ Link Generated Successfully</div>
+                        <a href="${url}" target="_blank" class="verification-btn">
+                            Launch Verification
+                        </a>
+                        <div class="user-info">
+                            Applicant ID: ${applicantId}<br>
+                            Link expires in ~10 minutes
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                responseDiv.className = 'error';
+                responseDiv.innerHTML = `❌ ${error.message}`;
+            }
+        }
+
+        // Auto-generate a random user ID on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const randomId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            document.getElementById('autoExternalUserId').value = randomId;
+        });
+    </script>
+</body>
+</html>

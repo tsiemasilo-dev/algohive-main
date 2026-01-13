@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoMoney — Apply for PO Funding</title>
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <script nonce="ALGOHIVE">
+    (function () {
+      const originalWarn = console.warn;
+      console.warn = function (msg, ...rest) {
+        if (typeof msg === 'string' && msg.includes('cdn.tailwindcss.com should not be used in production')) return;
+        originalWarn.call(console, msg, ...rest);
+      };
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" nonce="ALGOHIVE"></script>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --primary: #1a73e8;
+      --primary-dark: #0c5ac9;
+      --text: #0f172a;
+      --muted: #6b7280;
+      --line: #e5e7ef;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    #layout {
+      --sb: 275px;
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh;
+    }
+
+    #ah-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+    }
+
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 350px;
+      max-width: 85vw;
+      position: fixed;
+      top: 0;
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%);
+      background: #fff;
+    }
+
+    #ah-sidebar.is-open {
+      transform: translateX(0);
+    }
+
+    @media (min-width: 768px) {
+      #layout {
+        grid-template-columns: var(--sb) 1fr;
+      }
+
+      #ah-sidebar {
+        position: sticky;
+        top: 0;
+        width: var(--sb);
+        max-width: none;
+        height: 100vh;
+        transform: translateX(0);
+        z-index: auto;
+      }
+    }
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron {
+      display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #main-nav {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details > .sub {
+      display: none !important;
+    }
+
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details > summary {
+      justify-content: center;
+      gap: 0.25rem;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details > summary span {
+      gap: 0;
+    }
+
+    #ah-sidebar .footer {
+      transition: all 0.2s ease;
+    }
+
+    #ah-sidebar[data-collapsed="true"] .footer {
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+      transform: rotate(180deg);
+    }
+
+    #ah-collapse {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      #ah-collapse {
+        display: inline-flex;
+      }
+    }
+
+    #ah-brand-switcher { position: relative; }
+    #ah-brand-switcher summary { list-style: none; }
+    #ah-brand-switcher summary::-webkit-details-marker { display: none; }
+
+    .brand-toggle {
+      margin: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff);
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    #ah-brand-switcher[open] .brand-toggle {
+      border-color: #cbd5e1;
+      background: #fff;
+      box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55);
+    }
+
+    .brand-marker {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .brand-menu {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: calc(100% - 6px);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .brand-menu-header {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: #475569;
+      padding: 4px 4px 2px;
+    }
+
+    .brand-option {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .brand-option:hover {
+      background: linear-gradient(135deg, #000000, #7c3aed);
+      color: white;
+    }
+
+    .brand-option img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      padding: 6px;
+    }
+
+    .btn {
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .nav-active {
+      background: #f1f5ff;
+      color: #1a73e8;
+    }
+
+    .nav-active i {
+      color: #1a73e8;
+    }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden bg-[var(--bg)]">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoMoney</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch</div>
+          <a href="/demo/dashboard.html" class="brand-option">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Markets Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoHive Markets</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/home.html" title="Home">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Accounts">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Accounts</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Pay</p>
+        <details class="group rounded-lg">
+          <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-send-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+            <span class="label flex-1 flex items-center justify-between">Make a Payment <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+          </summary>
+          <div class="sub ml-9 mt-1 flex flex-col gap-1">
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#geo" title="GeoPay">
+              <span class="label">GeoPay</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#bill-split" title="Bill Split">
+              <span class="label">Bill Split</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#eft" title="EFT">
+              <span class="label">EFT</span>
+            </a>
+          </div>
+        </details>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Receive a Payment">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-receive-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Receive a Payment</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Credit</p>
+        <details class="group rounded-lg">
+          <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+            <span class="label flex-1 flex items-center justify-between">Personal Credit <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+          </summary>
+          <div class="sub ml-9 mt-1 flex flex-col gap-1">
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="#" title="Unsecured Credit">
+              <span class="label">Unsecured Credit</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/instant-liquidity.html" title="Portfolio Credit">
+              <span class="label">Portfolio Credit</span>
+            </a>
+            <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/instant-liquidity.html" title="Instant Liquidity">
+              <span class="label">Instant Liquidity</span>
+            </a>
+          </div>
+        </details>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/business/apply.html" title="For my business">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">For my business</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Documents</p>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/demo/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      </div>
+    </aside>
+
+    <main class="relative flex-1 min-w-0 bg-[var(--bg)]">
+      <div class="max-w-7xl mx-auto px-3 md:px-5 pb-24 lg:pb-12 pt-6 lg:pt-8 space-y-8">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <button id="ah-mobile-menu-btn" aria-label="Open menu" class="md:hidden btn h-11 w-11 p-0 rounded-xl border-0">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 relative">
+            <button class="inline-flex items-center justify-center h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50" aria-label="Notifications">
+              <i class="fa-regular fa-bell text-base"></i>
+            </button>
+            <button id="profile-menu-trigger" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+              <img data-profile-avatar src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+              <span class="text-sm font-semibold text-slate-900 hidden sm:inline" data-profile-name>Ronaldinho Fazio</span>
+              <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+            </button>
+            <div id="profile-menu" class="absolute right-0 top-[calc(100%+8px)] w-64 rounded-xl border border-slate-200 bg-white shadow-xl hidden z-20 overflow-hidden">
+              <div class="px-4 py-3 border-b border-slate-200">
+                <p class="text-sm font-semibold text-slate-900" data-profile-name>Ronaldinho Fazio</p>
+                <p class="text-xs text-slate-500">Profile controls</p>
+              </div>
+              <button id="geopay-toggle" class="flex items-center justify-between w-full px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <span>Enable GeoPay</span>
+                <div id="geopay-toggle-track" class="relative inline-flex h-5 w-10 items-center rounded-full border border-slate-200 bg-slate-200 transition-colors">
+                  <span id="geopay-toggle-knob" class="h-4 w-4 rounded-full bg-white shadow-sm transition-transform translate-x-1"></span>
+                </div>
+              </button>
+              <button id="sign-out-btn" class="flex items-center gap-2 w-full px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 border-t border-slate-200">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <header class="flex flex-col gap-2">
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Business credit</p>
+          <h1 class="text-3xl md:text-4xl font-semibold text-slate-900">Apply for PO Funding</h1>
+          <p class="text-base text-slate-600">Welcome back, <span class="font-semibold text-slate-900" data-profile-name>Ronaldinho Fazio</span>. Tell us about your purchase order to unlock fast working capital.</p>
+        </header>
+
+        <section class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-start">
+          <div class="space-y-6">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6">
+              <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                Built for approved purchase orders
+              </span>
+              <h2 class="mt-5 text-2xl font-semibold text-slate-900">Keep cash flow moving while you fulfill large orders.</h2>
+              <p class="mt-3 text-sm text-slate-600">
+                We advance funds against your PO so you can pay suppliers, manufacture, and deliver on time. Decisions arrive within 48 hours.
+              </p>
+              <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs uppercase tracking-wide text-slate-500">Funding size</p>
+                  <p class="mt-2 text-lg font-semibold">R50k – R2M</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs uppercase tracking-wide text-slate-500">Decision time</p>
+                  <p class="mt-2 text-lg font-semibold">24-48 hours</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p class="text-xs uppercase tracking-wide text-slate-500">Advance rate</p>
+                  <p class="mt-2 text-lg font-semibold">Up to 90%</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-6">
+              <h3 class="text-sm font-semibold text-slate-900">Application steps</h3>
+              <p class="mt-2 text-sm text-slate-600">Follow the steps in order to complete your PO funding application.</p>
+              <ol class="mt-4 grid gap-3 text-sm text-slate-600">
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">1</span>
+                  Step 1: Contacts for verification
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">2</span>
+                  Step 2: Where it came from (forward the email)
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">3</span>
+                  Step 3: 6 months bank statement
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">4</span>
+                  Step 4: ID of director
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">5</span>
+                  Step 5: CIPC doc
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">6</span>
+                  Step 6: Email address
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">7</span>
+                  Step 7: Phone number
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">8</span>
+                  Step 8: Contingency plan in case you do not finish
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">9</span>
+                  Step 9: Any collateral? Registered in your name?
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">10</span>
+                  Step 10: Any other forms of income? Expected or otherwise?
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <aside class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-slate-900">PO funding application</h3>
+            <p class="mt-2 text-sm text-slate-500">We’ll review your order and respond with a term sheet.</p>
+            <form class="mt-6 grid gap-4">
+              <label class="text-sm font-medium text-slate-700">
+                Business name
+                <input class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="Acme Supply Co." />
+              </label>
+              <label class="text-sm font-medium text-slate-700">
+                Contact email
+                <input class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="you@company.com" type="email" />
+              </label>
+              <label class="text-sm font-medium text-slate-700">
+                Purchase order value
+                <input class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="$180,000" />
+              </label>
+              <label class="text-sm font-medium text-slate-700">
+                Customer name
+                <input class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="Who issued the PO?" />
+              </label>
+              <label class="text-sm font-medium text-slate-700">
+                Funding timeline
+                <select class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm">
+                  <option>Within 7 days</option>
+                  <option>Within 14 days</option>
+                  <option>Within 30 days</option>
+                </select>
+              </label>
+              <button class="btn mt-2 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 border-0" type="button">Submit application</button>
+              <p class="text-xs text-slate-500">By submitting, you agree to a soft credit review and PO verification.</p>
+            </form>
+          </aside>
+        </section>
+
+        <section class="rounded-3xl border border-slate-200 bg-slate-900 px-6 py-8 text-white">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h3 class="text-2xl font-semibold">Need help structuring your PO?</h3>
+              <p class="mt-2 text-sm text-slate-200">A funding specialist can walk you through eligibility and next steps.</p>
+            </div>
+            <a class="btn rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 border-0 hover:bg-slate-100" href="mailto:info@thealgohive.com?subject=Speak%20to%20advisory">Speak to advisory</a>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <nav class="lg:hidden fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto grid grid-cols-4">
+      <button class="flex flex-col items-center gap-1 py-3 nav-active">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[11px] font-semibold">Home</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-chart-bar text-lg"></i>
+        <span class="text-[11px] font-semibold">Statistics</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-credit-card text-lg"></i>
+        <span class="text-[11px] font-semibold">Cards</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 py-3 nav-icon">
+        <i class="fa-regular fa-user text-lg"></i>
+        <span class="text-[11px] font-semibold">Account</span>
+      </button>
+    </div>
+  </nav>
+
+  <script nonce="ALGOHIVE">
+    const sidebar = document.getElementById('ah-sidebar');
+    const overlay = document.getElementById('ah-overlay');
+    const mobileBtn = document.getElementById('ah-mobile-menu-btn');
+    const profileMenu = document.getElementById('profile-menu');
+    const profileTrigger = document.getElementById('profile-menu-trigger');
+    const signOutBtn = document.getElementById('sign-out-btn');
+    const geoToggle = document.getElementById('geopay-toggle');
+    const geoToggleTrack = document.getElementById('geopay-toggle-track');
+    const geoToggleKnob = document.getElementById('geopay-toggle-knob');
+    const profileNameEls = document.querySelectorAll('[data-profile-name]');
+    const profileAvatarEls = document.querySelectorAll('[data-profile-avatar]');
+    const PROFILE_AVATAR_FALLBACK = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80';
+    const SUPABASE_URL = 'https://aazofjsssobejhkyyiqv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM';
+    const supabaseClient = window.supabase?.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
+      {
+        global: {
+          fetch: (url, options = {}) =>
+            fetch(url, {
+              mode: 'cors',
+              cache: 'no-store',
+              ...options,
+            }),
+        },
+      }
+    );
+    const GEO_PREF_KEY = 'algomoney_geo_pay_enabled';
+    let geoPayEnabled = true;
+    let currentUser = null;
+    let currentCoords = null;
+
+    const setProfileName = (value) => {
+      const resolved = (typeof value === 'string' && value.trim()) ? value.trim() : 'AlgoMoney Member';
+      profileNameEls.forEach(el => {
+        el.textContent = resolved;
+        el.title = resolved;
+      });
+    };
+
+    const setProfileAvatar = (url) => {
+      const resolved = (typeof url === 'string' && url.trim().startsWith('http')) ? url.trim() : PROFILE_AVATAR_FALLBACK;
+      profileAvatarEls.forEach(img => { img.src = resolved; });
+    };
+
+    const setGeoToggle = (enabled) => {
+      geoPayEnabled = !!enabled;
+      if (!geoToggleTrack || !geoToggleKnob) return;
+      geoToggleTrack.classList.toggle('bg-indigo-600', enabled);
+      geoToggleTrack.classList.toggle('border-indigo-600', enabled);
+      geoToggleTrack.classList.toggle('bg-slate-200', !enabled);
+      geoToggleTrack.classList.toggle('border-slate-200', !enabled);
+      geoToggleKnob.classList.toggle('translate-x-5', enabled);
+      geoToggleKnob.classList.toggle('translate-x-1', !enabled);
+    };
+
+    const requestLocation = () => new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        console.warn('GeoPay requires location support.');
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+        (err) => {
+          console.warn('Geo location denied', err);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, maximumAge: 15000, timeout: 12000 }
+      );
+    });
+
+    const updateProfileGeoState = async (enabled, coords = null) => {
+      try {
+        const payload = {
+          geopay_enabled: enabled,
+          geo_lat: enabled && coords ? coords.latitude : null,
+          geo_lng: enabled && coords ? coords.longitude : null,
+          geo_updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient
+          .from('profiles')
+          .update(payload)
+          .eq('id', currentUser?.id);
+        if (error) throw error;
+      } catch (err) {
+        console.warn('Unable to save GeoPay preference', err);
+      }
+    };
+
+    const persistGeoPreference = async (enabled) => {
+      const nextValue = !!enabled;
+      localStorage.setItem(GEO_PREF_KEY, nextValue ? 'true' : 'false');
+      setGeoToggle(nextValue);
+      if (typeof window.onGeoPreferenceChanged === 'function') {
+        window.onGeoPreferenceChanged(nextValue);
+      }
+
+      if (!currentUser || !supabaseClient) return;
+      if (nextValue) {
+        const coords = await requestLocation();
+        if (!coords) {
+          setGeoToggle(false);
+          localStorage.setItem(GEO_PREF_KEY, 'false');
+          return;
+        }
+        currentCoords = coords;
+        await updateProfileGeoState(true, coords);
+      } else {
+        currentCoords = null;
+        await updateProfileGeoState(false, null);
+      }
+    };
+
+    const loadGeoPreference = async (profileRow) => {
+      const storedRaw = localStorage.getItem(GEO_PREF_KEY);
+      const storedEnabled = storedRaw !== 'false';
+      const profileEnabled = profileRow?.geopay_enabled === true;
+      const lat = profileRow?.geo_lat ? Number.parseFloat(profileRow.geo_lat) : null;
+      const lng = profileRow?.geo_lng ? Number.parseFloat(profileRow.geo_lng) : null;
+      const initialEnabled = profileEnabled || storedEnabled;
+      if (profileEnabled && Number.isFinite(lat) && Number.isFinite(lng)) {
+        currentCoords = { latitude: lat, longitude: lng };
+        setGeoToggle(true);
+        if (typeof window.onGeoPreferenceChanged === 'function') {
+          window.onGeoPreferenceChanged(true);
+        }
+      } else if (initialEnabled) {
+        await persistGeoPreference(true);
+      } else {
+        setGeoToggle(false);
+        if (typeof window.onGeoPreferenceChanged === 'function') {
+          window.onGeoPreferenceChanged(false);
+        }
+      }
+    };
+
+    const toggleProfileMenu = () => {
+      profileMenu?.classList.toggle('hidden');
+    };
+
+    const closeProfileMenu = () => profileMenu?.classList.add('hidden');
+
+    const redirectToAuth = () => {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+    };
+
+    const ensureSession = async () => {
+      if (!supabaseClient) {
+        console.warn('Supabase unavailable; cannot enforce auth');
+        redirectToAuth();
+        return null;
+      }
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) console.warn('Error fetching session', error.message);
+        if (!session) {
+          redirectToAuth();
+          return null;
+        }
+        return session;
+      } catch (err) {
+        console.warn('Unable to enforce session guard', err);
+        redirectToAuth();
+        return null;
+      }
+    };
+
+    const hydrateProfileFromSupabase = async (user) => {
+      if (!supabaseClient || !user) return null;
+      let profileRow = null;
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('first_name,last_name,avatar_url,geopay_enabled,geo_lat,geo_lng')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (error && error.code !== 'PGRST116') throw error;
+        profileRow = data || null;
+      } catch (err) {
+        console.warn('Unable to load profile', err);
+      }
+
+      const fullName = [profileRow?.first_name, profileRow?.last_name].filter(Boolean).join(' ').trim();
+      const metaFullName = [user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(' ').trim();
+      const displayName = fullName
+        || metaFullName
+        || (typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim())
+        || 'AlgoMoney Member';
+
+      setProfileName(displayName);
+      setProfileAvatar(profileRow?.avatar_url || user.user_metadata?.avatar_url);
+      return profileRow;
+    };
+
+    const handleSignOut = async () => {
+      try {
+        await supabaseClient?.auth.signOut();
+      } catch (err) {
+        console.warn('Unable to sign out', err);
+      }
+      redirectToAuth();
+    };
+
+    (async () => {
+      const session = await ensureSession();
+      if (!session) return;
+      currentUser = session.user;
+      const profileRow = await hydrateProfileFromSupabase(session.user);
+      await loadGeoPreference(profileRow);
+    })();
+
+    profileTrigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleProfileMenu();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profileMenu?.contains(e.target) && !profileTrigger?.contains(e.target)) {
+        closeProfileMenu();
+      }
+    });
+
+    signOutBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSignOut();
+      closeProfileMenu();
+    });
+
+    geoToggle?.addEventListener('click', (e) => {
+      e.preventDefault();
+      persistGeoPreference(!geoPayEnabled);
+    });
+
+    mobileBtn?.addEventListener('click', () => {
+      sidebar?.classList.add('is-open');
+      overlay?.classList.remove('hidden');
+    });
+
+    overlay?.addEventListener('click', () => {
+      sidebar?.classList.remove('is-open');
+      overlay?.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

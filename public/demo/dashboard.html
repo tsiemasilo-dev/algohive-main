@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive — Demo Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" nonce="ALGOHIVE"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --page: #0b1220;
+      --bg: #ffffff;
+      --muted: #64748b;
+      --ink: #0f172a;
+      --olive: #556b2f;
+      --olive-700: #3f4f21;
+      --brand: #556b2f;
+      --line: #e5e7ef
+    }
+
+      html,
+      body {
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink)
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      height: 40px;
+      padding: 0 .875rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-weight: 600
+    }
+
+    .btn-olive {
+      background: var(--olive);
+      border-color: var(--olive-700);
+      color: #f8fafc;
+      box-shadow: 0 14px 28px -18px rgba(63, 79, 33, 0.45);
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .btn-olive:hover {
+      background: var(--olive-700);
+      box-shadow: 0 18px 38px -18px rgba(63, 79, 33, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .tab {
+      height: 36px;
+      border-radius: 8px;
+      padding: 0 .75rem
+    }
+
+    .tab-active {
+      background: #111827;
+      color: #fff
+    }
+
+    #layout {
+      --sb: 275px;
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh
+    }
+
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 350px;
+      max-width: 85vw;
+      position: fixed;
+      top: 0;
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%)
+    }
+
+    #ah-sidebar.is-open {
+      transform: translateX(0)
+    }
+
+    @media (min-width: 768px) {
+      #layout {
+        grid-template-columns: var(--sb) 1fr
+      }
+
+      #layout.is-collapsed {
+        --sb: 64px
+      }
+
+      #ah-sidebar {
+        position: sticky;
+        top: 0;
+        width: var(--sb);
+        max-width: none;
+        height: 100vh;
+        transform: translateX(0);
+        z-index: auto
+      }
+    }
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron {
+      display: none
+    }
+
+    #ah-sidebar[data-collapsed="true"] #main-nav {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-menu {
+      display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details>.sub {
+      display: none !important
+    }
+
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details>summary {
+      justify-content: center;
+      gap: .25rem
+    }
+
+    #ah-sidebar[data-collapsed="true"] details>summary span {
+      gap: 0
+    }
+
+    #ah-sidebar .footer {
+      transition: all .2s ease
+    }
+
+    #ah-sidebar[data-collapsed="true"] .footer {
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+      transform: rotate(180deg)
+    }
+
+    #ah-collapse {
+      display: none
+    }
+
+    @media (min-width: 768px) {
+      #ah-collapse {
+        display: inline-flex
+      }
+    }
+
+    .ps-tile {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #fff
+    }
+
+    .ps-label {
+      color: #64748b;
+      font-weight: 500;
+      font-size: .85rem
+    }
+
+    .ps-value {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-top: 2px
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none
+    }
+
+    .stat-card {
+      box-shadow: 0 16px 44px -24px rgba(12, 18, 31, 0.32);
+      transition: transform .18s ease, box-shadow .22s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 52px -26px rgba(12, 18, 31, 0.38);
+    }
+
+    .skeleton {
+      position: relative;
+      overflow: hidden;
+      background: #e5e7eb;
+    }
+
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%);
+      animation: shimmer 1.25s infinite;
+    }
+
+    @keyframes shimmer {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    #dashboard-skeleton {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(1px);
+      transition: opacity .25s ease;
+    }
+
+    /* Brand switcher */
+    #ah-brand-switcher {
+      position: relative;
+    }
+
+    #ah-brand-switcher summary {
+      list-style: none;
+    }
+
+    #ah-brand-switcher summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .brand-toggle {
+      margin: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff);
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    #ah-brand-switcher[open] .brand-toggle {
+      border-color: #cbd5e1;
+      background: #fff;
+      box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55);
+    }
+
+    .brand-marker {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #111827;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .brand-menu {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: calc(100% - 6px);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .brand-menu-header {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 700;
+      color: #475569;
+      padding: 4px 4px 2px;
+    }
+
+    .brand-option {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        transition: background-color .2s ease, color .2s ease, filter .2s ease;
+    }
+
+    .brand-option:hover {
+      background: linear-gradient(135deg, #000000, #7c3aed);
+    }
+
+    .brand-option:hover img {
+      filter: brightness(0) invert(1);
+    }
+
+    .brand-option:hover .algomoney-word {
+      color: #fff;
+    }
+
+    .brand-option img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        object-fit: contain;
+        background: transparent;
+    }
+
+    .brand-option .algomoney-word {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: #0f172a;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle {
+        margin: 12px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        justify-content: center;
+        gap: 0;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down {
+        display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker {
+        background: transparent;
+        width: 38px;
+        height: 38px;
+        box-shadow: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+    .watch-strip {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+
+    .watch-strip > article {
+      scroll-snap-align: start;
+    }
+
+    .watch-fade {
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 48px;
+    }
+
+    .watch-fade-left {
+      left: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    }
+
+    .watch-fade-right {
+      right: 0;
+      background: linear-gradient(270deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    }
+
+    .allocation-card {
+      background: radial-gradient(circle at 10% 20%, rgba(190, 242, 100, 0.18), transparent 35%),
+        radial-gradient(circle at 90% 10%, rgba(190, 242, 100, 0.16), transparent 30%),
+        linear-gradient(135deg, #1a2a15, #2f4a2a);
+      border: 1px solid rgba(163, 190, 90, 0.35);
+      box-shadow: 0 24px 60px -32px rgba(137, 168, 72, 0.5);
+      color: #f8fafc;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.65rem;
+      border-radius: 9999px;
+      font-weight: 700;
+    }
+
+    .toast-stack {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      z-index: 400;
+      pointer-events: none;
+    }
+
+    .toast-card {
+      pointer-events: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      min-width: 240px;
+      max-width: 360px;
+      padding: 0.9rem 1rem;
+      border-radius: 1rem;
+      background-image: linear-gradient(135deg, #0b1215, #1c2714);
+      color: #f8fafc;
+      box-shadow: 0 18px 42px -18px rgba(11, 18, 21, 0.7);
+      border: 1px solid rgba(126, 141, 82, 0.45);
+      transform: translateX(120%);
+      opacity: 0;
+      animation: toastIn 0.45s cubic-bezier(.22, 1, .36, 1) forwards;
+    }
+
+    .toast-card[data-tone="err"],
+    .toast-card[data-tone="warn"] {
+      background-image: linear-gradient(135deg, #231312, #261a12);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+
+    .toast-card[data-tone="ok"] {
+      background-image: linear-gradient(135deg, #0d1b10, #14200f);
+      border-color: rgba(52, 211, 153, 0.35);
+    }
+
+    .toast-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(126, 141, 82, 0.12);
+      color: #f8fafc;
+      border: 1px solid rgba(126, 141, 82, 0.35);
+      flex-shrink: 0;
+    }
+
+    .toast-card[data-tone="err"] .toast-icon,
+    .toast-card[data-tone="warn"] .toast-icon {
+      background: rgba(248, 113, 113, 0.12);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+
+    .toast-card[data-tone="ok"] .toast-icon {
+      background: rgba(52, 211, 153, 0.12);
+      border-color: rgba(52, 211, 153, 0.35);
+    }
+
+    .toast-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .toast-message {
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .toast-dismiss {
+      color: #cbd5e1;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0.1rem;
+      transition: color .2s ease;
+    }
+
+    .toast-dismiss:hover {
+      color: #f8fafc;
+    }
+
+    .toast-card--leaving {
+      animation: toastOut 0.32s ease forwards;
+    }
+
+    @keyframes toastIn {
+      0% { transform: translateX(120%); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes toastOut {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(120%); opacity: 0; }
+    }
+
+    .top-gainers-marquee {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 12px 30px -18px rgba(15, 23, 42, 0.35);
+    }
+
+    .top-gainers-marquee::-webkit-scrollbar {
+      display: none;
+    }
+
+    .top-gainers-track {
+      display: flex;
+      align-items: stretch;
+      gap: 14px;
+      width: max-content;
+    }
+
+    .top-gainers-track.is-looping {
+      animation: tg-scroll var(--tg-duration, 24s) linear infinite;
+    }
+
+    .top-gainers-track.is-looping:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes tg-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .tg-card {
+      min-width: 220px;
+      background: linear-gradient(135deg, #f8fafc, #ffffff);
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      color: #0f172a;
+      box-shadow: 0 18px 42px -18px rgba(15, 23, 42, 0.25);
+    }
+
+    .tg-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .tg-logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid rgba(226, 232, 240, 0.6);
+      padding: 6px;
+    }
+
+    .tg-logo-fallback {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #0f172a;
+      background: #e2e8f0;
+    }
+
+    .tg-card-meta {
+      min-width: 0;
+    }
+
+    .tg-symbol {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .tg-name {
+      font-size: 13px;
+      color: #475569;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tg-value {
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .tg-change {
+      margin-top: 6px;
+      font-weight: 700;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.06);
+    }
+
+    .tg-change.is-up { color: #22c55e; }
+    .tg-change.is-down { color: #ef4444; }
+
+    .ph-item {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+    }
+
+    .ph-symbol { font-weight: 700; color: #0f172a; }
+    .ph-name { font-size: 13px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ph-weight { font-weight: 700; color: #0f172a; }
+
+    .ph-logo-fallback {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #0f172a;
+      background: #e2e8f0;
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-white">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 h-[100vh] bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+            <div class="text-[11px] text-slate-500 label">Markets</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch workspace</div>
+          <a href="https://thealgohive.com/money/home" class="brand-option">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoMoney</div>
+          </a>
+        </div>
+      </details>
+
+        <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+          <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/demo/dashboard.html" title="Home">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+          </a>
+
+          <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Markets</p>
+
+          <details class="group mt-1">
+            <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+              <span class="flex items-center gap-3">
+                <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/market-analysis-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Invest</span>
+              </span>
+              <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+            </summary>
+            <div class="ml-8 mt-1 flex flex-col sub">
+              <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/demo/strategies.html" title="OpenStrategies">
+                <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">OpenStrategies</span>
+              </a>
+              <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="#" title="Funds">
+                <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4" />
+                <span class="flex items-center gap-2">
+                  <span class="label">Funds</span>
+                  <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+                </span>
+              </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/demo/markets.html" title="Markets">
+                <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/earth-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Markets</span>
+              </a>
+            </div>
+          </details>
+
+          <a class="mt-1 px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/demo/news-insights.html" title="News &amp; Insights">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/news-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">News &amp; Insights</span>
+          </a>
+
+          <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Account</p>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/demo/holdings.html" title="Holdings">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Holdings</span>
+          </a>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/demo/account-statements.html" title="Account Statements">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Account Statements</span>
+          </a>
+          <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Rewards">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/gift-stroke-rounded.svg" alt="" class="w-4 h-4" />
+            <span class="flex items-center gap-2">
+              <span class="label">Rewards</span>
+              <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+            </span>
+          </a>
+        <details class="group mt-4">
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center">
+              <span class="label">Other</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="#" title="Help">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/help-circle-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Help</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="#" title="Legal">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/audit-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Legal</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="#" title="Learn">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pencil-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="flex items-center gap-2"><span class="label">Learn</span><span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span></span>
+            </a>
+          </div>
+        </details>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/demo/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <button id="ah-collapse" class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+    </aside>
+
+    <main class="relative flex-1 min-w-0 bg-white">
+      <div id="dashboard-skeleton" class="overflow-y-auto px-4 md:px-6 pt-4 pb-10">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <div class="h-11 w-11 rounded-xl skeleton"></div>
+            <div class="h-10 w-32 rounded-full skeleton"></div>
+          </div>
+          <div class="h-11 w-32 rounded-full skeleton"></div>
+        </div>
+
+        <div class="px-6 md:px-10 py-6 space-y-6">
+          <div class="space-y-2">
+            <div class="h-8 w-72 rounded-lg skeleton"></div>
+            <div class="h-4 w-80 max-w-full rounded-lg skeleton"></div>
+          </div>
+
+          <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="bg-white rounded-xl shadow-sm p-5 space-y-3">
+              <div class="h-4 w-24 rounded skeleton"></div>
+              <div class="h-8 w-24 rounded skeleton"></div>
+              <div class="h-4 w-32 rounded skeleton"></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 space-y-3">
+              <div class="h-4 w-20 rounded skeleton"></div>
+              <div class="h-8 w-24 rounded skeleton"></div>
+              <div class="h-4 w-28 rounded skeleton"></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 space-y-3">
+              <div class="h-4 w-28 rounded skeleton"></div>
+              <div class="h-8 w-28 rounded skeleton"></div>
+              <div class="h-4 w-24 rounded skeleton"></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 space-y-3">
+              <div class="h-4 w-24 rounded skeleton"></div>
+              <div class="h-8 w-24 rounded skeleton"></div>
+              <div class="h-4 w-24 rounded skeleton"></div>
+            </div>
+          </div>
+
+          <div class="grid gap-6 lg:grid-cols-3">
+            <div class="bg-white rounded-xl shadow-sm p-6 lg:col-span-2 space-y-4">
+              <div class="h-5 w-56 rounded skeleton"></div>
+              <div class="h-4 w-72 rounded skeleton"></div>
+              <div class="h-[240px] rounded-lg skeleton"></div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-5 space-y-4">
+              <div class="h-5 w-40 rounded skeleton"></div>
+              <div class="h-4 w-52 rounded skeleton"></div>
+              <div class="grid grid-cols-3 gap-3">
+                <div class="h-16 rounded-lg skeleton"></div>
+                <div class="h-16 rounded-lg skeleton"></div>
+                <div class="h-16 rounded-lg skeleton"></div>
+              </div>
+              <div class="space-y-3">
+                <div class="h-12 rounded-lg skeleton"></div>
+                <div class="h-12 rounded-lg skeleton"></div>
+                <div class="h-12 rounded-lg skeleton"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-5 space-y-4">
+            <div class="h-5 w-48 rounded skeleton"></div>
+            <div class="h-4 w-64 rounded skeleton"></div>
+            <div class="flex flex-wrap gap-2">
+              <div class="h-11 w-full md:w-64 rounded-lg skeleton"></div>
+              <div class="h-11 w-28 rounded-lg skeleton"></div>
+              <div class="h-11 w-28 rounded-lg skeleton"></div>
+            </div>
+            <div class="h-[260px] rounded-lg skeleton"></div>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 md:px-6 pt-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <button id="ah-mobile-menu-btn" class="md:hidden btn h-11 w-11 p-0 rounded-xl border-0" title="Open Menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <a id="account-status-pill" class="inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-800 font-semibold transition hover:bg-blue-100" href="#" aria-disabled="true">
+              <div class="h-8 w-8 rounded-full border border-blue-200 bg-white grid place-items-center text-blue-600 text-base">ⓘ</div>
+              <p id="account-status-label" class="whitespace-normal">Demo Account</p>
+            </a>
+          </div>
+
+          <button id="profile-btn" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+            <img id="profile-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+            <span id="profile-name" class="text-sm font-semibold text-slate-900 hidden sm:inline">Demo User</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 md:px-10 py-6 space-y-6">
+        <section class="space-y-2" id="header-section">
+          <h1 id="dashboard-title" class="text-[28px] md:text-[32px] font-semibold text-slate-900">Dashboard</h1>
+          <p class="text-sm md:text-base text-slate-500">Here's your financial snapshot for today.</p>
+        </section>
+
+        <section id="stats-cards" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4"></section>
+        <div class="flex items-center justify-end text-sm text-slate-600">
+          <a href="/demo/account-statements.html" class="inline-flex items-center gap-2 text-olive-700 font-semibold hover:underline">
+            View statements <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+          </a>
+        </div>
+
+        <section class="grid gap-6 lg:grid-cols-12" id="performance-grid">
+          <article id="portfolio-card" class="card border border-slate-200 shadow-none col-span-12 lg:col-span-8 min-w-0">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <div>
+                <h3 class="font-normal text-slate-800">Your portfolio</h3>
+                <div class="mt-1 text-sm text-slate-500" id="pf-updated">—</div>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap justify-end">
+                <button data-range="1M" class="tab tab-active text-[13px]">1M</button>
+                <button data-range="3M" class="tab text-[13px]">3M</button>
+                <button data-range="6M" class="tab text-[13px]">6M</button>
+                <button data-range="YTD" class="tab text-[13px]">YTD</button>
+                <button data-range="1Y" class="tab text-[13px]">1Y</button>
+                <button data-range="3Y" class="tab text-[13px]">3Y</button>
+                <button id="pf-refresh"
+                  class="ml-2 h-9 w-9 rounded-lg border border-slate-200 hover:bg-slate-50 grid place-items-center"
+                  title="Refresh">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="px-5 pt-2 flex flex-wrap gap-3 items-center text-sm text-slate-600">Strategy performance</div>
+              <div class="px-5 pb-4 flex flex-wrap items-center gap-3">
+                <div class="flex items-baseline gap-3">
+                  <div class="text-2xl font-bold" id="pf-value">—</div>
+                  <div class="text-lg font-normal" id="pf-change" data-sign="-">—</div>
+                </div>
+              <div class="ml-auto inline-flex items-center gap-2 text-sm text-slate-600">
+                <label for="pf-allocation" class="text-xs uppercase tracking-[0.08em] text-slate-500 font-semibold">View</label>
+                <select id="pf-allocation" class="h-9 rounded-lg border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"></select>
+              </div>
+            </div>
+            <div class="px-2 pb-4 pt-2">
+              <div class="h-[260px]"><canvas id="pf-chart" class="max-w-full"></canvas></div>
+            </div>
+          </article>
+
+          <aside class="col-span-12 lg:col-span-4 grid gap-6 lg:sticky lg:top-4 self-start min-w-0">
+            <div class="card p-5 border border-slate-200" id="strategy-card">
+              <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Strategy spotlight</p>
+                  <h3 id="strategy-name" class="text-base font-semibold text-slate-900">—</h3>
+                  <p id="strategy-code" class="text-xs text-slate-500">Loading your strategies…</p>
+                </div>
+                <div class="flex gap-2">
+                  <button id="strategy-prev" class="h-9 w-9 rounded-lg border border-slate-200 grid place-items-center hover:bg-slate-50" aria-label="Previous strategy">
+                    <i class="fa-solid fa-chevron-left text-slate-500"></i>
+                  </button>
+                  <button id="strategy-next" class="h-9 w-9 rounded-lg border border-slate-200 grid place-items-center hover:bg-slate-50" aria-label="Next strategy">
+                    <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+                    <p class="text-xs text-slate-500 font-medium">Allocations</p>
+                    <p id="strategy-allocations" class="text-lg font-semibold text-slate-900">—</p>
+                  </div>
+                  <div class="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+                    <p class="text-xs text-slate-500 font-medium">Allocated</p>
+                    <p id="strategy-allocated" class="text-lg font-semibold text-slate-900">—</p>
+                  </div>
+                  <div class="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+                    <p class="text-xs text-slate-500 font-medium">% Return</p>
+                    <p id="strategy-return" class="text-lg font-semibold text-emerald-700">—</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div id="strategy-asset-logo" class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center text-sm font-semibold text-slate-700">—</div>
+                    <div class="min-w-0">
+                      <p id="strategy-asset-symbol" class="text-sm font-semibold text-slate-900 truncate">—</p>
+                      <p class="text-xs text-slate-500">Top performing asset</p>
+                    </div>
+                  </div>
+                  <span id="strategy-asset-change" class="text-sm font-semibold text-emerald-600">—</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="col-span-12 lg:col-span-9 min-w-0">
+          <div class="card p-6 rounded-2xl border border-slate-200">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-lg font-medium text-slate-900">Current holdings</h3>
+              <div class="flex gap-2">
+                <button id="hold-prev"
+                  class="h-9 w-9 rounded-lg border border-slate-200 grid place-items-center hover:bg-slate-50"
+                  aria-label="Previous">
+                  <i class="fa-solid fa-chevron-left text-slate-500"></i>
+                </button>
+                <button id="hold-next"
+                  class="h-9 w-9 rounded-lg border border-slate-200 grid place-items-center hover:bg-slate-50"
+                  aria-label="Next">
+                  <i class="fa-solid fa-chevron-right text-slate-500"></i>
+                </button>
+              </div>
+            </div>
+            <div id="hold-track" class="flex gap-4 overflow-x-auto no-scrollbar snap-x"></div>
+          </div>
+        </section>
+
+        <section class="col-span-12 lg:col-span-9 min-w-0">
+          <div class="card rounded-2xl border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-medium text-slate-900">Top Positions</h3>
+              <a href="/demo/holdings.html" class="text-sm text-slate-500 hover:text-slate-700">View Holdings</a>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <label class="text-sm text-slate-500">Asset Class</label>
+              <select id="position-asset-class" class="h-9 rounded-lg border border-slate-200 px-3 text-sm">
+                <option value="all">All</option>
+                <option value="stocks">Stocks</option>
+                <option value="crypto">Crypto</option>
+                <option value="etf">ETFs</option>
+              </select>
+            </div>
+
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-sm" aria-label="Top positions table">
+                <thead>
+                  <tr class="text-slate-500">
+                    <th class="py-3 text-left font-normal">Asset</th>
+                    <th class="py-3 text-left font-normal">Market Value</th>
+                    <th class="py-3 text-left font-normal">Total P/L ($)</th>
+                    <th class="py-3 text-center font-normal"> </th>
+                  </tr>
+                </thead>
+                <tbody id="positions-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="col-span-12 lg:col-span-9 min-w-0">
+          <div class="card rounded-2xl border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-medium text-slate-900">Recent Orders</h3>
+              <a href="/demo/orders.html" class="text-sm text-slate-500 hover:text-slate-700">View All</a>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <div class="relative">
+                <input id="orders-search" class="h-9 w-64 rounded-lg border border-slate-200 pl-9 pr-3 text-sm" placeholder="Search..." />
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              </div>
+              <button id="cancel-selected" class="h-9 rounded-lg bg-amber-100 text-amber-900 px-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                Cancel <span id="sel-count">0</span> selected
+              </button>
+              <button class="h-9 rounded-lg border border-slate-200 px-3 text-sm">
+                <i class="fa-solid fa-table-cells-large mr-2 text-slate-500"></i> Columns
+              </button>
+            </div>
+
+            <div class="mt-3 text-xs text-slate-400" id="clear-selection" hidden>Clear Selection</div>
+
+            <div class="mt-2 overflow-x-auto">
+              <table class="w-full text-sm" aria-label="Recent orders table">
+                <thead>
+                  <tr class="text-slate-500">
+                    <th class="py-3 pl-3"><input id="chk-all" type="checkbox" class="h-4 w-4 rounded border-slate-300" /></th>
+                    <th class="py-3 text-left font-normal">Asset</th>
+                    <th class="py-3 text-left font-normal">Order Type</th>
+                    <th class="py-3 text-left font-normal">Side</th>
+                    <th class="py-3 text-left font-normal">Qty</th>
+                    <th class="py-3 text-left font-normal">Filled Qty</th>
+                    <th class="py-3 text-left font-normal">Avg. Fill Price</th>
+                    <th class="py-3 text-left font-normal">Status</th>
+                    <th class="py-3 text-left font-normal">Source</th>
+                    <th class="py-3 text-left font-normal">Submitted At</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="transaction-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4">
+    <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Transaction Details</p>
+          <h3 id="modal-title" class="text-lg font-semibold text-slate-900"></h3>
+        </div>
+        <button id="close-modal" class="text-slate-400 hover:text-slate-600" aria-label="Close modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="modal-body" class="space-y-3 px-5 py-4 text-sm text-slate-700"></div>
+      <div class="flex items-center justify-end gap-2 border-t border-slate-200 px-5 py-4">
+        <button id="modal-close-btn" class="h-11 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Close</button>
+        <button class="h-11 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800">View in ledger</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="funds-modal" class="fixed inset-0 z-50 hidden">
+    <div id="funds-overlay" class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Add funds</p>
+            <h3 class="text-lg font-semibold text-slate-900">Top up a demo account</h3>
+          </div>
+          <button id="funds-close" type="button" class="text-slate-500 hover:text-slate-800" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="px-5 py-4 space-y-4">
+          <label class="block text-sm font-medium text-slate-700">
+            Choose account
+            <select id="funds-account" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[15px] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900">
+              <option value="">Loading…</option>
+            </select>
+          </label>
+          <label class="block text-sm font-medium text-slate-700">
+            Amount (USD)
+            <input id="funds-amount" type="number" inputmode="decimal" min="1" max="100000" step="1" placeholder="500" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-[15px] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900" />
+            <p class="mt-1 text-xs text-slate-500">Minimum $1 — Maximum $100,000.</p>
+          </label>
+        </div>
+        <div class="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/80 px-5 py-3">
+          <p class="text-xs text-slate-500">Funds apply to your selected demo account.</p>
+          <div class="flex items-center gap-3">
+            <button id="funds-cancel" type="button" class="btn bg-white text-slate-700">Cancel</button>
+            <button id="funds-submit" type="button" class="btn bg-slate-900 text-white border-slate-900 hover:bg-slate-800">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <script type="module" nonce="ALGOHIVE">
+    import { supabase } from '/js/supabase.js';
+
+    const dashboardTitle = document.getElementById('dashboard-title');
+    const profileNameEl = document.getElementById('profile-name');
+    const profileAvatarEl = document.getElementById('profile-avatar');
+    const accountStatusPill = document.getElementById('account-status-pill');
+    const accountStatusLabel = document.getElementById('account-status-label');
+    const pfValue = document.getElementById('pf-value');
+    const pfChange = document.getElementById('pf-change');
+    const pfUpdated = document.getElementById('pf-updated');
+    const pfTabs = Array.from(document.querySelectorAll('#portfolio-card .tab'));
+    const pfAllocationSelect = document.getElementById('pf-allocation');
+    const pfChart = document.getElementById('pf-chart');
+    const pfRefresh = document.getElementById('pf-refresh');
+    const holdTrack = document.getElementById('hold-track');
+    const holdPrev = document.getElementById('hold-prev');
+    const holdNext = document.getElementById('hold-next');
+    const strategyNameEl = document.getElementById('strategy-name');
+    const strategyCodeEl = document.getElementById('strategy-code');
+    const strategyAllocationsEl = document.getElementById('strategy-allocations');
+    const strategyAllocatedEl = document.getElementById('strategy-allocated');
+    const strategyReturnEl = document.getElementById('strategy-return');
+    const strategyAssetLogoEl = document.getElementById('strategy-asset-logo');
+    const strategyAssetSymbolEl = document.getElementById('strategy-asset-symbol');
+    const strategyAssetChangeEl = document.getElementById('strategy-asset-change');
+    const strategyPrev = document.getElementById('strategy-prev');
+    const strategyNext = document.getElementById('strategy-next');
+    const fallbackFirstName = 'Trader';
+
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good Morning';
+      if (hour < 18) return 'Good Afternoon';
+      return 'Good Evening';
+    };
+
+    const setGreetingName = (firstName = fallbackFirstName) => {
+      if (dashboardTitle) dashboardTitle.textContent = `${getGreeting()} ${firstName}`;
+    };
+
+    const setProfileName = (fullName) => {
+      if (profileNameEl && fullName) {
+        profileNameEl.textContent = fullName;
+      }
+    };
+
+    const ACCOUNT_PILL_STYLES = {
+      pending: {
+        label: 'Pending',
+        className: 'inline-flex items-center gap-3 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 font-semibold transition',
+        dotClass: 'border-amber-200 text-amber-600',
+      },
+      active: {
+        label: 'Live Account',
+        className: 'inline-flex items-center gap-3 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800 font-semibold transition',
+        dotClass: 'border-emerald-200 text-emerald-600',
+      },
+      action: {
+        label: 'Action required',
+        className: 'inline-flex items-center gap-3 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-800 font-semibold transition hover:bg-rose-100',
+        dotClass: 'border-rose-200 text-rose-600',
+      },
+      fallback: {
+        label: 'Demo Account',
+        className: 'inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-800 font-semibold transition',
+        dotClass: 'border-blue-200 text-blue-600',
+      },
+    };
+
+    const applyAccountStatusPill = (status) => {
+      if (!accountStatusPill || !accountStatusLabel) return;
+      const normalized = String(status || '').toUpperCase();
+      let tone = 'pending';
+      if (normalized === 'ACTIVE') tone = 'active';
+      if (normalized === 'ACTION_REQUIRED') tone = 'action';
+      if (!normalized) tone = 'fallback';
+
+      const style = ACCOUNT_PILL_STYLES[tone] || ACCOUNT_PILL_STYLES.fallback;
+      const dotEl = accountStatusPill.querySelector('div');
+      accountStatusPill.className = style.className;
+      accountStatusLabel.textContent = style.label;
+      if (dotEl) {
+        dotEl.className = `h-8 w-8 rounded-full border bg-white grid place-items-center text-base ${style.dotClass}`;
+      }
+
+      if (tone === 'action') {
+        accountStatusPill.setAttribute('href', '/settings.html');
+        accountStatusPill.removeAttribute('aria-disabled');
+      } else {
+        accountStatusPill.setAttribute('href', '#');
+        accountStatusPill.setAttribute('aria-disabled', 'true');
+      }
+    };
+
+    const fallbackOrders = [
+      { asset: 'AAPL', type: 'Market', side: 'Buy', qty: 12, filled: 12, price: 254.12, status: 'Filled', source: 'Algo', submitted: '2024/06/14 10:23', logo: null },
+      { asset: 'ETH', type: 'Limit', side: 'Sell', qty: 1.6, filled: 1.4, price: 3520.12, status: 'Partial', source: 'Manual', submitted: '2024/06/13 16:08', logo: null },
+      { asset: 'QQQ', type: 'Market', side: 'Buy', qty: 8, filled: 8, price: 471.21, status: 'Filled', source: 'Algo', submitted: '2024/06/12 13:44', logo: null },
+      { asset: 'BTC', type: 'Stop', side: 'Buy', qty: 0.05, filled: 0.05, price: 68750.55, status: 'Filled', source: 'Strategy', submitted: '2024/06/10 09:10', logo: null },
+    ];
+
+    let baseCurrency = 'USD';
+    let profileBalance = 0;
+    let currentUserId = null;
+    let cachedAllocations = [];
+    let positionsCache = [];
+    let ordersCache = [...fallbackOrders];
+    let selectedOrders = new Set();
+
+    const statsData = [
+      { title: 'Total Balance', value: '$0.00', changePercent: 0, changeDirection: 'up', subtitle: 'Funds available in demo wallet' },
+      { title: 'Total Allocations', value: '0', changePercent: 0, changeDirection: 'up', subtitle: 'Number of allocations' },
+      { title: 'Total Income', value: '$0.00', changePercent: 0, changeDirection: 'up', subtitle: 'Performance income to date' },
+      { title: 'Avg. Return', value: '0%', changePercent: 0, changeDirection: 'up', subtitle: 'Average return across allocations' },
+    ];
+
+    const equityRanges = {
+      '1M': {
+        labels: ['2024-06-01', '2024-06-08', '2024-06-15', '2024-06-22'],
+        data: [13650, 14020, 14310, 14860],
+        updated: () => new Date(),
+      },
+      '3M': {
+        labels: ['2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01'],
+        data: [12900, 13650, 14220, 14860],
+        updated: () => new Date(),
+      },
+      '6M': {
+        labels: ['2024-02-01', '2024-04-01', '2024-06-01', '2024-08-01'],
+        data: [12100, 13220, 14220, 14860],
+        updated: () => new Date(),
+      },
+      YTD: {
+        labels: ['2024-01-02', '2024-03-01', '2024-05-01', '2024-07-01'],
+        data: [11800, 12940, 13910, 14860],
+        updated: () => new Date(),
+      },
+      '1Y': {
+        labels: ['2023-09-01', '2023-12-01', '2024-03-01', '2024-06-01'],
+        data: [10300, 11810, 13220, 14860],
+        updated: () => new Date('2024-12-31'),
+      },
+      '3Y': {
+        labels: ['2022-07-01', '2023-01-01', '2023-07-01', '2024-01-01'],
+        data: [7800, 9200, 11350, 14860],
+        updated: () => new Date('2024-12-31'),
+      },
+    };
+
+    const fallbackHoldings = [
+      { symbol: 'BTC', name: 'Bitcoin', weightPct: 24.8, value: 18250, changePct: 2.6, breakdown: [{ strategyName: 'Momentum BTC', weightPct: 14.4, value: 10600 }] },
+      { symbol: 'ETH', name: 'Ethereum', weightPct: 21.6, value: 15850, changePct: 3.1, breakdown: [{ strategyName: 'ETH Growth', weightPct: 12.2, value: 8950 }] },
+      { symbol: 'QQQ', name: 'Invesco QQQ', weightPct: 18.2, value: 13420, changePct: 1.4, breakdown: [{ strategyName: 'Tech Momentum', weightPct: 10.5, value: 7750 }] },
+      { symbol: 'GLD', name: 'SPDR Gold Shares', weightPct: 17.4, value: 12820, changePct: 0.9, breakdown: [{ strategyName: 'Defensive', weightPct: 9.2, value: 6780 }] },
+      { symbol: 'SPY', name: 'SPDR S&P 500', weightPct: 15.3, value: 11240, changePct: 1.8, breakdown: [{ strategyName: 'Index Core', weightPct: 8.1, value: 5960 }] },
+    ];
+
+    const fallbackStrategies = [
+      {
+        id: 'demo-strat-1',
+        name: 'Momentum BTC',
+        code: 'MOM-BTC',
+        allocationsCount: 3,
+        allocated: 12000,
+        latestValue: 14550,
+        currency: 'USD',
+        topAsset: { symbol: 'BTC', logo: null, changePct: 2.4 },
+      },
+      {
+        id: 'demo-strat-2',
+        name: 'Tech Momentum',
+        code: 'TECH-MOM',
+        allocationsCount: 2,
+        allocated: 9800,
+        latestValue: 11750,
+        currency: 'USD',
+        topAsset: { symbol: 'QQQ', logo: null, changePct: 1.2 },
+      },
+    ];
+
+      let strategySpotlights = [];
+      let strategyIndex = 0;
+      let strategySeriesMap = new Map();
+      let selectedStrategyId = null;
+      let selectedAllocationId = null;
+      let currentPayload = { labels: [], data: [] };
+      let currentValueCurrency = baseCurrency;
+
+      const computeAllocationReturn = (allocation = {}) => {
+        const explicit = Number(allocation?.latest_return_pct);
+        if (Number.isFinite(explicit)) return Math.abs(explicit * 100);
+        return Math.abs(computeReturnPct(allocation?.amount_invested, allocation?.latest_value));
+      };
+
+      const formatStartDateLabel = (value) => {
+        if (!value) return 'Allocation';
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+        }
+        return String(value);
+      };
+
+    function normalizeWeight(weight = 0) {
+      const value = Number(weight);
+      if (!Number.isFinite(value) || value <= 0) return 0;
+      return value > 1 ? value / 100 : value;
+    }
+
+    function ensurePositiveTrend(values = []) {
+      const next = [];
+      values.forEach((value, idx) => {
+        const numeric = Number.isFinite(Number(value)) ? Math.abs(Number(value)) : 0;
+        if (idx === 0) {
+          next.push(numeric || 0);
+          return;
+        }
+        const prev = next[idx - 1];
+        next.push(Math.max(prev, numeric));
+      });
+      return next;
+    }
+
+    function formatMoney(value = 0, currency = 'USD') {
+      try {
+        return Number(value || 0).toLocaleString('en-US', {
+          style: 'currency',
+          currency,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      } catch (error) {
+        return `$${Number(value || 0).toFixed(2)}`;
+      }
+    }
+
+    async function fetchDemoAllocations(profileId = '') {
+      if (!profileId) return [];
+      try {
+        const { data, error } = await supabase
+          .from('demo_allocations')
+          .select(
+            `id, strategy_id, amount_invested, latest_value, latest_return_pct, base_currency, status,
+            portfolio_holdings, series_1m, series_3m, series_6m, series_ytd, series_1y, series_3y, start_date, end_date,
+            strategies(name, code)`
+          )
+          .eq('demo_profile_id', profileId);
+
+        if (error) throw error;
+        return data || [];
+      } catch (error) {
+        console.warn('demo_allocations fetch failed', error);
+        return [];
+      }
+    }
+
+    function aggregateHoldings(allocations = []) {
+      const activeAllocs = allocations.filter((row) => (row?.status || '').toLowerCase() === 'active');
+      const rows = activeAllocs.length ? activeAllocs : allocations;
+      const holdingsMap = new Map();
+
+      let totalAmount = 0;
+      let currency = 'USD';
+
+      rows.forEach((allocation) => {
+        const amount = Number(allocation?.latest_value ?? allocation?.amount_invested ?? 0) || 0;
+        if (amount <= 0) return;
+
+        currency = allocation?.base_currency || currency;
+        totalAmount += amount;
+
+        const strategyName = allocation?.strategies?.name || allocation?.strategies?.code || `Strategy ${allocation?.strategy_id || ''}`;
+        const holdings = Array.isArray(allocation?.portfolio_holdings) ? allocation.portfolio_holdings : [];
+
+        holdings.forEach((holding) => {
+          const weight = normalizeWeight(holding?.weight_pct ?? holding?.weight);
+          if (!weight) return;
+
+          const value = amount * weight;
+          const symbol = (holding?.symbol || holding?.name || '—').toString().trim();
+          if (!symbol) return;
+
+          if (!holdingsMap.has(symbol)) {
+            holdingsMap.set(symbol, {
+              symbol,
+              name: (holding?.company_name || holding?.name || symbol || 'Unknown').toString().trim() || 'Unknown',
+              logo: holding?.logo_url || holding?.logo || null,
+              value: 0,
+              changePct: holding?.daily_change_pct ?? holding?.change_pct ?? null,
+              breakdown: [],
+            });
+          }
+
+          const record = holdingsMap.get(symbol);
+          record.value += value;
+          const existing = record.breakdown.find((item) => item.strategyId === allocation?.strategy_id);
+          const contribution = { strategyId: allocation?.strategy_id, strategyName, weightPct: weight * 100, value };
+          if (existing) {
+            existing.value += value;
+            existing.weightPct = weight * 100;
+          } else {
+            record.breakdown.push(contribution);
+          }
+          if (record.changePct == null && holding?.daily_change_pct != null) {
+            record.changePct = holding.daily_change_pct;
+          }
+        });
+      });
+
+      const holdings = Array.from(holdingsMap.values())
+        .map((item) => ({
+          ...item,
+          weightPct: totalAmount ? (item.value / totalAmount) * 100 : 0,
+        }))
+        .sort((a, b) => b.value - a.value);
+
+      return { holdings, totalAmount, currency };
+    }
+
+    let chartInstance = null;
+    let currentRange = '1M';
+
+    function applySeekPosition(index = null, { skipTooltip = false } = {}) {
+      const payload = Array.isArray(currentPayload?.data) ? currentPayload : { labels: [], data: [] };
+      if (payload.data.length === 0) return;
+
+      const maxIndex = payload.data.length - 1;
+      const desired = index ?? maxIndex;
+      const safeIndex = Math.min(Math.max(Number(desired) || 0, 0), maxIndex);
+
+      const value = Number(payload.data[safeIndex] ?? payload.data[maxIndex] ?? 0);
+      const label = payload.labels[safeIndex] ?? payload.labels[maxIndex];
+
+      if (pfValue) pfValue.textContent = formatCurrency(value, currentValueCurrency || baseCurrency);
+
+      if (pfUpdated) {
+        const parsed = label && !Number.isNaN(Date.parse(label)) ? new Date(label) : null;
+        pfUpdated.textContent = parsed
+          ? parsed.toLocaleString('en-ZA', { month: 'long', day: '2-digit', year: 'numeric' })
+          : label || new Date().toLocaleString('en-ZA', { month: 'long', day: '2-digit', year: 'numeric' });
+      }
+
+      if (!skipTooltip && chartInstance?.tooltip?.setActiveElements) {
+        chartInstance.setActiveElements([{ datasetIndex: 0, index: safeIndex }]);
+        chartInstance.tooltip.setActiveElements([{ datasetIndex: 0, index: safeIndex }], { x: 0, y: 0 });
+        chartInstance.update();
+      }
+    }
+
+    function formatCurrency(value = 0, currency = 'USD') {
+      try {
+        return value.toLocaleString('en-US', {
+          style: 'currency',
+          currency,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      } catch (error) {
+        return `$${Number(value || 0).toFixed(2)}`;
+      }
+    }
+
+    function setBalanceCard(value = 0, currency = baseCurrency) {
+      profileBalance = Number(value) || 0;
+      baseCurrency = currency || 'USD';
+      statsData[0].value = formatCurrency(profileBalance, baseCurrency);
+      renderStats();
+    }
+
+    async function hydrateBalanceFromDemo(userId = '') {
+      if (!userId) {
+        setBalanceCard(profileBalance, baseCurrency);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('demo_profiles')
+          .select('balance, base_currency')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (error) throw error;
+        setBalanceCard(data?.balance ?? 0, data?.base_currency || 'USD');
+      } catch (error) {
+        console.warn('demo_profiles balance fetch failed; using fallback balance', error);
+        setBalanceCard(profileBalance, baseCurrency);
+      }
+    }
+
+    async function hydrateProfileFromLive() {
+      try {
+        const { data: userWrap } = await supabase.auth.getUser();
+        const user = userWrap?.user;
+        if (!user) {
+          setGreetingName();
+          setProfileName('Demo User');
+          applyAccountStatusPill();
+          hydrateBalanceFromDemo();
+          return;
+        }
+
+        currentUserId = user.id;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, avatar_url')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const firstName = profile?.first_name || user.user_metadata?.first_name || fallbackFirstName;
+        const lastName = profile?.last_name || user.user_metadata?.last_name || '';
+        const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+
+        setGreetingName(firstName);
+        setProfileName(fullName || firstName);
+
+        const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
+        if (avatarUrl && profileAvatarEl) profileAvatarEl.src = avatarUrl;
+
+        await hydrateAccountStatus(user);
+        hydrateBalanceFromDemo(user.id);
+      } catch (error) {
+        console.warn('Profile hydration failed; using defaults', error);
+      }
+    }
+
+    async function hydrateAccountStatus(user) {
+      if (!user) {
+        applyAccountStatusPill();
+        return;
+      }
+      try {
+        const emailAddress = (user.email || '').trim();
+        let query = supabase.from('alpaca_accounts').select('alpaca_account_status').eq('user_id', user.id);
+        let { data, error } = await query.maybeSingle();
+        if (error && error.code !== 'PGRST116') throw error;
+        if (!data && emailAddress) {
+          ({ data, error } = await supabase
+            .from('alpaca_accounts')
+            .select('alpaca_account_status')
+            .eq('email', emailAddress)
+            .maybeSingle());
+          if (error && error.code !== 'PGRST116') throw error;
+        }
+        applyAccountStatusPill(data?.alpaca_account_status || 'PENDING');
+      } catch (error) {
+        console.warn('Alpaca account status fetch failed', error);
+        applyAccountStatusPill('PENDING');
+      }
+    }
+
+    setGreetingName();
+    const profileReady = hydrateProfileFromLive().catch(() => null);
+
+    const statsContainer = document.getElementById('stats-cards');
+    const holdingsRows = document.getElementById('holdings-rows');
+    const holdingsCards = document.getElementById('holdings-cards');
+    const positionsBody = document.getElementById('positions-body');
+    const positionAssetClass = document.getElementById('position-asset-class');
+    const ordersBody = document.getElementById('orders-body');
+    const ordersSearch = document.getElementById('orders-search');
+    const cancelSelected = document.getElementById('cancel-selected');
+    const clearSelection = document.getElementById('clear-selection');
+    const selectionCount = document.getElementById('sel-count');
+    const chkAll = document.getElementById('chk-all');
+    const skeletonLayer = document.getElementById('dashboard-skeleton');
+    const fundsModal = document.getElementById('funds-modal');
+    const fundsOverlay = document.getElementById('funds-overlay');
+    const fundsClose = document.getElementById('funds-close');
+    const fundsAccount = document.getElementById('funds-account');
+    const fundsAmount = document.getElementById('funds-amount');
+    const fundsCancel = document.getElementById('funds-cancel');
+    const fundsSubmit = document.getElementById('funds-submit');
+    const toastStack = document.getElementById('toast-stack');
+
+    function showToast(message, tone = 'ok') {
+      if (!toastStack || !message) return;
+
+      const iconMap = {
+        ok: 'fa-check',
+        warn: 'fa-triangle-exclamation',
+        err: 'fa-circle-xmark',
+      };
+
+      const toneKey = ['ok', 'warn', 'err'].includes(tone) ? tone : 'ok';
+      const toast = document.createElement('article');
+      toast.className = 'toast-card';
+      toast.dataset.tone = toneKey;
+
+      toast.innerHTML = `
+        <span class="toast-icon"><i class="fa-solid ${iconMap[toneKey]}"></i></span>
+        <div class="toast-content"><p class="toast-message">${message}</p></div>
+        <button class="toast-dismiss" aria-label="Dismiss notification"><i class="fa-solid fa-xmark"></i></button>
+      `;
+
+      const removeToast = () => {
+        toast.classList.add('toast-card--leaving');
+        setTimeout(() => toast.remove(), 320);
+      };
+
+      toast.querySelector('.toast-dismiss')?.addEventListener('click', removeToast);
+      toastStack.appendChild(toast);
+      setTimeout(removeToast, 4200);
+    }
+
+    function renderStats() {
+      if (!statsContainer) return;
+      statsContainer.innerHTML = statsData
+        .map((item) => {
+          const positive = item.changeDirection === 'up';
+          const pillClass = positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+      const arrow = positive ? '↑' : '↓';
+      const isBalanceCard = item.title === 'Total Balance';
+      const addFundsCta = isBalanceCard
+          ? `<div class="pt-2"><button data-add-funds class="btn btn-olive w-full justify-center text-sm">
+                  <i class="fa-solid fa-plus text-xs"></i><span>Add funds</span>
+                </button></div>`
+              : '';
+          return `
+            <article class="bg-white rounded-xl stat-card p-5 space-y-3 border border-slate-100">
+              <p class="text-sm font-semibold text-slate-500">${item.title}</p>
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-[28px] md:text-[32px] font-bold text-slate-900">${item.value}</p>
+                <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${pillClass}">${arrow} ${item.changePercent}%</span>
+              </div>
+              <p class="text-sm text-slate-500">${item.subtitle}</p>
+              ${addFundsCta}
+            </article>`;
+        })
+        .join('');
+
+      attachAddFundsHandler();
+    }
+
+    function updateStatsFromAllocations(allocations = [], currency = baseCurrency) {
+      const rows = Array.isArray(allocations) ? allocations : [];
+      const totalAllocations = rows.length;
+      const totalIncome = rows.reduce((sum, row) => {
+        const latest = Number(row?.latest_value ?? 0) || 0;
+        const allocated = Number(row?.amount_invested ?? 0) || 0;
+        return sum + (latest - allocated);
+      }, 0);
+      const avgReturn = totalAllocations
+        ? rows.reduce((sum, row) => sum + computeReturnPct(row?.amount_invested, row?.latest_value), 0) / totalAllocations
+        : 0;
+      const positiveIncome = Math.max(0, Math.abs(totalIncome));
+      const positiveReturn = Math.max(0, Math.abs(avgReturn));
+
+      statsData[1].value = `${totalAllocations}`;
+      statsData[1].changePercent = 0;
+      statsData[1].changeDirection = 'up';
+
+      statsData[2].value = formatCurrency(positiveIncome, currency);
+      statsData[2].changePercent = Number(positiveReturn.toFixed(2));
+      statsData[2].changeDirection = 'up';
+
+      statsData[3].value = `${Number(positiveReturn).toFixed(2)}%`;
+      statsData[3].changePercent = Number(positiveReturn.toFixed(2));
+      statsData[3].changeDirection = 'up';
+
+      renderStats();
+    }
+
+    function setActiveRange(range = '1M') {
+      currentRange = range;
+      pfTabs.forEach((btn) => {
+        const isActive = btn.dataset.range === range;
+        btn.classList.toggle('tab-active', isActive);
+      });
+    }
+
+      function renderEquityChart(range = '1M') {
+        if (!pfChart) return;
+        const rangeKey = range.toUpperCase();
+        currentRange = range;
+
+        pfTabs.forEach((btn) => btn.classList.toggle('tab-active', btn.dataset.range === rangeKey));
+
+        const ctx = pfChart.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+        gradient.addColorStop(0, 'rgba(85,107,47,0.35)');
+        gradient.addColorStop(1, 'rgba(85,107,47,0.06)');
+
+        const strategy = strategySeriesMap.get(selectedStrategyId) || strategySeriesMap.values().next().value || null;
+        const fallbackCfg = equityRanges[rangeKey] || equityRanges['1Y'];
+        let payload = { labels: fallbackCfg.labels || [], data: fallbackCfg.data || [] };
+        let currencyForValue = baseCurrency;
+        let label = 'Demo allocation';
+        let changePct = 0;
+
+        if (strategy) {
+          const allocations = strategy.allocations || [];
+          const matched = allocations.find((item) => String(item.id) === String(selectedAllocationId));
+          const targetAllocation = matched || allocations[0] || null;
+
+          if (targetAllocation && !matched) {
+            selectedAllocationId = targetAllocation.id || targetAllocation.label || null;
+            if (pfAllocationSelect) pfAllocationSelect.value = selectedAllocationId || '';
+          }
+
+          const sourceSeries = targetAllocation?.seriesByRange?.[rangeKey] || strategy.seriesByRange?.[rangeKey] || [];
+          const seriesPayload = buildRangePayload(sourceSeries, rangeKey);
+
+          if (seriesPayload.labels.length && seriesPayload.data.length) payload = seriesPayload;
+          currencyForValue = targetAllocation?.currency || strategy.currency || baseCurrency;
+
+        if (targetAllocation) {
+          changePct = computeAllocationReturn(targetAllocation);
+          label = targetAllocation.label || `${formatStartDateLabel(targetAllocation.start_date)} allocation`;
+        } else {
+          changePct = Number.isFinite(strategy.returnPct)
+            ? Math.abs(strategy.returnPct)
+            : Math.abs(computeReturnPct(strategy.allocated, strategy.latestValue));
+          label = strategy.name || 'Strategy allocation';
+        }
+
+      }
+
+        payload.data = ensurePositiveTrend(payload.data);
+
+        if (!Number.isFinite(changePct)) {
+        const first = payload.data[0] || 0;
+        const last = payload.data[payload.data.length - 1] || 0;
+        changePct = first ? Math.abs(((last - first) / first) * 100) : 0;
+      }
+
+      if (pfChange) {
+        pfChange.textContent = `+${changePct.toFixed(2)}%`;
+        pfChange.classList.add('text-green-600');
+        pfChange.classList.remove('text-rose-600');
+      }
+
+        currentPayload = payload;
+        currentValueCurrency = currencyForValue;
+
+        if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: payload.labels, datasets: [
+          {
+            label,
+            data: payload.data,
+            tension: 0.35,
+            borderWidth: 2,
+            borderColor: '#556B2F',
+            backgroundColor: gradient,
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 4,
+          },
+        ] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: false }, tooltip: { enabled: true, displayColors: false } },
+          onHover: (_evt, elements) => {
+            if (elements?.length) {
+              applySeekPosition(elements[0].index, { skipTooltip: true });
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', maxTicksLimit: 5, autoSkip: true, maxRotation: 0 },
+            },
+            y: {
+              grid: { color: 'rgba(148, 163, 184, 0.3)' },
+              ticks: { color: '#94a3b8', maxTicksLimit: 5 },
+            },
+          },
+        },
+      });
+
+      applySeekPosition(payload.data.length ? payload.data.length - 1 : 0, { skipTooltip: true });
+    }
+    const buildLogo = (symbol = '', logoUrl = null, size = 'h-11 w-11', bgTone = 'bg-slate-100') => {
+      const clean = (symbol || '—').toString();
+      if (logoUrl) {
+        return `<img src="${logoUrl}" alt="${clean} logo" class="${size} rounded-full object-cover border border-slate-200" loading="lazy" />`;
+      }
+      return `<div class="${size} rounded-full ${bgTone} grid place-items-center text-slate-800 font-semibold">${clean.slice(0, 2).toUpperCase()}</div>`;
+    };
+
+    function renderHoldingsCarousel(data = [], currency = baseCurrency) {
+      if (!holdTrack) return;
+      const rows = Array.isArray(data) ? data.slice(0, 8) : [];
+      if (!rows.length) {
+        holdTrack.innerHTML = '<div class="text-sm text-slate-500">No holdings yet.</div>';
+        return;
+      }
+
+      const chip = (pct = 0) => {
+        const tone = pct >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700';
+        const label = `${pct >= 0 ? '+' : ''}${Number(pct || 0).toFixed(2)}%`;
+        return `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${tone}">${label}</span>`;
+      };
+
+      holdTrack.innerHTML = rows
+        .map((h, idx) => {
+          const bg = idx % 2 === 0 ? '#eef2ff' : '#e2f3ec';
+          const price = formatMoney(h.value || 0, currency);
+          return `
+            <article class="min-w-[280px] max-w-[280px] snap-start bg-white border border-slate-200 rounded-2xl p-5 flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                ${buildLogo(h.symbol || h.ticker, h.logo, 'h-11 w-11', 'bg-indigo-50')}
+                <div>
+                  <div class="text-sm font-normal text-slate-900">${h.symbol || h.ticker || 'Asset'}</div>
+                  <div class="text-xs text-slate-500">${h.name || 'Holding'}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-normal text-slate-900">${price}</div>
+                <div class="mt-2">${chip(h.changePct ?? 0)}</div>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+
+      const CARD_W = 284;
+      if (holdPrev) holdPrev.onclick = () => holdTrack.scrollBy({ left: -CARD_W, behavior: 'smooth' });
+      if (holdNext) holdNext.onclick = () => holdTrack.scrollBy({ left: CARD_W, behavior: 'smooth' });
+    }
+
+    function summarizeMix(asset) {
+      const mix = (asset.breakdown || []).slice(0, 2);
+      if (!mix.length) return '—';
+      return mix
+        .map((row) => `${row.strategyName || 'Strategy'} (${row.weightPct?.toFixed?.(1) || '0.0'}%)`)
+        .join(', ');
+    }
+
+    function renderHoldingsView(data = [], currency = 'USD') {
+      if (!holdingsRows || !holdingsCards) return;
+      const rows = Array.isArray(data) ? data.slice(0, 5) : [];
+      holdingsRows.innerHTML = '';
+      holdingsCards.innerHTML = '';
+
+      if (!rows.length) {
+        holdingsRows.innerHTML = '<tr><td class="px-4 py-4 text-sm text-slate-500" colspan="5">No holdings available yet.</td></tr>';
+        holdingsCards.innerHTML = '<div class="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-500">No holdings available yet.</div>';
+        return;
+      }
+
+      rows.forEach((asset, idx) => {
+        const tone = asset.changePct == null ? 'text-slate-600' : asset.changePct >= 0 ? 'text-emerald-600' : 'text-rose-600';
+        const changeLabel = asset.changePct == null ? '—' : `${asset.changePct >= 0 ? '+' : ''}${Number(asset.changePct).toFixed(2)}%`;
+        const mixLabel = summarizeMix(asset);
+        const logo = buildLogo(asset.symbol, asset.logo, 'h-10 w-10');
+
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 1 ? 'bg-slate-50/50' : '';
+        tr.innerHTML = `
+          <td class="px-4 py-3 font-semibold text-slate-900">
+            <div class="flex items-center gap-3">
+              ${logo}
+              <div>
+                <div class="text-[var(--olive)] font-semibold">${asset.symbol}</div>
+                <div class="text-xs text-slate-500">${asset.name || asset.symbol}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-slate-700">${(asset.weightPct || 0).toFixed(2)}%</td>
+          <td class="px-4 py-3 text-slate-700">${formatMoney(asset.value, currency)}</td>
+          <td class="px-4 py-3 text-slate-700">${mixLabel}</td>
+          <td class="px-4 py-3 font-semibold ${tone}">${changeLabel}</td>
+        `;
+        holdingsRows.appendChild(tr);
+
+        const card = document.createElement('div');
+        card.className = 'rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-2';
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            ${buildLogo(asset.symbol, asset.logo, 'h-10 w-10')}
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <p class="text-base font-semibold text-slate-900">${asset.symbol}</p>
+                <span class="text-xs font-semibold ${tone}">${changeLabel}</span>
+              </div>
+              <p class="text-xs text-slate-500">${asset.name || asset.symbol}</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-sm text-slate-700 mt-2">
+            <span>${(asset.weightPct || 0).toFixed(2)}% alloc</span>
+            <span class="font-semibold">${formatMoney(asset.value, currency)}</span>
+          </div>
+          <p class="text-xs text-slate-500">${mixLabel}</p>
+        `;
+        holdingsCards.appendChild(card);
+      });
+    }
+
+    function buildPositionsFromHoldings(data = []) {
+      const holdings = Array.isArray(data) ? data : [];
+      return holdings
+        .slice(0, 5)
+        .map((asset) => {
+          const value = Number(asset.value || 0) || 0;
+          const pl = (Number(asset.changePct ?? 0) / 100) * value;
+          const assetClass = ['BTC', 'ETH', 'SOL'].includes((asset.symbol || '').toUpperCase()) ? 'crypto' : 'stocks';
+          return {
+            symbol: asset.symbol,
+            name: asset.name || asset.symbol,
+            value,
+            pl,
+            class: assetClass,
+            logo: asset.logo || null,
+          };
+        })
+        .sort((a, b) => b.value - a.value);
+    }
+
+    function renderTopPositions(data = [], currency = baseCurrency) {
+      if (!positionsBody) return;
+      positionsBody.innerHTML = '';
+      const classFilter = (positionAssetClass?.value || 'all').toLowerCase();
+      positionsCache = Array.isArray(data) ? data : [];
+
+      const filtered = positionsCache.filter((row) => {
+        const classOk = classFilter === 'all' || row.class === classFilter;
+        return classOk;
+      });
+
+      if (!filtered.length) {
+        positionsBody.innerHTML = '<tr><td colspan="4" class="py-4 text-sm text-slate-500">No positions available.</td></tr>';
+        return;
+      }
+
+      filtered.slice(0, 5).forEach((row, idx) => {
+        const plTone = row.pl >= 0 ? 'text-green-600' : 'text-red-600';
+        const logo = buildLogo(row.symbol, row.logo, 'h-10 w-10');
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 1 ? 'bg-slate-50/60' : 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="py-3">
+            <div class="flex items-center gap-3">
+              ${logo}
+              <div>
+                <div class="text-slate-800 font-semibold">${row.symbol}</div>
+                <div class="text-xs text-slate-500">${row.name || ''}</div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3">${formatMoney(row.value, currency)}</td>
+          <td class="py-3 ${plTone}">${row.pl >= 0 ? '+' : ''}${formatMoney(row.pl, currency)}</td>
+          <td class="py-3 text-center"></td>
+        `;
+        positionsBody.appendChild(tr);
+      });
+    }
+
+    function filterFallbackHoldings(strategyId = null) {
+      if (!strategyId) return fallbackHoldings;
+      const strat = fallbackStrategies.find((row) => String(row.id) === String(strategyId));
+      if (!strat) return fallbackHoldings;
+      const matches = fallbackHoldings.filter((holding) =>
+        (holding.breakdown || []).some(
+          (item) => (item.strategyName || '').toLowerCase() === (strat.name || '').toLowerCase()
+        )
+      );
+      return matches.length ? matches : fallbackHoldings;
+    }
+
+    function getStrategyHoldings(strategyId = null) {
+      const allocations = Array.isArray(cachedAllocations) ? cachedAllocations : [];
+      const hasAllocations = allocations.length > 0;
+
+      if (strategyId && hasAllocations) {
+        const scoped = allocations.filter((row) => String(row?.strategy_id) === String(strategyId));
+        const { holdings, currency } = aggregateHoldings(scoped);
+        if (holdings.length) return { holdings, currency: currency || baseCurrency };
+      }
+
+      if (hasAllocations) {
+        const { holdings, currency } = aggregateHoldings(allocations);
+        if (holdings.length) return { holdings, currency: currency || baseCurrency };
+      }
+
+      return { holdings: filterFallbackHoldings(strategyId), currency: baseCurrency };
+    }
+
+    function renderHoldingsForSelected() {
+      const { holdings: scopedHoldings, currency } = getStrategyHoldings(selectedStrategyId);
+      const currencyToUse = currency || baseCurrency;
+
+      renderHoldingsView(scopedHoldings, currencyToUse);
+      renderHoldingsCarousel(scopedHoldings, currencyToUse);
+      positionsCache = buildPositionsFromHoldings(scopedHoldings);
+      renderTopPositions(positionsCache, currencyToUse);
+    }
+
+    function buildOrdersFromHoldings(data = []) {
+      const holdings = Array.isArray(data) ? data.slice(0, 4) : [];
+      if (!holdings.length) return [...fallbackOrders];
+      return holdings.map((asset, idx) => {
+        const qty = Math.max(1, Math.round((asset.weightPct || 1) * 2 + idx));
+        const price = Math.max(1, (asset.value || 1000) / Math.max(1, qty));
+        return {
+          id: `order-${idx}`,
+          asset: asset.symbol,
+          orderType: idx % 2 === 0 ? 'Market' : 'Limit',
+          side: (asset.changePct ?? 0) >= 0 ? 'Buy' : 'Sell',
+          qty,
+          filled: qty - (idx % 2 === 0 ? 0 : 1),
+          price,
+          status: idx % 2 === 0 ? 'Filled' : 'Partial',
+          source: idx % 2 === 0 ? 'Algo' : 'Manual',
+          submitted: '2024/06/12 10:00',
+          logo: asset.logo || null,
+        };
+      });
+    }
+
+    function updateOrderSelectionUI() {
+      if (selectionCount) selectionCount.textContent = selectedOrders.size;
+      if (cancelSelected) cancelSelected.disabled = selectedOrders.size === 0;
+      if (clearSelection) clearSelection.hidden = selectedOrders.size === 0;
+    }
+
+    function renderOrdersTable(data = ordersCache) {
+      if (!ordersBody) return;
+      ordersBody.innerHTML = '<tr><td colspan="10" class="py-4 text-sm text-slate-600 text-center">Switch to live to view recent orders.</td></tr>';
+      updateOrderSelectionUI();
+      return;
+      const query = (ordersSearch?.value || '').toLowerCase();
+      const rows = (Array.isArray(data) ? data : []).filter((row) =>
+        !query || row.asset?.toLowerCase().includes(query) || row.orderType?.toLowerCase?.().includes?.(query) || row.side?.toLowerCase?.().includes?.(query)
+      );
+
+      ordersBody.innerHTML = '';
+      if (!rows.length) {
+        ordersBody.innerHTML = '<tr><td colspan="10" class="py-4 text-sm text-slate-500">No orders found.</td></tr>';
+        updateOrderSelectionUI();
+        return;
+      }
+
+      rows.forEach((row, idx) => {
+        const id = row.id || `order-${idx}`;
+        const logo = buildLogo(row.asset, row.logo, 'h-8 w-8');
+        const checked = selectedOrders.has(id);
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="py-3 pl-3"><input type="checkbox" class="row-chk h-4 w-4 rounded border-slate-300" data-order-id="${id}" ${checked ? 'checked' : ''} /></td>
+          <td class="py-3">
+            <div class="flex items-center gap-2">${logo}<span class="text-slate-800 font-semibold">${row.asset}</span></div>
+          </td>
+          <td class="py-3">${row.orderType || row.type || 'Market'}</td>
+          <td class="py-3">${row.side || 'Buy'}</td>
+          <td class="py-3">${row.qty}</td>
+          <td class="py-3">${row.filled}</td>
+          <td class="py-3">${formatMoney(row.price, baseCurrency)}</td>
+          <td class="py-3">${row.status || 'Filled'}</td>
+          <td class="py-3">${row.source || 'Algo'}</td>
+          <td class="py-3">${row.submitted || ''}</td>
+        `;
+        ordersBody.appendChild(tr);
+      });
+
+      ordersBody.querySelectorAll('.row-chk').forEach((chk) => {
+        chk.addEventListener('change', (event) => {
+          const id = event.target.dataset.orderId;
+          if (event.target.checked) selectedOrders.add(id);
+          else selectedOrders.delete(id);
+          updateOrderSelectionUI();
+        });
+      });
+
+      updateOrderSelectionUI();
+    }
+
+    async function loadTopHoldings() {
+      try {
+        const allocations = await fetchDemoAllocations(currentUserId || '');
+        cachedAllocations = allocations;
+        let holdingsSet = fallbackHoldings;
+
+        if (allocations.length) {
+          const { holdings, currency } = aggregateHoldings(allocations);
+          baseCurrency = currency || baseCurrency;
+          holdingsSet = holdings.length ? holdings : fallbackHoldings;
+          updateStatsFromAllocations(allocations, baseCurrency);
+        } else {
+          const fallbackRows = fallbackStrategies.map((item) => ({
+            amount_invested: item.allocated || 0,
+            latest_value: (item.latestValue ?? item.allocated) || 0,
+            base_currency: item.currency || baseCurrency,
+          }));
+          updateStatsFromAllocations(fallbackRows, baseCurrency);
+        }
+        const strategyData = buildStrategySpotlights(allocations);
+        strategySpotlights = strategyData.length ? strategyData : [];
+        strategySeriesMap = buildStrategySeries(allocations);
+        if (!selectedStrategyId || !strategySeriesMap.has(selectedStrategyId)) {
+          selectedStrategyId = strategySeriesMap.keys().next().value || null;
+        }
+        renderStrategySpotlight(strategyIndex);
+
+        const scoped = getStrategyHoldings(selectedStrategyId);
+        ordersCache = buildOrdersFromHoldings(scoped.holdings.length ? scoped.holdings : holdingsSet);
+        renderOrdersTable(ordersCache);
+      } catch (error) {
+        console.warn('Top holdings load failed; showing fallback', error);
+        const fallbackRows = fallbackStrategies.map((item) => ({
+          amount_invested: item.allocated || 0,
+          latest_value: (item.latestValue ?? item.allocated) || 0,
+          base_currency: item.currency || baseCurrency,
+        }));
+        updateStatsFromAllocations(fallbackRows, baseCurrency);
+        strategySpotlights = [];
+          strategySeriesMap = buildStrategySeries([]);
+        selectedStrategyId = strategySeriesMap.keys().next().value || null;
+        renderStrategySpotlight(strategyIndex);
+
+        const scoped = getStrategyHoldings(selectedStrategyId);
+        ordersCache = buildOrdersFromHoldings(scoped.holdings);
+        renderOrdersTable(ordersCache);
+      }
+    }
+
+    function computeReturnPct(allocated = 0, latestValue = 0) {
+      const alloc = Number(allocated) || 0;
+      const latest = Number(latestValue) || 0;
+      if (!alloc || alloc <= 0) return 0;
+      return ((latest - alloc) / alloc) * 100;
+    }
+
+    function generateSeries(base = 10000, points = 12) {
+      let value = base || 10000;
+      const series = [];
+      for (let i = 0; i < points; i++) {
+        const drift = 0.004 * Math.sin(i / 2);
+        const momentum = 0.003 * Math.cos(i / 3);
+        value = value * (1 + drift + momentum);
+        series.push(Number(value.toFixed(2)));
+      }
+      return series;
+    }
+
+    function normalizeSeriesPoints(series = []) {
+      const arr = Array.isArray(series) ? series : [];
+      const points = arr
+        .map((item, idx) => {
+          if (Number.isFinite(item)) {
+            return { date: idx, value: Number(item) };
+          }
+          if (item && typeof item === 'object') {
+            const value = Number(item.value ?? item.equity ?? item.amount ?? item.val ?? item.y);
+            if (!Number.isFinite(value)) return null;
+            const date = item.date || item.ts || item.label || item.time || item.x || item.asof || idx;
+            return { date, value };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      if (!points.length) return [];
+
+      const sortable = points.every((pt) => pt.date && !Number.isNaN(Date.parse(pt.date)));
+      if (sortable) {
+        return [...points].sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
+
+      return points;
+    }
+
+    function formatSeriesLabel(value, rangeKey = '1Y') {
+      if (value == null) return '';
+      const asDate = new Date(value);
+      if (!Number.isNaN(asDate.getTime())) {
+        const opts = ['1M', '3M', '6M', 'YTD'].includes(rangeKey)
+          ? { month: 'short', day: '2-digit' }
+          : { month: 'short', year: 'numeric' };
+        return asDate.toLocaleDateString('en-US', opts);
+      }
+      return value.toString();
+    }
+
+    function scaleSeriesPoints(points = [], targetEndValue = 0) {
+      const arr = Array.isArray(points) ? points : [];
+      if (!arr.length || !targetEndValue) return arr;
+      const base = arr[arr.length - 1]?.value;
+      if (!Number.isFinite(base) || base === 0) return arr;
+      const factor = Number(targetEndValue) / base;
+      return arr.map((pt) => ({ ...pt, value: Number((pt.value * factor).toFixed(2)) }));
+    }
+
+    function combineSeriesByDate(seriesSets = [], fallback = []) {
+      const allSeries = Array.isArray(seriesSets) ? seriesSets.flatMap((set) => (Array.isArray(set) ? set : [])) : [];
+      const dateMap = new Map();
+
+      allSeries.forEach((pt) => {
+        const value = Number(pt?.value ?? 0);
+        if (!Number.isFinite(value)) return;
+        const rawDate = pt?.date ?? pt?.label ?? pt?.x ?? '';
+        const parsed = rawDate && !Number.isNaN(Date.parse(rawDate)) ? new Date(rawDate) : null;
+        const key = parsed ? parsed.toISOString().slice(0, 10) : String(rawDate || '');
+        if (!key) return;
+        dateMap.set(key, (dateMap.get(key) || 0) + value);
+      });
+
+      if (!dateMap.size) return fallback;
+
+      const combined = Array.from(dateMap.entries()).map(([date, value]) => ({ date, value }));
+      const sortable = combined.every((pt) => pt.date && !Number.isNaN(Date.parse(pt.date)));
+      if (sortable) combined.sort((a, b) => new Date(a.date) - new Date(b.date));
+      return combined;
+    }
+
+    function buildAllocationSeriesByRange(allocation = {}, fallbackBase = []) {
+      const ranges = {
+        '1M': normalizeSeriesPoints(allocation?.series_1m),
+        '3M': normalizeSeriesPoints(allocation?.series_3m),
+        '6M': normalizeSeriesPoints(allocation?.series_6m),
+        YTD: normalizeSeriesPoints(allocation?.series_ytd),
+        '1Y': normalizeSeriesPoints(allocation?.series_1y),
+        '3Y': normalizeSeriesPoints(allocation?.series_3y),
+      };
+
+      const targetValue = allocation?.latest_value ?? allocation?.amount_invested ?? 0;
+
+      Object.keys(ranges).forEach((rangeKey) => {
+        if (!ranges[rangeKey].length) {
+          ranges[rangeKey] = scaleSeriesPoints(fallbackBase, targetValue);
+        }
+      });
+
+      return ranges;
+    }
+
+    function buildRangePayload(series = [], rangeKey = '1Y') {
+      const points = normalizeSeriesPoints(series);
+      if (!points.length) return { labels: [], data: [] };
+
+      const labels = points.map((pt, idx) => formatSeriesLabel(pt.date ?? idx, rangeKey) || `Point ${idx + 1}`);
+      const data = ensurePositiveTrend(points.map((pt) => Number(pt.value || 0)));
+      return { labels, data };
+    }
+
+    function alignData(baseLength = 0, values = []) {
+      const arr = Array.isArray(values) ? values : [];
+      if (!baseLength) return arr;
+      const trimmed = arr.slice(-baseLength);
+      if (trimmed.length === baseLength) return trimmed;
+      const padValue = trimmed.length ? trimmed[trimmed.length - 1] : 0;
+      return [...Array(baseLength - trimmed.length).fill(padValue), ...trimmed];
+    }
+
+    function buildStrategySeries(allocations = []) {
+      const grouped = new Map();
+
+      allocations.forEach((allocation, idx) => {
+        const strategyId = allocation?.strategy_id;
+        if (!strategyId) return;
+
+        const name = allocation?.strategies?.name || allocation?.strategies?.code || `Strategy ${strategyId}`;
+        const code = allocation?.strategies?.code || '';
+        const group = grouped.get(strategyId) || {
+          id: strategyId,
+          name,
+          code,
+          currency: allocation?.base_currency || baseCurrency,
+          allocated: 0,
+          latestValue: 0,
+          allocations: [],
+          weightedReturn: 0,
+        };
+
+        group.allocated += Number(allocation?.amount_invested ?? 0) || 0;
+        group.latestValue += Number(allocation?.latest_value ?? allocation?.amount_invested ?? 0) || 0;
+        group.currency = allocation?.base_currency || group.currency;
+        const allocReturn = computeAllocationReturn(allocation);
+        if (Number.isFinite(allocReturn)) {
+          group.weightedReturn += (Number(allocation?.amount_invested) || 0) * allocReturn;
+        }
+        group.allocations.push({ ...allocation, label: name || `Allocation ${idx + 1}` });
+
+        grouped.set(strategyId, group);
+      });
+
+      if (!grouped.size) {
+        fallbackStrategies.forEach((strat, idx) => {
+          grouped.set(strat.id, {
+            id: strat.id,
+            name: strat.name,
+            code: strat.code,
+            currency: strat.currency || 'USD',
+            allocated: strat.allocated || 8000,
+            latestValue: strat.latestValue || strat.allocated || 9500,
+            allocations: [
+              { id: `${strat.id}-a`, amount_invested: strat.allocated * 0.6, latest_value: strat.latestValue * 0.62, base_currency: strat.currency || 'USD', label: `${strat.name} A` },
+              { id: `${strat.id}-b`, amount_invested: strat.allocated * 0.4, latest_value: strat.latestValue * 0.38, base_currency: strat.currency || 'USD', label: `${strat.name} B` },
+            ],
+          });
+        });
+      }
+
+      const map = new Map();
+      grouped.forEach((group, id) => {
+        const baseFallback = generateSeries(group.latestValue || group.allocated || 10000).map((value, idx) => ({ date: idx, value }));
+
+        const aggregatedSeriesByRange = { '1M': [], '3M': [], '6M': [], YTD: [], '1Y': [], '3Y': [] };
+
+          const allocationsSeries = group.allocations.map((alloc, idx) => {
+            const allocLabel = alloc.label || `${formatStartDateLabel(alloc.start_date)} allocation`;
+            const allocationSeriesByRange = buildAllocationSeriesByRange(alloc, baseFallback);
+            Object.entries(allocationSeriesByRange).forEach(([rangeKey, points]) => {
+              aggregatedSeriesByRange[rangeKey].push(points);
+            });
+
+            return {
+              ...alloc,
+              id: alloc.id || `${id}-alloc-${idx}`,
+              label: allocLabel,
+              seriesByRange: allocationSeriesByRange,
+              currency: alloc.base_currency || group.currency,
+              logo: alloc.logo || null,
+              returnPct: computeAllocationReturn(alloc),
+            };
+          });
+
+        const seriesByRange = {};
+        Object.keys(aggregatedSeriesByRange).forEach((rangeKey) => {
+          const fallbackScaled = scaleSeriesPoints(baseFallback, group.latestValue || group.allocated || 0);
+          const merged = combineSeriesByDate(aggregatedSeriesByRange[rangeKey], fallbackScaled);
+          seriesByRange[rangeKey] = merged.length ? merged : fallbackScaled;
+        });
+
+          const aggregatedReturn = group.allocated
+            ? group.weightedReturn / group.allocated
+            : computeReturnPct(group.allocated, group.latestValue);
+
+          map.set(id, {
+            id,
+            name: group.name,
+            code: group.code,
+            currency: group.currency,
+            allocated: group.allocated,
+            latestValue: group.latestValue,
+            returnPct: Number.isFinite(aggregatedReturn)
+              ? Math.abs(aggregatedReturn)
+              : Math.abs(computeReturnPct(group.allocated, group.latestValue)),
+            seriesByRange,
+            allocations: allocationsSeries,
+          });
+        });
+
+      return map;
+    }
+
+    function deriveTopAsset(holdings = []) {
+      if (!Array.isArray(holdings) || !holdings.length) return null;
+      let winner = null;
+      holdings.forEach((holding) => {
+        const symbol = (holding?.symbol || holding?.name || '').toString().trim();
+        if (!symbol) return;
+        const change = Number(holding?.change_pct ?? holding?.daily_change_pct);
+        const weight = normalizeWeight(holding?.weight_pct ?? holding?.weight) * 100;
+        const score = Number.isFinite(change) ? change : weight;
+        if (winner == null || score > winner.score) {
+          winner = {
+            symbol,
+            logo: holding?.logo_url || holding?.logo || null,
+            changePct: Number.isFinite(change) ? change : null,
+            score,
+          };
+        }
+      });
+      return winner;
+    }
+
+    function buildStrategySpotlights(allocations = []) {
+      const grouped = new Map();
+
+      allocations.forEach((allocation) => {
+        const strategyId = allocation?.strategy_id;
+        if (!strategyId) return;
+
+        const group = grouped.get(strategyId) || {
+          id: strategyId,
+          name: allocation?.strategies?.name || allocation?.strategies?.code || `Strategy ${strategyId}`,
+          code: allocation?.strategies?.code || '',
+          allocationsCount: 0,
+          allocated: 0,
+          latestValue: 0,
+          currency: allocation?.base_currency || baseCurrency,
+          topAsset: null,
+          weightedReturn: 0,
+        };
+
+        group.allocationsCount += 1;
+        group.allocated += Number(allocation?.amount_invested ?? 0) || 0;
+        group.latestValue += Number(allocation?.latest_value ?? allocation?.amount_invested ?? 0) || 0;
+        group.currency = allocation?.base_currency || group.currency;
+        const allocReturn = computeAllocationReturn(allocation);
+        if (Number.isFinite(allocReturn)) {
+          group.weightedReturn += (Number(allocation?.amount_invested) || 0) * allocReturn;
+        }
+
+        const holdings = Array.isArray(allocation?.portfolio_holdings) ? allocation.portfolio_holdings : [];
+        if (holdings.length) {
+          const top = deriveTopAsset(holdings);
+          if (top) group.topAsset = top;
+        }
+
+        grouped.set(strategyId, group);
+      });
+
+      return Array.from(grouped.values()).map((item) => ({
+        ...item,
+        returnPct: item.allocated && Number.isFinite(item.weightedReturn / item.allocated)
+          ? item.weightedReturn / item.allocated
+          : computeReturnPct(item.allocated, item.latestValue),
+        topAsset: item.topAsset || { symbol: '—', logo: null, changePct: null },
+      }));
+    }
+
+    function renderTopAsset(asset = { symbol: '—', logo: null, changePct: null }) {
+      if (strategyAssetLogoEl) {
+        strategyAssetLogoEl.style.backgroundImage = asset.logo ? `url('${asset.logo}')` : 'none';
+        strategyAssetLogoEl.style.backgroundSize = 'cover';
+        strategyAssetLogoEl.style.backgroundPosition = 'center';
+        strategyAssetLogoEl.textContent = asset.logo ? '' : (asset.symbol || '—').slice(0, 3).toUpperCase();
+      }
+      if (strategyAssetSymbolEl) strategyAssetSymbolEl.textContent = asset.symbol || '—';
+
+      if (strategyAssetChangeEl) {
+        if (asset.changePct == null || Number.isNaN(asset.changePct)) {
+          strategyAssetChangeEl.textContent = '—';
+          strategyAssetChangeEl.classList.remove('text-emerald-600', 'text-rose-600');
+        } else {
+          const positive = Number(asset.changePct) >= 0;
+          strategyAssetChangeEl.textContent = `${positive ? '+' : ''}${Number(asset.changePct).toFixed(2)}%`;
+          strategyAssetChangeEl.classList.toggle('text-emerald-600', positive);
+          strategyAssetChangeEl.classList.toggle('text-rose-600', !positive);
+        }
+      }
+    }
+
+    function renderAllocationOptions(strategy) {
+      if (!pfAllocationSelect) return;
+      const allocations = strategy?.allocations || [];
+      const previous = pfAllocationSelect.value || selectedAllocationId;
+      pfAllocationSelect.innerHTML = '';
+
+      if (!allocations.length) {
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'No allocations';
+        pfAllocationSelect.appendChild(placeholder);
+        pfAllocationSelect.value = '';
+        selectedAllocationId = null;
+        pfAllocationSelect.disabled = true;
+        return;
+      }
+
+      allocations.forEach((alloc) => {
+        const opt = document.createElement('option');
+        opt.value = alloc.id || alloc.label;
+        const allocLabel = `${formatStartDateLabel(alloc.start_date)} allocation`;
+        opt.textContent = allocLabel;
+        pfAllocationSelect.appendChild(opt);
+      });
+
+      const nextMatch = allocations.find((alloc) => String(alloc.id) === String(previous)) || allocations[0];
+      const next = nextMatch?.id || nextMatch?.label || '';
+      pfAllocationSelect.value = next;
+      selectedAllocationId = next || null;
+      pfAllocationSelect.disabled = allocations.length === 0;
+    }
+
+    function renderStrategySpotlight(index = 0) {
+      const list = (strategySpotlights.length ? strategySpotlights : fallbackStrategies).map((item) => ({
+        ...item,
+        returnPct: item.returnPct != null ? item.returnPct : computeReturnPct(item.allocated, item.latestValue),
+        topAsset: item.topAsset || { symbol: '—', logo: null, changePct: null },
+      }));
+
+      if (!list.length) return;
+
+      const len = list.length;
+      const safeIndex = ((index % len) + len) % len;
+      strategyIndex = safeIndex;
+      const current = list[safeIndex];
+
+      if (strategyNameEl) strategyNameEl.textContent = current?.name || 'Strategy';
+      if (strategyCodeEl) strategyCodeEl.textContent = current?.code ? `Code: ${current.code}` : 'demo_allocation';
+      if (strategyAllocationsEl) strategyAllocationsEl.textContent = `${current?.allocationsCount || 0}`;
+      if (strategyAllocatedEl) strategyAllocatedEl.textContent = formatCurrency(current?.allocated || 0, current?.currency || baseCurrency);
+      if (strategyReturnEl) {
+        const ret = Number(current?.returnPct || 0);
+        strategyReturnEl.textContent = `${ret.toFixed(2)}%`;
+        strategyReturnEl.classList.toggle('text-emerald-700', ret >= 0);
+        strategyReturnEl.classList.toggle('text-rose-700', ret < 0);
+      }
+
+      if (current?.id) {
+        selectedStrategyId = current.id;
+        renderAllocationOptions(strategySeriesMap.get(current.id));
+        renderEquityChart(currentRange);
+      }
+
+      renderTopAsset(current?.topAsset);
+      renderHoldingsForSelected();
+    }
+
+    function wireStrategyNav() {
+      strategyPrev?.addEventListener('click', () => {
+        const len = (strategySpotlights.length ? strategySpotlights : fallbackStrategies).length;
+        if (!len) return;
+        renderStrategySpotlight(strategyIndex - 1);
+      });
+
+      strategyNext?.addEventListener('click', () => {
+        const len = (strategySpotlights.length ? strategySpotlights : fallbackStrategies).length;
+        if (!len) return;
+        renderStrategySpotlight(strategyIndex + 1);
+      });
+    }
+
+    function wirePortfolioCard() {
+      pfTabs.forEach((btn) => {
+        btn.addEventListener('click', () => renderEquityChart(btn.dataset.range || '1M'));
+      });
+
+      pfAllocationSelect?.addEventListener('change', (event) => {
+        selectedAllocationId = event.target.value || null;
+        renderEquityChart(currentRange);
+      });
+
+      pfRefresh?.addEventListener('click', () => renderEquityChart(currentRange));
+    }
+
+    function populateFundsAccount() {
+      if (!fundsAccount) return;
+      const label = profileNameEl?.textContent?.trim() || 'Demo account';
+      const optionValue = currentUserId || 'demo-account';
+      fundsAccount.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = optionValue;
+      opt.textContent = optionValue === 'demo-account' ? `${label} (local)` : label;
+      fundsAccount.appendChild(opt);
+    }
+
+    function openFundsModal() {
+      populateFundsAccount();
+      fundsModal?.classList.remove('hidden');
+      if (fundsAmount) {
+        fundsAmount.value = '';
+        fundsAmount.focus();
+      }
+    }
+
+    function closeFundsModal() {
+      fundsModal?.classList.add('hidden');
+    }
+
+    async function submitFunds() {
+      if (!fundsAccount || !fundsAmount) return;
+
+      const amount = Number.parseFloat(fundsAmount.value);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        showToast('Enter a valid amount above 0.', 'warn');
+        return;
+      }
+
+      const nextBalance = profileBalance + amount;
+      setBalanceCard(nextBalance, baseCurrency);
+
+      if (currentUserId) {
+        try {
+          const { data, error } = await supabase
+            .from('demo_profiles')
+            .update({ balance: nextBalance })
+            .eq('id', currentUserId)
+            .select('balance, base_currency')
+            .maybeSingle();
+
+          if (error) throw error;
+          setBalanceCard(data?.balance ?? nextBalance, data?.base_currency || baseCurrency);
+          showToast('Funds added successfully.', 'ok');
+        } catch (error) {
+          console.warn('Add funds failed', error);
+          showToast('Unable to add funds right now. Please try again later.', 'err');
+        }
+      } else {
+        console.warn('Add funds attempted without a signed-in user.');
+        showToast('Demo balance updated locally.', 'ok');
+      }
+
+      closeFundsModal();
+    }
+
+    function attachAddFundsHandler() {
+      const addFundsBtn = document.querySelector('[data-add-funds]');
+      if (!addFundsBtn) return;
+      addFundsBtn.addEventListener('click', openFundsModal);
+    }
+
+    function wireFundsModal() {
+      fundsClose?.addEventListener('click', closeFundsModal);
+      fundsOverlay?.addEventListener('click', closeFundsModal);
+      fundsCancel?.addEventListener('click', closeFundsModal);
+      fundsSubmit?.addEventListener('click', submitFunds);
+    }
+
+    function hideSkeleton() {
+      if (!skeletonLayer) return;
+      skeletonLayer.style.opacity = '0';
+      setTimeout(() => skeletonLayer.remove(), 260);
+    }
+
+    function wireSidebar() {
+      const sidebar = document.getElementById('ah-sidebar');
+      const overlay = document.getElementById('ah-overlay');
+      const mobileBtn = document.getElementById('ah-mobile-menu-btn');
+      const collapseBtn = document.getElementById('ah-collapse');
+
+      mobileBtn?.addEventListener('click', () => {
+        sidebar?.classList.add('is-open');
+        overlay?.classList.remove('hidden');
+      });
+
+      overlay?.addEventListener('click', () => {
+        sidebar?.classList.remove('is-open');
+        overlay?.classList.add('hidden');
+      });
+
+      collapseBtn?.addEventListener('click', () => {
+        const layout = document.getElementById('layout');
+        const isCollapsed = sidebar?.dataset.collapsed === 'true';
+        const next = !isCollapsed;
+        sidebar.dataset.collapsed = String(next);
+        layout?.classList.toggle('is-collapsed', next);
+      });
+    }
+
+    function wireTableControls() {
+      positionAssetClass?.addEventListener('change', () => renderTopPositions(positionsCache, baseCurrency));
+      ordersSearch?.addEventListener('input', () => renderOrdersTable(ordersCache));
+      chkAll?.addEventListener('change', () => {
+        const shouldCheck = chkAll.checked;
+        ordersBody?.querySelectorAll('.row-chk').forEach((chk) => {
+          chk.checked = shouldCheck;
+          const id = chk.dataset.orderId;
+          if (shouldCheck) selectedOrders.add(id);
+          else selectedOrders.delete(id);
+        });
+        updateOrderSelectionUI();
+      });
+
+      clearSelection?.addEventListener('click', () => {
+        selectedOrders.clear();
+        chkAll.checked = false;
+        ordersBody?.querySelectorAll('.row-chk').forEach((chk) => { chk.checked = false; });
+        updateOrderSelectionUI();
+      });
+
+      cancelSelected?.addEventListener('click', () => {
+        if (!selectedOrders.size) return;
+        showToast(`Cancelled ${selectedOrders.size} order(s).`, 'warn');
+        selectedOrders.clear();
+        chkAll.checked = false;
+        renderOrdersTable(ordersCache);
+      });
+    }
+
+    async function init() {
+      await profileReady;
+      renderStats();
+      renderEquityChart(currentRange);
+      await loadTopHoldings();
+      wirePortfolioCard();
+      wireStrategyNav();
+      wireFundsModal();
+      wireSidebar();
+      wireTableControls();
+      hideSkeleton();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { init(); });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AlgoHive — Demo Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --olive: #7e8d52;
+            --olive-700: #576138;
+            --ink: #0B1215;
+        }
+
+        body {
+            background: #f6f7f6;
+        }
+
+        .preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: #f6f7f6;
+            color: var(--ink);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            transition: opacity .45s ease;
+        }
+
+        .preloader__logo {
+            height: 3rem;
+            width: auto;
+            animation: heroSlideUp .6s ease-out, preloaderPulse 2.4s ease-in-out .45s infinite;
+        }
+
+        .preloader__brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            animation: heroSlideUp .6s ease-out .08s both;
+        }
+
+        .preloader__tagline {
+            font-size: .95rem;
+            color: rgba(11, 18, 21, 0.68);
+            animation: heroSlideUp .6s ease-out .14s both;
+        }
+
+        .preloader--hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .btn-shine::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, .7) 50%, transparent 100%);
+            transform: translateX(-120%);
+            transition: transform .8s ease;
+        }
+
+        .btn-shine:hover::before {
+            transform: translateX(120%);
+        }
+
+        .btn-shine:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px -16px rgba(11, 18, 21, 0.4);
+        }
+
+        .btn-shine:disabled {
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn-shine:disabled::before {
+            display: none;
+        }
+
+        .auth-left {
+            animation: heroSlideUp .7s ease-out .25s both;
+        }
+
+        .auth-right {
+            animation: heroScaleIn .9s cubic-bezier(.2, .8, .2, 1) .35s both;
+        }
+
+        @keyframes heroScaleIn {
+            0% {
+                transform: scale(1.06);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes heroSlideUp {
+            0% {
+                transform: translateY(16px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes preloaderPulse {
+
+            0%,
+            100% {
+                opacity: .45;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .swap-anim {
+            animation: heroSlideUp .5s ease both;
+        }
+
+        .orb-gradient {
+            background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 60%),
+                radial-gradient(circle at 80% 20%, rgba(126, 141, 82, 0.18), rgba(255, 255, 255, 0) 55%),
+                radial-gradient(circle at 50% 80%, rgba(126, 141, 82, 0.12), rgba(255, 255, 255, 0) 55%);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .input-error {
+            border-color: rgba(248, 113, 113, 0.55) !important;
+            box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.28);
+        }
+
+        .field-error {
+            outline: 2px solid rgba(248, 113, 113, 0.35);
+            outline-offset: 4px;
+            border-radius: 1.25rem;
+        }
+    </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen bg-[#f6f7f6] text-slate-900">
+    <div id="page-loader" class="preloader">
+        <img class="preloader__logo" src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png"
+            alt="AlgoHive logo" />
+        <span class="preloader__brand">AlgoHive</span>
+        <span class="preloader__tagline">Loading your experience…</span>
+    </div>
+
+    <main class="flex min-h-screen w-full flex-col bg-transparent lg:flex-row lg:items-stretch">
+        <!-- Left: Brand + steps -->
+        <div
+            class="auth-left relative hidden w-full flex-col gap-8 bg-white px-6 py-10 text-slate-800 shadow-xl shadow-slate-200/60 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-1/4 lg:min-w-[300px] lg:overflow-y-auto lg:border-r lg:border-slate-100 lg:px-10 lg:py-14 lg:shadow-none">
+            <div class="flex items-center gap-3">
+                <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive"
+                    class="h-10 w-auto" />
+                <span class="text-lg font-semibold tracking-tight">AlgoHive</span>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--olive)]">Demo onboarding</p>
+                <h1 class="text-3xl font-semibold leading-tight text-slate-900">Set up your paper profile</h1>
+                <p class="text-sm text-slate-600">We’ll mirror your live details where possible to keep your paper experience
+                    consistent.</p>
+            </div>
+
+            <div class="space-y-5 rounded-3xl border border-slate-100 bg-slate-50/70 p-5">
+                <div class="space-y-1">
+                    <p class="text-sm font-semibold text-slate-900">What you’ll share</p>
+                    <p class="text-sm text-slate-500">We only need the basics to personalize your demo dashboard.</p>
+                </div>
+                <ol class="step-flow space-y-4 text-sm text-slate-600">
+                    <li class="relative flex gap-4">
+                        <span class="step-circle flex h-10 w-10 items-center justify-center rounded-full border border-[var(--olive)]/40 bg-white text-sm font-semibold text-[var(--olive-700)] shadow-sm">1</span>
+                        <div class="space-y-1">
+                            <h2 class="text-base font-semibold text-slate-900">Your details</h2>
+                            <p class="text-sm text-slate-500">Confirm your name and phone (avatar optional).</p>
+                        </div>
+                    </li>
+                    <li class="relative flex gap-4">
+                        <span class="step-circle flex h-10 w-10 items-center justify-center rounded-full border border-[var(--olive)]/40 bg-white text-sm font-semibold text-[var(--olive-700)] shadow-sm">2</span>
+                        <div class="space-y-1">
+                            <h2 class="text-base font-semibold text-slate-900">Sync</h2>
+                            <p class="text-sm text-slate-500">We save these to your demo and live profiles.</p>
+                        </div>
+                    </li>
+                    <li class="relative flex gap-4">
+                        <span class="step-circle flex h-10 w-10 items-center justify-center rounded-full border border-[var(--olive)]/40 bg-white text-sm font-semibold text-[var(--olive-700)] shadow-sm">3</span>
+                        <div class="space-y-1">
+                            <h2 class="text-base font-semibold text-slate-900">Start trading</h2>
+                            <p class="text-sm text-slate-500">Jump into your paper dashboard.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Right: Workspace -->
+        <aside class="auth-right relative flex w-full flex-1 lg:items-stretch lg:rounded-none">
+            <div class="absolute inset-0 orb-gradient opacity-90"></div>
+            <div class="relative z-10 flex w-full items-start justify-center px-4 py-10 sm:px-8 lg:px-12 lg:py-16">
+                <div class="w-full max-w-5xl space-y-8">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+                            <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+                                <i class="fa-solid fa-bars"></i>
+                            </button>
+                            <div class="inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-800 font-semibold">
+                                <div class="h-8 w-8 rounded-full border border-blue-200 bg-white grid place-items-center text-blue-600 text-base">ⓘ</div>
+                                <p id="banner-copy" class="whitespace-normal">Demo Account</p>
+                            </div>
+                        </div>
+
+                        <button id="profile-btn" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+                            <img id="profile-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+                            <span id="profile-name" class="text-sm font-semibold text-slate-900 hidden sm:inline">—</span>
+                            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <header class="flex flex-col gap-3 text-left text-slate-800 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                        <div class="space-y-2">
+                            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--olive)]">Demo onboarding</p>
+                            <h2 class="text-3xl font-semibold sm:text-[34px]">Complete your paper profile</h2>
+                            <p class="text-sm text-slate-600">Use your live details where available. These fields keep your demo dashboard personalized.</p>
+                        </div>
+                        <button id="signOutButton" type="button"
+                            class="inline-flex items-center justify-center gap-2 self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[var(--olive)] hover:text-[var(--olive-700)]">
+                            Sign out
+                        </button>
+                    </header>
+
+                    <section class="rounded-3xl border border-white/40 bg-white/90 p-6 shadow-[0_20px_50px_-28px_rgba(15,23,42,0.55)] backdrop-blur sm:p-8">
+                        <div class="flex flex-col gap-6">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.4em] text-[var(--olive-700)]">Step 1 of 2 · Basics</p>
+                    <h3 class="text-xl font-semibold text-slate-900">Tell us about yourself</h3>
+                                </div>
+                                <div class="flex flex-col items-start gap-2 text-left sm:items-end sm:text-right">
+                                    <span class="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400">Need help?</span>
+                                    <a href="mailto:support@algohive.io"
+                                        class="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--olive)] px-4 py-2 text-xs font-semibold text-[var(--olive-700)] transition hover:bg-[var(--olive)] hover:text-white">Contact us</a>
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div id="alert" class="hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"></div>
+
+                                <div class="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-100 p-2 text-sm font-semibold text-slate-700">
+                                    <button type="button" data-tab="basics" class="tab-btn rounded-xl px-4 py-2 transition hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/30">Basics</button>
+                                    <button type="button" data-tab="preferences" class="tab-btn rounded-xl px-4 py-2 transition hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/30">Investing preferences</button>
+                                </div>
+
+                                <form id="demo-onboarding-form" class="space-y-10" novalidate>
+                                    <div id="tab-basics" class="space-y-8">
+                                        <div class="grid gap-6 md:grid-cols-2">
+                                            <label class="flex flex-col gap-2 text-sm font-medium text-slate-700" for="first-name">
+                                                First name
+                                                <input id="first-name" name="first_name" type="text" autocomplete="given-name"
+                                                    class="h-11 rounded-xl border border-slate-200 px-4 text-base font-normal text-slate-900 shadow-sm focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/20" />
+                                            </label>
+                                            <label class="flex flex-col gap-2 text-sm font-medium text-slate-700" for="last-name">
+                                                Last name
+                                                <input id="last-name" name="last_name" type="text" autocomplete="family-name"
+                                                    class="h-11 rounded-xl border border-slate-200 px-4 text-base font-normal text-slate-900 shadow-sm focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/20" />
+                                            </label>
+                                        </div>
+
+                                        <div class="grid gap-6 md:grid-cols-[minmax(0,360px)_1fr]">
+                                            <div class="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                                                <span>Avatar</span>
+                                                <div class="flex items-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+                                                    <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-slate-200">
+                                                        <img id="avatar-preview"
+                                                            src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23e2e8f0'/></svg>"
+                                                            alt="Profile avatar preview" class="h-16 w-16 object-cover" />
+                                                    </div>
+                                                    <div class="flex flex-1 flex-col gap-2 text-sm text-slate-500">
+                                                        <input type="file" id="avatar" name="avatar" accept="image/png,image/jpeg" class="hidden" />
+                                                        <label for="avatar"
+                                                            class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[var(--olive)] px-4 py-1.5 text-xs font-semibold text-[var(--olive-700)] transition hover:bg-[var(--olive)] hover:text-white">
+                                                            Choose file
+                                                        </label>
+                                                        <span id="avatar-filename" class="text-xs text-slate-400">No file chosen</span>
+                                                        <p class="text-xs text-slate-400">JPG/PNG, 2 MB. Best results: 512×512px.</p>
+                                                        <button type="button" id="avatar-remove"
+                                                            class="self-start text-xs font-medium text-rose-500 hover:underline hidden">Remove avatar</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <label class="flex flex-col gap-2 text-sm font-medium text-slate-700" for="phone">
+                                                Contact phone
+                                                <input id="phone" name="phone" type="tel" autocomplete="tel"
+                                                    class="h-11 rounded-xl border border-slate-200 px-4 text-base font-normal text-slate-900 shadow-sm focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/20" />
+                                            </label>
+                                        </div>
+
+                                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                            <p class="text-sm text-slate-500">Keep your paper basics in sync with your live profile.</p>
+                                            <button type="button" id="to-preferences"
+                                                class="inline-flex items-center justify-center gap-2 self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[var(--olive)] hover:text-[var(--olive-700)]">Next: investing preferences</button>
+                                        </div>
+                                    </div>
+
+                                    <div id="tab-preferences" class="space-y-6 hidden">
+                                        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                            <div>
+                                                <p class="text-xs font-semibold uppercase tracking-[0.4em] text-[var(--olive-700)]">Step 2 of 2 · Investing preferences</p>
+                                                <h4 class="text-lg font-semibold text-slate-900">Help us tailor your demo</h4>
+                                            </div>
+                                            <p class="text-xs text-slate-500">These answers personalize your strategies and insights.</p>
+                                        </div>
+
+                                        <div class="grid gap-4 md:grid-cols-2">
+                                            <fieldset class="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                                <legend class="text-sm font-semibold text-slate-800">Risk appetite (matches OpenStrategies filters)</legend>
+                                                <div class="grid gap-2">
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:border-[var(--olive)]">
+                                                        <input type="radio" name="risk_appetite" value="All" class="h-4 w-4 text-[var(--olive)] focus:ring-[var(--olive)]" />
+                                                        All
+                                                    </label>
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:border-[var(--olive)]">
+                                                        <input type="radio" name="risk_appetite" value="Conservative" class="h-4 w-4 text-[var(--olive)] focus:ring-[var(--olive)]" />
+                                                        Conservative
+                                                    </label>
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:border-[var(--olive)]">
+                                                        <input type="radio" name="risk_appetite" value="Moderate" class="h-4 w-4 text-[var(--olive)] focus:ring-[var(--olive)]" />
+                                                        Moderate
+                                                    </label>
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:border-[var(--olive)]">
+                                                        <input type="radio" name="risk_appetite" value="Balanced" class="h-4 w-4 text-[var(--olive)] focus:ring-[var(--olive)]" />
+                                                        Balanced
+                                                    </label>
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:border-[var(--olive)]">
+                                                        <input type="radio" name="risk_appetite" value="High Risk" class="h-4 w-4 text-[var(--olive)] focus:ring-[var(--olive)]" />
+                                                        High Risk
+                                                    </label>
+                                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:border-[var(--olive)]">
+                                                        <input type="radio" name="risk_appetite" value="Very High Risk" class="h-4 w-4 text-[var(--olive)] focus:ring-[var(--olive)]" />
+                                                        Very High Risk
+                                                    </label>
+                                                </div>
+                                            </fieldset>
+
+                                            <div class="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-800" for="return-goal">
+                                                    Target YTD return
+                                                    <select id="return-goal" class="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-800 shadow-sm focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/20">
+                                                        <option value="">Select a range</option>
+                                                        <option value="under_5">Under 5%</option>
+                                                        <option value="5_10">5% - 10%</option>
+                                                        <option value="10_15">10% - 15%</option>
+                                                        <option value="over_15">15%+</option>
+                                                    </select>
+                                                </label>
+
+                                                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-800" for="drawdown">
+                                                    Comfort with short-term losses
+                                                    <select id="drawdown" class="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-800 shadow-sm focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/20">
+                                                        <option value="">Choose a comfort level</option>
+                                                        <option value="minimal">Prefer minimal losses (0-5%)</option>
+                                                        <option value="moderate">Okay with moderate dips (5-10%)</option>
+                                                        <option value="meaningful">Comfortable with meaningful swings (10-20%)</option>
+                                                        <option value="high">Open to high volatility (20%+)</option>
+                                                    </select>
+                                                </label>
+                                            </div>
+
+                                            <label class="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-800 shadow-sm" for="time-horizon">
+                                                Time horizon
+                                                <select id="time-horizon" class="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-800 shadow-sm focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/20">
+                                                    <option value="">How long do you plan to invest?</option>
+                                                    <option value="short">0 - 2 years</option>
+                                                    <option value="medium">2 - 5 years</option>
+                                                    <option value="long">5 - 10 years</option>
+                                                    <option value="very_long">10+ years</option>
+                                                </select>
+                                            </label>
+
+                                        </div>
+
+                                            <div class="space-y-3 rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm">
+                                                <div class="flex items-center justify-between gap-3 text-sm font-semibold text-slate-800">
+                                                    <div>
+                                                        <p class="text-[11px] font-semibold uppercase tracking-[0.35em] text-[var(--olive-700)]">Strategies for your risk</p>
+                                                        <p>Select the strategies you like to build your watchlist.</p>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <button type="button" id="strategy-prev" class="hidden h-9 w-9 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[var(--olive)] hover:text-[var(--olive-700)]" aria-label="Previous strategy">
+                                                            ‹
+                                                        </button>
+                                                        <button type="button" id="strategy-next" class="hidden h-9 w-9 rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[var(--olive)] hover:text-[var(--olive-700)]" aria-label="Next strategy">
+                                                            ›
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="relative">
+                                                    <div id="strategy-fade-left" class="pointer-events-none absolute inset-y-2 left-0 w-10 bg-gradient-to-r from-white to-transparent hidden lg:block"></div>
+                                                    <div id="strategy-fade-right" class="pointer-events-none absolute inset-y-2 right-0 w-10 bg-gradient-to-l from-white to-transparent hidden lg:block"></div>
+                                                    <div id="strategy-recos" class="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth pb-2 pr-1 snap-x snap-mandatory"></div>
+                                                </div>
+                                                <p id="strategy-empty" class="hidden text-sm text-slate-500">Choose a risk appetite to see matching strategies.</p>
+                                            </div>
+
+                                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <button type="button" id="back-to-basics"
+                                                class="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[var(--olive)] hover:text-[var(--olive-700)]">Back to basics</button>
+                                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                                <p class="text-sm text-slate-500">We’ll sync these details to your demo and live profiles.</p>
+                                                <button type="submit"
+                                                    class="btn-shine inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--olive)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--olive-700)] sm:w-auto"
+                                                    id="submit-btn">Save and continue</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module" nonce="ALGOHIVE">
+        import { supabase } from "/js/supabase.js";
+
+        const form = document.getElementById("demo-onboarding-form");
+        const alertBox = document.getElementById("alert");
+        const submitBtn = document.getElementById("submit-btn");
+        const avatarInput = document.getElementById("avatar");
+        const avatarPreview = document.getElementById("avatar-preview");
+        const avatarFilename = document.getElementById("avatar-filename");
+        const avatarRemove = document.getElementById("avatar-remove");
+        const firstName = document.getElementById("first-name");
+        const lastName = document.getElementById("last-name");
+        const phone = document.getElementById("phone");
+        const riskRadios = Array.from(document.querySelectorAll("input[name='risk_appetite']"));
+        const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
+        const tabBasics = document.getElementById("tab-basics");
+        const tabPreferences = document.getElementById("tab-preferences");
+        const toPreferences = document.getElementById("to-preferences");
+        const backToBasics = document.getElementById("back-to-basics");
+        const returnGoal = document.getElementById("return-goal");
+        const drawdown = document.getElementById("drawdown");
+        const timeHorizon = document.getElementById("time-horizon");
+        const strategyRecos = document.getElementById("strategy-recos");
+        const strategyEmpty = document.getElementById("strategy-empty");
+        const strategyPrev = document.getElementById("strategy-prev");
+        const strategyNext = document.getElementById("strategy-next");
+        const strategyFadeLeft = document.getElementById("strategy-fade-left");
+        const strategyFadeRight = document.getElementById("strategy-fade-right");
+        const loader = document.getElementById("page-loader");
+        const signOutButton = document.getElementById("signOutButton");
+        const watchList = new Set();
+        const AVATAR_BUCKET = "avatars";
+
+        let supabaseUser = null;
+        let profileRow = null;
+        let demoProfileRow = null;
+        let demoSupportsAvatar = true;
+        let avatarUrl = null;
+        let avatarFile = null;
+        const RISK_FILTER_MAP = {
+            conservative: "Conservative",
+            moderate: "Moderate",
+            balanced: "Balanced",
+            medium: "Balanced",
+            growth: "High Risk",
+            high: "High Risk",
+            aggressive: "Very High Risk",
+            "high risk": "High Risk",
+            "very high": "Very High Risk",
+            "very high risk": "Very High Risk",
+            all: "All",
+        };
+
+        function normalizeRisk(value) {
+            if (!value) return "";
+            const clean = String(value).trim();
+            if (!clean) return "";
+            const mapped = RISK_FILTER_MAP[clean.toLowerCase()] || clean;
+            return mapped;
+        }
+
+        function formatPercent(value) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return "—";
+            return `${num >= 0 ? "+" : ""}${num.toFixed(1)}%`;
+        }
+
+        function matchesReturnGoal(goal, pct) {
+            if (!goal) return true;
+            if (!Number.isFinite(pct)) return false;
+            const val = Math.abs(pct);
+            switch (goal) {
+                case "under_5":
+                    return val < 5;
+                case "5_10":
+                    return val >= 5 && val < 10;
+                case "10_15":
+                    return val >= 10 && val < 15;
+                case "over_15":
+                    return val >= 15;
+                default:
+                    return true;
+            }
+        }
+
+        function matchesDrawdownPreference(pref, pct) {
+            if (!pref) return true;
+            if (!Number.isFinite(pct)) return false;
+            const val = Math.abs(pct);
+            switch (pref) {
+                case "minimal":
+                    return val <= 5;
+                case "moderate":
+                    return val > 5 && val <= 10;
+                case "meaningful":
+                    return val > 10 && val <= 20;
+                case "high":
+                    return val > 20;
+                default:
+                    return true;
+            }
+        }
+
+        function computePerfFromSeries(series = []) {
+            let level = 1;
+            let peak = 1;
+            let maxDrawdown = 0;
+
+            for (const point of series) {
+                const pct = Number(point?.pct);
+                if (!Number.isFinite(pct)) continue;
+                level *= 1 + pct;
+                if (level > peak) peak = level;
+                const dd = peak > 0 ? (peak - level) / peak : 0;
+                if (dd > maxDrawdown) maxDrawdown = dd;
+            }
+
+            const totalReturn = (level - 1) * 100;
+            const drawdownPct = maxDrawdown * 100;
+
+            return { returnPct: totalReturn, drawdownPct };
+        }
+
+        function derivePerformance(metrics = {}) {
+            const perf = metrics?.perf_summary || {};
+            const seriesAll = Array.isArray(metrics?.series_all) ? metrics.series_all : [];
+            const fallbackSeries = Array.isArray(metrics?.series_ytd) ? metrics.series_ytd : [];
+            const series = seriesAll.length ? seriesAll : fallbackSeries;
+            const seriesPerf = computePerfFromSeries(series);
+
+            const returnPct = Number.isFinite(seriesPerf.returnPct)
+                ? seriesPerf.returnPct
+                : Number(perf.total_return ?? perf.return ?? perf.cagr_all ?? perf.cagr_1y ?? perf.ytd);
+            const drawdownPct = Number.isFinite(seriesPerf.drawdownPct)
+                ? seriesPerf.drawdownPct
+                : Number(perf.max_drawdown ?? perf.max_dd ?? perf.drawdown ?? perf.dd);
+
+            return { series, returnPct, drawdownPct };
+        }
+
+        function normalizeStrategyId(strategy) {
+            if (!strategy || typeof strategy !== "object") return "";
+            return (
+                strategy.id ||
+                strategy.strategy_id ||
+                strategy.code ||
+                strategy.slug ||
+                (typeof strategy.name === "string" ? strategy.name.toLowerCase().replace(/\s+/g, "-") : "")
+            );
+        }
+
+        function syncWatchlistState(button, isSelected) {
+            if (!button) return;
+            button.textContent = isSelected ? "Selected" : "Add to watchlist";
+            button.classList.toggle("bg-[var(--olive)]", isSelected);
+            button.classList.toggle("text-white", isSelected);
+            button.classList.toggle("border-[var(--olive)]", isSelected);
+            button.classList.toggle("bg-white", !isSelected);
+            button.classList.toggle("text-[var(--olive-700)]", !isSelected);
+        }
+
+        function curveFromPct(points, base = 100) {
+            const out = [];
+            let level = base;
+            for (const p of points || []) {
+                const rDec = Number(p?.pct);
+                if (Number.isFinite(rDec)) level *= 1 + rDec;
+                out.push(Number(level.toFixed(2)));
+            }
+            return out;
+        }
+
+        function drawCardChart(canvasId, seriesData) {
+            const ctx = document.getElementById(canvasId)?.getContext("2d");
+            if (!ctx || typeof Chart === "undefined") return;
+
+            if (Chart.getChart(canvasId)) {
+                Chart.getChart(canvasId).destroy();
+            }
+
+            const curve = curveFromPct(seriesData?.map((x) => ({ pct: Number(x?.pct) })), 100);
+            const labels = (seriesData || []).map((x) => x.label || x.date || "");
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 120);
+            gradient.addColorStop(0, "rgba(87, 97, 56, 0.35)");
+            gradient.addColorStop(1, "rgba(87, 97, 56, 0.05)");
+
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            data: curve,
+                            tension: 0.35,
+                            borderWidth: 2,
+                            borderColor: "#7e8d52",
+                            backgroundColor: gradient,
+                            fill: true,
+                            pointRadius: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                },
+            });
+        }
+
+        function showAlert(message, tone = "info") {
+            if (!alertBox) return;
+            alertBox.className = "rounded-2xl px-4 py-3 text-sm";
+            const toneClasses =
+                tone === "error"
+                    ? ["border", "border-rose-200", "bg-rose-50", "text-rose-800"]
+                    : ["border", "border-amber-200", "bg-amber-50", "text-amber-800"];
+            alertBox.classList.add(...toneClasses);
+            alertBox.textContent = message;
+            alertBox.classList.remove("hidden");
+        }
+
+        function clearAlert() {
+            if (!alertBox) return;
+            alertBox.className = "hidden rounded-2xl px-4 py-3 text-sm";
+            alertBox.textContent = "";
+        }
+
+        function setWatchlistFromProfile(list) {
+            watchList.clear();
+            if (Array.isArray(list)) {
+                list
+                    .map((id) => (id != null ? String(id) : ""))
+                    .filter(Boolean)
+                    .forEach((id) => watchList.add(id));
+            }
+        }
+
+        function showTab(which = "basics") {
+            const isBasics = which === "basics";
+            tabBasics?.classList.toggle("hidden", !isBasics);
+            tabPreferences?.classList.toggle("hidden", isBasics);
+            tabButtons.forEach((btn) => {
+                const active = btn.dataset.tab === which;
+                btn.classList.toggle("bg-white", active);
+                btn.classList.toggle("shadow-sm", active);
+                btn.classList.toggle("text-[var(--olive-700)]", active);
+            });
+        }
+
+        function updateStrategyScroller() {
+            if (!strategyRecos) return;
+            const maxScroll = Math.max(0, strategyRecos.scrollWidth - strategyRecos.clientWidth);
+            const hasOverflow = maxScroll > 8;
+            const left = strategyRecos.scrollLeft || 0;
+
+            if (strategyPrev) {
+                strategyPrev.classList.toggle("hidden", !hasOverflow);
+                strategyPrev.disabled = left <= 4;
+            }
+            if (strategyNext) {
+                strategyNext.classList.toggle("hidden", !hasOverflow);
+                strategyNext.disabled = left >= maxScroll - 4;
+            }
+
+            strategyFadeLeft?.classList.toggle("hidden", !hasOverflow || left <= 4);
+            strategyFadeRight?.classList.toggle("hidden", !hasOverflow || left >= maxScroll - 4);
+        }
+
+        function renderStrategyCards(items = [], riskLabel = "") {
+            if (!strategyRecos || !strategyEmpty) return;
+            strategyRecos.innerHTML = "";
+            if (!items.length) {
+                strategyEmpty.textContent = riskLabel
+                    ? `No strategies tagged ${riskLabel} yet. Try another appetite.`
+                    : "Choose a risk appetite to see matching strategies.";
+                strategyEmpty.classList.remove("hidden");
+                updateStrategyScroller();
+                return;
+            }
+            strategyEmpty.classList.add("hidden");
+            items.forEach((s) => {
+                const strategyId = normalizeStrategyId(s);
+                const metrics = s.metrics || (Array.isArray(s.strategy_metrics) ? s.strategy_metrics[0] : s.metrics);
+                const perfData = s.performance || derivePerformance(metrics);
+                const series = Array.isArray(perfData?.series) ? perfData.series : [];
+                const returnVal = Number(perfData?.returnPct);
+                const drawdownVal = Number(perfData?.drawdownPct);
+                const chartId = `curve-${s.id}`;
+                const cardRisk = s.risk_level || "—";
+                const riskChip = cardRisk.toLowerCase().includes("high")
+                    ? "bg-rose-50 text-rose-700"
+                    : "bg-emerald-50 text-emerald-700";
+                const perfTone = Number.isFinite(returnVal)
+                    ? returnVal >= 0
+                        ? "text-emerald-600"
+                        : "text-rose-600"
+                    : "text-slate-800";
+                const drawdownText = Number.isFinite(drawdownVal) ? `${Math.abs(drawdownVal).toFixed(1)}%` : "—";
+
+                const card = document.createElement("article");
+                card.className =
+                    "min-w-[280px] max-w-[340px] flex-shrink-0 snap-start rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-md shadow-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-lg";
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="space-y-1">
+                            <h5 class="text-base font-semibold text-slate-900">${s.name || "Strategy"}</h5>
+                            <p class="text-xs text-slate-500">${s.currency || "USD"}${s.style ? ` · ${s.style}` : ""}</p>
+                        </div>
+                        <span class="chip ${riskChip} text-xs">${cardRisk}</span>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Return</p>
+                            <p class="text-lg font-semibold ${perfTone}">${formatPercent(returnVal)}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3">
+                            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Drawdown</p>
+                            <p class="text-lg font-semibold text-slate-800">${drawdownText}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 h-32 w-full rounded-xl bg-slate-50 p-2">
+                        ${series.length
+                            ? `<canvas id="${chartId}" class="h-full w-full"></canvas>`
+                            : '<div class="flex h-full items-center justify-center text-xs text-slate-500">No equity data yet</div>'}
+                    </div>
+                    <button type="button" data-action="watchlist" data-id="${strategyId}" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-[var(--olive-700)] transition hover:border-[var(--olive)] hover:text-[var(--olive-700)]">
+                        Add to watchlist
+                    </button>
+                `;
+                strategyRecos.appendChild(card);
+
+                if (series.length) {
+                    drawCardChart(chartId, series);
+                }
+
+                const cta = card.querySelector("[data-action='watchlist']");
+                if (cta) {
+                    const isSelected = strategyId && watchList.has(String(strategyId));
+                    syncWatchlistState(cta, isSelected);
+                    cta.addEventListener("click", () => {
+                        if (!strategyId) return;
+                        const key = String(strategyId);
+                        if (watchList.has(key)) {
+                            watchList.delete(key);
+                            syncWatchlistState(cta, false);
+                        } else {
+                            watchList.add(key);
+                            syncWatchlistState(cta, true);
+                        }
+                    });
+                }
+            });
+
+            strategyRecos.scrollLeft = 0;
+            updateStrategyScroller();
+        }
+
+        async function loadStrategiesForRisk(riskLabel) {
+            if (!strategyRecos || !strategyEmpty) return;
+            const normalized = normalizeRisk(riskLabel);
+            if (!normalized) {
+                renderStrategyCards([], "");
+                return;
+            }
+            strategyRecos.innerHTML = "<p class='text-sm text-slate-500'>Loading matches…</p>";
+            strategyEmpty.classList.add("hidden");
+            updateStrategyScroller();
+            try {
+                let query = supabase
+                    .from("strategies")
+                    .select("id,name,currency,risk_level,style")
+                    .order("aum", { ascending: false })
+                    .limit(6);
+
+                if (normalized !== "All") {
+                    query = query.eq("risk_level", normalized);
+                }
+
+                const { data: strategies, error: stratError } = await query;
+                if (stratError) throw stratError;
+
+                let metricsById = {};
+                const ids = (strategies || []).map((s) => s.id).filter(Boolean);
+                if (ids.length) {
+                    const { data: metrics, error: metricsError } = await supabase
+                        .from("strategy_metrics")
+                        .select("strategy_id, perf_summary, series_all, series_ytd")
+                        .in("strategy_id", ids);
+                    if (metricsError) {
+                        console.warn("Could not load metrics", metricsError);
+                    } else {
+                        metricsById = Object.fromEntries(metrics.map((m) => [m.strategy_id, m]));
+                    }
+                }
+
+                const returnPref = returnGoal?.value || "";
+                const drawdownPref = drawdown?.value || "";
+
+                const merged = (strategies || []).map((s) => {
+                    const metrics = metricsById[s.id] || null;
+                    return { ...s, metrics, performance: derivePerformance(metrics) };
+                });
+
+                const filtered = merged.filter((s) => {
+                    const perf = s.performance || {};
+                    return (
+                        matchesReturnGoal(returnPref, perf.returnPct) && matchesDrawdownPreference(drawdownPref, perf.drawdownPct)
+                    );
+                });
+
+                renderStrategyCards(filtered, normalized);
+            } catch (error) {
+                console.warn("Could not load strategies", error);
+                strategyRecos.innerHTML = "";
+                strategyEmpty.textContent = "Sorry, we couldn’t fetch strategies right now.";
+                strategyEmpty.classList.remove("hidden");
+                updateStrategyScroller();
+            }
+        }
+
+        function setAvatar(src) {
+            avatarUrl = src || null;
+            if (avatarPreview) {
+                avatarPreview.src = src || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23e2e8f0'/></svg>";
+            }
+            avatarRemove?.classList.toggle("hidden", !src);
+        }
+
+        function setLoading(on) {
+            submitBtn.disabled = on;
+            submitBtn.textContent = on ? "Saving…" : "Save and continue";
+        }
+
+        function hydrateFields(row = {}, demoRow = {}) {
+            const meta = supabaseUser?.user_metadata || {};
+            const source = { ...demoRow, ...row, ...meta };
+            if (firstName && source.first_name) firstName.value = source.first_name;
+            if (lastName && source.last_name) lastName.value = source.last_name;
+            if (phone && source.phone) phone.value = source.phone;
+            if (source.avatar_url) setAvatar(source.avatar_url);
+            avatarFilename.textContent = source.avatar_url ? "Avatar on file" : "No file chosen";
+            setWatchlistFromProfile(demoRow?.watch_list);
+
+            const riskChoice = normalizeRisk(demoRow?.risk_appetite || meta.risk_appetite || meta.risk_profile);
+            if (riskChoice) {
+                const match = riskRadios.find((input) => input.value === riskChoice);
+                if (match) match.checked = true;
+            }
+
+            const preferences = source.investment_preferences || source.investor_profile || {};
+            if (returnGoal && preferences.return_goal) returnGoal.value = preferences.return_goal;
+            if (drawdown && preferences.drawdown) drawdown.value = preferences.drawdown;
+            if (timeHorizon && preferences.time_horizon) timeHorizon.value = preferences.time_horizon;
+
+            if (riskChoice) refreshStrategies();
+        }
+
+        function hideLoader() {
+            if (!loader) return;
+            loader.classList.add("preloader--hide");
+            setTimeout(() => loader.remove(), 500);
+        }
+
+        async function ensureSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                location.replace(`/auth.html?redirect=${encodeURIComponent(location.pathname)}`);
+                return null;
+            }
+            supabaseUser = session.user;
+            hideLoader();
+            return session.user;
+        }
+
+        async function signOut() {
+            await supabase.auth.signOut();
+            location.replace("/auth.html");
+        }
+
+        async function loadProfiles() {
+            if (!supabaseUser) return;
+            try {
+                const emailAddress = (supabaseUser?.email || "").trim();
+                let liveQuery = supabase.from("profiles").select("first_name, last_name, phone, avatar_url");
+                liveQuery = emailAddress ? liveQuery.eq("email", emailAddress) : liveQuery.eq("id", supabaseUser.id);
+                const { data: liveData, error: liveError } = await liveQuery.maybeSingle();
+                if (liveError && liveError.code === "42703") {
+                    const fallbackQuery = supabase.from("profiles").select("first_name, last_name, phone, avatar_url");
+                    const { data: fallbackData, error: fallbackErr } = await (
+                        emailAddress ? fallbackQuery.eq("email", emailAddress) : fallbackQuery.eq("id", supabaseUser.id)
+                    ).maybeSingle();
+                    if (fallbackErr && fallbackErr.code !== "PGRST116") throw fallbackErr;
+                    profileRow = fallbackData || {};
+                } else {
+                    if (liveError && liveError.code !== "PGRST116") throw liveError;
+                    profileRow = liveData || {};
+                }
+            } catch (error) {
+                console.warn("Unable to load live profile", error);
+            }
+
+            try {
+                const baseQuery = supabase
+                    .from("demo_profiles")
+                    .select(
+                        demoSupportsAvatar
+                            ? "first_name, last_name, phone, avatar_url, risk_appetite, watch_list"
+                            : "first_name, last_name, phone, risk_appetite, watch_list"
+                    )
+                    .eq("id", supabaseUser.id);
+
+                const { data: demoData, error: demoError } = await baseQuery.maybeSingle();
+
+                if (demoError && demoError.code === "42703") {
+                    demoSupportsAvatar = false;
+                    const { data: fallbackData, error: fallbackError } = await supabase
+                        .from("demo_profiles")
+                        .select("first_name, last_name, phone, risk_appetite, watch_list")
+                        .eq("id", supabaseUser.id)
+                        .maybeSingle();
+                    if (fallbackError && fallbackError.code !== "PGRST116") throw fallbackError;
+                    demoProfileRow = fallbackData || {};
+                } else {
+                    if (demoError && demoError.code !== "PGRST116") throw demoError;
+                    demoProfileRow = demoData || {};
+                }
+            } catch (error) {
+                console.warn("Unable to load demo profile", error);
+            }
+
+            hydrateFields(profileRow, demoProfileRow);
+        }
+
+        async function uploadAvatar(file) {
+            if (!file || !supabaseUser) return avatarUrl;
+            const extension = file.name.split(".").pop();
+            const path = `${supabaseUser.id}/avatar_${Date.now()}.${extension || "png"}`;
+            const { error: upErr } = await supabase.storage.from(AVATAR_BUCKET).upload(path, file, { upsert: true, cacheControl: "3600" });
+            if (upErr) throw upErr;
+            const { data: pub } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+            if (!pub?.publicUrl) throw new Error("Could not get public URL");
+            avatarUrl = pub.publicUrl;
+            return avatarUrl;
+        }
+
+        async function saveProfiles({ first_name, last_name, phone, risk_appetite, investment_preferences }) {
+            if (!supabaseUser) throw new Error("Please sign in again.");
+
+            const basePayload = {
+                id: supabaseUser.id,
+                first_name,
+                last_name,
+                phone,
+            };
+
+            const watch_list = Array.from(watchList);
+
+            const demoPayload = demoSupportsAvatar
+                ? { ...basePayload, avatar_url: avatarUrl, risk_appetite, watch_list }
+                : { ...basePayload, risk_appetite, watch_list };
+
+            const { error: demoError } = await supabase.from("demo_profiles").upsert(demoPayload);
+            if (demoError && demoError.code === "42703") {
+                demoSupportsAvatar = false;
+                const fallbackPayload = { id: supabaseUser.id, first_name, last_name, phone, risk_appetite, watch_list };
+                const { error: fallbackErr } = await supabase.from("demo_profiles").upsert(fallbackPayload);
+                if (fallbackErr && fallbackErr.code === "42703") {
+                    const minimalPayload = { id: supabaseUser.id, first_name, last_name, phone, risk_appetite };
+                    const { error: minimalErr } = await supabase.from("demo_profiles").upsert(minimalPayload);
+                    if (minimalErr) throw minimalErr;
+                } else if (fallbackErr) {
+                    throw fallbackErr;
+                }
+            } else if (demoError) {
+                throw demoError;
+            }
+
+            const livePayload = { ...basePayload, avatar_url: avatarUrl };
+            const { error: liveError } = await supabase.from("profiles").upsert(livePayload);
+            if (liveError && liveError.code === "42703") {
+                const { error: fallbackLive } = await supabase
+                    .from("profiles")
+                    .upsert({ id: supabaseUser.id, first_name, last_name, phone, avatar_url: avatarUrl });
+                if (fallbackLive) throw fallbackLive;
+            } else if (liveError) {
+                throw liveError;
+            }
+
+            try {
+                await supabase.auth.updateUser({
+                    data: {
+                        first_name,
+                        last_name,
+                        phone,
+                        avatar_url: avatarUrl,
+                        account_type: "paper",
+                        risk_appetite,
+                        investment_preferences,
+                        watch_list,
+                    },
+                });
+            } catch (error) {
+                console.warn("Could not persist auth metadata", error);
+            }
+        }
+
+        avatarInput?.addEventListener("change", (e) => {
+            const file = e.target.files?.[0];
+            avatarFile = file || null;
+            avatarFilename.textContent = file?.name || "No file chosen";
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => setAvatar(reader.result);
+                reader.readAsDataURL(file);
+            }
+        });
+
+        avatarRemove?.addEventListener("click", () => {
+            avatarFile = null;
+            setAvatar(null);
+            avatarFilename.textContent = "No file chosen";
+        });
+
+        tabButtons.forEach((btn) =>
+            btn.addEventListener("click", () => showTab(btn.dataset.tab === "preferences" ? "preferences" : "basics")),
+        );
+
+        toPreferences?.addEventListener("click", () => {
+            if (!firstName?.value.trim() || !lastName?.value.trim() || !phone?.value.trim()) {
+                showAlert("Please finish your basics first.", "error");
+                return;
+            }
+            clearAlert();
+            showTab("preferences");
+        });
+
+        backToBasics?.addEventListener("click", () => {
+            clearAlert();
+            showTab("basics");
+        });
+
+        const refreshStrategies = () => {
+            const activeRisk = normalizeRisk(riskRadios.find((input) => input.checked)?.value);
+            loadStrategiesForRisk(activeRisk);
+        };
+
+        riskRadios.forEach((input) => input.addEventListener("change", refreshStrategies));
+        returnGoal?.addEventListener("change", refreshStrategies);
+        drawdown?.addEventListener("change", refreshStrategies);
+
+        strategyRecos?.addEventListener("scroll", () => updateStrategyScroller());
+
+        strategyPrev?.addEventListener("click", () => {
+            if (!strategyRecos) return;
+            const step = Math.max(260, strategyRecos.clientWidth * 0.85);
+            strategyRecos.scrollBy({ left: -step, behavior: "smooth" });
+        });
+
+        strategyNext?.addEventListener("click", () => {
+            if (!strategyRecos) return;
+            const step = Math.max(260, strategyRecos.clientWidth * 0.85);
+            strategyRecos.scrollBy({ left: step, behavior: "smooth" });
+        });
+
+        window.addEventListener("resize", updateStrategyScroller);
+
+        showTab("basics");
+        renderStrategyCards([], "");
+
+        signOutButton?.addEventListener("click", signOut);
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            clearAlert();
+
+            const first_name = firstName?.value.trim();
+            const last_name = lastName?.value.trim();
+            const phoneVal = phone?.value.trim();
+            const riskChoice = normalizeRisk(riskRadios.find((input) => input.checked)?.value);
+            const returnGoalVal = returnGoal?.value || "";
+            const drawdownVal = drawdown?.value || "";
+            const horizonVal = timeHorizon?.value || "";
+
+            if (!first_name || !last_name || !phoneVal) {
+                showTab("basics");
+                showAlert("Please complete all fields.", "error");
+                return;
+            }
+
+            if (!riskChoice || !returnGoalVal || !drawdownVal || !horizonVal) {
+                showTab("preferences");
+                showAlert("Please answer all investment preference questions.", "error");
+                return;
+            }
+
+            try {
+                setLoading(true);
+                if (avatarFile) {
+                    await uploadAvatar(avatarFile);
+                }
+                const investment_preferences = {
+                    return_goal: returnGoalVal,
+                    drawdown: drawdownVal,
+                    time_horizon: horizonVal,
+                };
+
+                await saveProfiles({
+                    first_name,
+                    last_name,
+                    phone: phoneVal,
+                    risk_appetite: riskChoice,
+                    investment_preferences,
+                });
+                showAlert("Profile saved. Redirecting to your demo dashboard…", "info");
+                setTimeout(() => location.replace("/demo/dashboard.html"), 400);
+            } catch (error) {
+                console.error(error);
+                showAlert(error.message || "Could not save your details.", "error");
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        await ensureSession();
+        await loadProfiles();
+    </script>
+</body>
+
+</html>

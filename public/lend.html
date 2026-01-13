@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AlgoHive – My Lending</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+  <style>
+    :root{
+      --page:#0b1220;
+      --bg:#f9fafb;
+      --muted:#64748b;
+      --ink:#0f172a;
+      --olive:#556B2F;
+      --brand:#f59e0b;
+      --line:#e5e7ef
+    }
+    html,body{
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--ink)
+    }
+    .card{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04)
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      height:40px;
+      padding:0 .875rem;
+      border-radius:10px;
+      border:1px solid var(--line);
+      font-weight:600
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      border-radius:9999px;
+      padding:.2rem .55rem;
+      font-size:.74rem;
+      font-weight:600
+    }
+    .topbar{ height:52px }
+
+    /* LAYOUT / SIDEBAR ================================== */
+    #layout{
+      --sb:220px;
+      display:grid;
+      grid-template-columns:1fr;
+      min-height:100vh
+    }
+    #ah-sidebar{
+      transition: transform .3s ease, width .2s ease;
+      width:280px;
+      max-width:85vw;
+      position:fixed;
+      z-index:50;
+      height:100vh;
+      transform:translateX(-100%);
+      overflow-y:auto;
+      background:#fff;
+      border-right:1px solid #e5e7eb;
+    }
+    #ah-sidebar.is-open{ transform:translateX(0) }
+
+    @media (min-width:768px){
+      #layout{ grid-template-columns:var(--sb) 1fr }
+      #layout.is-collapsed{ --sb:64px }
+      #ah-sidebar{
+        position:sticky;
+        width:var(--sb);
+        max-width:none;
+        transform:translateX(0);
+        z-index:auto;
+      }
+    }
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron{
+      display:none
+    }
+    #ah-sidebar details .sub{ transition:height .2s ease }
+    #ah-sidebar[data-collapsed="true"] details>.sub{ display:none!important }
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details>summary{
+      justify-content:center;
+      gap:.25rem
+    }
+    #ah-sidebar[data-collapsed="true"] details>summary span{ gap:0 }
+    #ah-sidebar .footer{ transition:all .2s ease }
+    #ah-sidebar[data-collapsed="true"] .footer{
+      justify-content:center;
+      flex-direction:column;
+      gap:12px
+    }
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg,i){
+      transform:rotate(180deg)
+    }
+
+    /* hide desktop collapse button on mobile */
+    #ah-collapse{ display:none }
+    @media (min-width:768px){
+      #ah-collapse{ display:inline-flex }
+    }
+
+    /* TABLE STYLES (desktop repayments) ================ */
+    .tbl-wrap{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      overflow:hidden
+    }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      table-layout:fixed;
+    }
+    thead th{
+      position:sticky;
+      top:0;
+      background:#fff;
+      z-index:1;
+      font-size:.75rem;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:#64748b;
+      border-bottom:1px solid #e5e7eb;
+      padding:.875rem .875rem;
+      text-align:left
+    }
+    tbody td{
+      padding:1rem .875rem;
+      border-bottom:1px solid #f1f5f9;
+      font-size:.925rem;
+      vertical-align:middle
+    }
+    tbody tr:hover{ background:#f8fafc }
+    .th-min{ width:1%; white-space:nowrap }
+    .th-center{ text-align:center }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+<div id="layout">
+  <!-- dark overlay for mobile sidebar -->
+  <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+
+  <!-- SIDEBAR -->
+  <aside id="ah-sidebar" data-collapsed="false" class="flex flex-col">
+    <div class="px-4 py-3 flex items-center gap-3 border-b border-slate-200">
+      <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png"
+        alt="AlgoHive Logo" class="w-10 h-10 object-contain"/>
+      <div class="min-w-0">
+        <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+        <div class="text-[11px] text-slate-500 label">Where Smart Capital Gathers</div>
+      </div>
+    </div>
+
+    <nav id="main-nav" class="p-1 text-[14px]">
+      <a class="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-slate-50 font-medium text-slate-900"
+         href="/home.html" title="Home">
+        <i class="fa-solid fa-house text-slate-500 w-4 shrink-0"></i>
+        <span class="label">Home</span>
+      </a>
+
+      <details class="group mt-1">
+        <summary
+          class="flex items-center justify-between px-3 py-1 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+          <span class="flex items-center gap-3">
+            <i class="fa-regular fa-user w-4 text-slate-500"></i>
+            <span class="label">Portfolio</span>
+          </span>
+          <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+        </summary>
+        <div class="ml-8 flex flex-col sub">
+          <a class="px-3 py-1 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/my-strategies.html">
+            <i class="fa-solid fa-chart-pie w-4 text-slate-500"></i>
+            <span class="label">My Strategies</span>
+          </a>
+        </div>
+      </details>
+
+      <details class="group mt-1">
+        <summary
+          class="flex items-center justify-between px-3 py-1 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+          <span class="flex items-center gap-3">
+            <i class="fa-solid fa-link w-4 text-slate-500"></i>
+            <span class="label">Invest</span>
+          </span>
+          <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+        </summary>
+        <div class="ml-8 flex flex-col sub">
+          <a class="px-3 py-1 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="strategies.html">
+            <i class="fa-solid fa-chart-line w-4 text-slate-500"></i>
+            <span class="label">OpenStrategies</span>
+          </a>
+        </div>
+      </details>
+
+      <!-- LEND (active) -->
+      <a class="flex items-center gap-3 px-3 py-1 rounded-lg bg-slate-100 font-semibold text-slate-900"
+         href="lend.html">
+        <i class="fa-solid fa-hand-holding-dollar w-4 text-slate-600"></i>
+        <span class="label">Lend</span>
+      </a>
+
+      <a class="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-slate-50" href="news-insights.html">
+        <i class="fa-solid fa-newspaper w-4 text-slate-500"></i>
+        <span class="label">News &amp; Insights</span>
+      </a>
+
+      <a class="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-slate-50" href="support.html">
+        <i class="fa-solid fa-life-ring w-4 text-slate-500"></i>
+        <span class="label">Support</span>
+      </a>
+
+      <a class="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-slate-50" href="legal.html">
+        <i class="fa-solid fa-scale-balanced w-4 text-slate-500"></i>
+        <span class="label">Legal</span>
+      </a>
+    </nav>
+
+    <div class="p-2 border-t border-slate-200 footer flex items-center justify-between gap-2 mt-auto">
+      <a href="settings.html" id="ah-settings" aria-current="page"
+         class="btn btn-settings h-10 w-10 p-0 rounded-xl border-0" title="Settings">
+        <i class="fa-solid fa-gear"></i>
+      </a>
+
+      <button id="ah-collapse"
+        class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0"
+        title="Collapse">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 min-w-0">
+    <!-- header / top bar -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-30">
+      <div class="flex items-center gap-3 flex-1 min-w-0 max-w-[560px]">
+        <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="text-xl font-bold text-slate-800 truncate">My Lending</h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <img id="hdr-avatar"
+             src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>"
+             alt="Profile"
+             class="w-9 h-9 rounded-full object-cover border border-slate-200"/>
+        <button id="hdr-profile-btn"
+                class="flex items-center gap-2 text-slate-900 font-medium hover:text-slate-700">
+          <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- page body -->
+    <div class="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
+      <!-- SUMMARY CARDS -->
+      <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="card p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total outstanding</div>
+          <div id="loan-total-outstanding" class="text-2xl font-bold text-slate-900 mt-1">R0</div>
+          <div class="text-xs text-slate-500 mt-2 flex items-center gap-2">
+            <span class="chip bg-amber-50 text-amber-700">Active</span>
+            <span id="loan-active-count" class="text-slate-500 text-xs">0 loans</span>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wide">Next repayment due</div>
+          <div id="loan-next-due-amount" class="text-2xl font-bold text-slate-900 mt-1">R0</div>
+          <div id="loan-next-due-date" class="text-xs text-slate-500 mt-2">—</div>
+        </div>
+
+        <div class="card p-4">
+          <div class="text-xs font-medium text-slate-500 uppercase tracking-wide">Current status</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span id="loan-status-chip" class="chip bg-emerald-50 text-emerald-700">Good standing</span>
+          </div>
+          <div id="loan-status-desc" class="text-xs text-slate-500 mt-2">All payments up to date</div>
+        </div>
+      </section>
+
+      <!-- ACTIVE LOAN DETAILS -->
+      <section class="card p-5">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-hand-holding-dollar text-[var(--olive)]"></i>
+              <span>Active loan</span>
+            </div>
+            <div class="mt-2 text-2xl font-bold text-slate-900 leading-tight" id="active-loan-amount">
+              R0
+            </div>
+            <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm text-slate-600">
+              <div>
+                <div class="text-[11px] uppercase text-slate-500 font-medium tracking-wide">APR</div>
+                <div id="active-loan-rate" class="font-medium text-slate-900">—</div>
+              </div>
+              <div>
+                <div class="text-[11px] uppercase text-slate-500 font-medium tracking-wide">Term</div>
+                <div id="active-loan-term" class="font-medium text-slate-900">—</div>
+              </div>
+              <div>
+                <div class="text-[11px] uppercase text-slate-500 font-medium tracking-wide">Next debit</div>
+                <div id="active-loan-next" class="font-medium text-slate-900">—</div>
+              </div>
+              <div>
+                <div class="text-[11px] uppercase text-slate-500 font-medium tracking-wide">Balance left</div>
+                <div id="active-loan-balance" class="font-medium text-slate-900">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-stretch gap-2 w-full sm:w-auto sm:items-end">
+            <button
+              class="btn bg-[var(--olive)] text-white border-none hover:opacity-95 w-full sm:w-auto text-sm"
+              id="btn-pay">
+              <i class="fa-solid fa-credit-card"></i>
+              <span>Make a payment</span>
+            </button>
+            <button
+              class="btn bg-white hover:bg-slate-50 border-slate-300 w-full sm:w-auto text-sm"
+              id="btn-new-loan">
+              <i class="fa-solid fa-plus"></i>
+              <span>Request new loan</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 text-xs text-slate-500 leading-relaxed">
+          We invest a portion of your repayments to build long-term wealth. Paying on time improves your limit.
+        </div>
+      </section>
+
+      <!-- REPAYMENT SCHEDULE -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-day text-[var(--olive)]"></i>
+              <span>Upcoming repayments</span>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">
+              These are the next scheduled debits for your active loan.
+            </div>
+          </div>
+          <div class="hidden sm:block text-xs text-slate-400">
+            Need help? Chat to us in Support.
+          </div>
+        </div>
+
+        <!-- DESKTOP TABLE -->
+        <div class="tbl-wrap hidden md:block">
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th class="th-min">Due Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th class="th-min">Reference</th>
+                </tr>
+              </thead>
+              <tbody id="repayment-body-desktop">
+                <!-- rows injected -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MOBILE LIST -->
+        <div id="repayment-mobile-list" class="space-y-3 md:hidden">
+          <!-- cards injected -->
+        </div>
+
+        <div id="repayment-empty" class="hidden py-10 text-center text-slate-500 text-sm">
+          No upcoming repayments.
+        </div>
+      </section>
+
+      <!-- PAST LOANS HISTORY -->
+      <section class="card p-5">
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <div class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-[var(--olive)]"></i>
+              <span>Loan history</span>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">
+              Closed or settled loans.
+            </div>
+          </div>
+        </div>
+
+        <div id="loan-history" class="mt-4 space-y-4">
+          <!-- past loans injected here -->
+        </div>
+
+        <div id="loan-history-empty" class="hidden py-4 text-center text-slate-500 text-sm">
+          You have no previous loans.
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- PROFILE DROPDOWN MODAL -->
+<div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+  <div class="absolute inset-0 bg-black/40"></div>
+  <div class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+    <div class="px-4 py-3 border-b border-slate-200">
+      <div class="text-sm font-semibold text-slate-900">Account</div>
+      <div id="pm-email" class="text-xs text-slate-500 truncate">user@example.com</div>
+    </div>
+    <div class="p-2">
+      <a id="pm-profile" href="/settings.html#basic"
+         class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+        <i class="fa-regular fa-user text-slate-500 w-4"></i>
+        <span>Profile settings</span>
+      </a>
+      <button id="pm-logout"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+        <i class="fa-solid fa-right-from-bracket w-4"></i>
+        <span>Log out</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- JS: mobile sidebar open/close -->
+<script nonce="ALGOHIVE">
+(function () {
+  const btn = document.getElementById('ah-mobile-menu-btn');
+  const overlay = document.getElementById('ah-overlay');
+  const sidebar = document.getElementById('ah-sidebar');
+
+  function openMenu() {
+    sidebar.classList.add('is-open');
+    overlay.classList.remove('hidden');
+  }
+  function closeMenu() {
+    sidebar.classList.remove('is-open');
+    overlay.classList.add('hidden');
+  }
+
+  btn?.addEventListener('click', openMenu);
+  overlay?.addEventListener('click', closeMenu);
+
+  // close menu if you tap a nav item (mobile)
+  sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+})();
+</script>
+
+<!-- JS: desktop collapse memory -->
+<script nonce="ALGOHIVE">
+(function () {
+  const layout = document.getElementById('layout');
+  const aside = document.getElementById('ah-sidebar');
+  const btn = document.getElementById('ah-collapse');
+  const saved = localStorage.getItem('ah_collapsed') === 'true';
+
+  if (saved) {
+    aside.setAttribute('data-collapsed','true');
+    layout.classList.add('is-collapsed');
+  }
+
+  btn?.addEventListener('click', () => {
+    const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+    if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+    aside.setAttribute('data-collapsed', String(!isCollapsed));
+    layout.classList.toggle('is-collapsed', !isCollapsed);
+    localStorage.setItem('ah_collapsed', String(!isCollapsed));
+  });
+})();
+</script>
+
+<!-- JS: Supabase data + hydrate lending -->
+<script type="module" nonce="ALGOHIVE">
+import { supabase } from "/js/supabase.js";
+
+const moneyFmtZAR = new Intl.NumberFormat('en-ZA',{style:'currency',currency:'ZAR',maximumFractionDigits:0});
+const money = (n) => moneyFmtZAR.format(n || 0);
+
+// tiny dom helpers
+const setText = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v??"—"; };
+const setSrc=(id,v)=>{
+  const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>";
+  const el=document.getElementById(id);
+  if(el) el.src=v||BLANK_AVATAR;
+};
+
+async function ensureProfile(id,email){
+  // same as your pattern
+  let { data, error } = await supabase.from("profiles").select("*").eq("id",id).maybeSingle();
+  if (error && error.code !== "PGRST116") throw error;
+  if (data) return data;
+
+  const up = await supabase.from("profiles")
+    .upsert({ id,email,updated_at:new Date().toISOString() }, { onConflict:"id" })
+    .select("*").single();
+  if (up.error) throw up.error;
+  return up.data;
+}
+
+// renderRepayments: desktop table + mobile stacked cards
+function renderRepayments(repayments){
+  const $tbodyDesktop = document.getElementById("repayment-body-desktop");
+  const $mobileList   = document.getElementById("repayment-mobile-list");
+  const $empty        = document.getElementById("repayment-empty");
+
+  $tbodyDesktop.innerHTML = "";
+  $mobileList.innerHTML   = "";
+
+  if (!repayments || repayments.length === 0){
+    $empty.classList.remove("hidden");
+    return;
+  }
+  $empty.classList.add("hidden");
+
+  repayments.forEach(r => {
+    // format "2025-11-05" -> "05 Nov 2025"
+    const dObj = new Date(r.due_date + "T00:00:00");
+    const day  = String(dObj.getDate()).padStart(2,"0");
+    const mon  = dObj.toLocaleString("en-US",{month:"short"});
+    const yr   = dObj.getFullYear();
+    const prettyDate = `${day} ${mon} ${yr}`;
+
+    const statusChipHTML =
+      r.status==="upcoming"
+        ? `<span class="chip bg-amber-50 text-amber-700">Upcoming</span>`
+      : r.status==="paid"
+        ? `<span class="chip bg-emerald-50 text-emerald-700">Paid</span>`
+        : `<span class="chip bg-rose-50 text-rose-700">Late</span>`;
+
+    // DESKTOP ROW
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="font-medium text-slate-900 whitespace-nowrap">${prettyDate}</td>
+      <td class="text-slate-900 font-semibold">${money(r.amount)}</td>
+      <td class="text-slate-700">${statusChipHTML}</td>
+      <td class="text-slate-500 text-xs">${r.ref}</td>
+    `;
+    $tbodyDesktop.appendChild(tr);
+
+    // MOBILE CARD (stacked lines)
+    const card = document.createElement("div");
+    card.className = "card border border-slate-200 rounded-xl p-4";
+    card.innerHTML = `
+      <!-- date -->
+      <div class="text-[15px] font-semibold text-slate-900 leading-5">
+        ${prettyDate}
+      </div>
+
+      <!-- amount -->
+      <div class="text-[15px] font-bold text-slate-900 leading-5 mt-1">
+        ${money(r.amount)}
+      </div>
+
+      <!-- status + ref -->
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-2">
+        ${statusChipHTML}
+        <span class="text-slate-400">${r.ref}</span>
+      </div>
+    `;
+    $mobileList.appendChild(card);
+  });
+}
+
+// renderHistory cards
+function renderHistory(pastLoans){
+  const $hist = document.getElementById("loan-history");
+  const $histEmpty = document.getElementById("loan-history-empty");
+
+  $hist.innerHTML = "";
+
+  if (!pastLoans || pastLoans.length === 0){
+    $histEmpty.classList.remove("hidden");
+    return;
+  }
+  $histEmpty.classList.add("hidden");
+
+  pastLoans.forEach(l=>{
+    const item = document.createElement("div");
+    item.className = "border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3";
+    item.innerHTML = `
+      <div>
+        <div class="text-sm font-semibold text-slate-900">Borrowed ${money(l.principal)}</div>
+        <div class="text-xs text-slate-500 mt-1">
+          Settled on ${l.closed_at || "—"}
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="chip bg-slate-100 text-slate-700">Closed</span>
+        <span class="text-xs text-slate-400">${l.term_months} mo term • ${l.apr.toFixed(1)}% APR</span>
+      </div>
+    `;
+    $hist.appendChild(item);
+  });
+}
+
+// renderSummaryAndActive handles:
+// - summary cards
+// - active loan block
+// - repayments for that loan
+// - loan history
+function renderSummaryAndActive(loans){
+  const activeLoan = loans.find(l=>!l.closed_at) || null;
+
+  // summary cards
+  const totalOutstanding = loans
+    .filter(l=>!l.closed_at)
+    .reduce((sum,l)=>sum+(l.balance_outstanding||0),0);
+
+  setText("loan-total-outstanding", money(totalOutstanding));
+  setText("loan-active-count", `${loans.filter(l=>!l.closed_at).length} loan${loans.filter(l=>!l.closed_at).length===1?"":"s"}`);
+
+  if (activeLoan){
+    setText("loan-next-due-amount", money(activeLoan.next_payment_amount));
+    setText("loan-next-due-date", `Due ${activeLoan.next_payment_date || "—"}`);
+  } else {
+    setText("loan-next-due-amount", money(0));
+    setText("loan-next-due-date", "No payments due");
+  }
+
+  // status chip
+  const chipEl = document.getElementById("loan-status-chip");
+  const descEl = document.getElementById("loan-status-desc");
+  if (activeLoan?.status === "late"){
+    chipEl.className = "chip bg-rose-50 text-rose-700";
+    chipEl.textContent = "Past due";
+    descEl.textContent = "You have missed a payment. Please settle.";
+  } else {
+    chipEl.className = "chip bg-emerald-50 text-emerald-700";
+    chipEl.textContent = "Good standing";
+    descEl.textContent = "All payments up to date";
+  }
+
+  // active loan details
+  if (activeLoan){
+    setText("active-loan-amount", money(activeLoan.principal));
+    setText("active-loan-rate", activeLoan.apr ? activeLoan.apr.toFixed(1) + "% APR" : "—");
+    setText("active-loan-term", activeLoan.term_months ? activeLoan.term_months + " mo" : "—");
+    setText("active-loan-next", activeLoan.next_payment_date || "—");
+    setText("active-loan-balance", money(activeLoan.balance_outstanding));
+  } else {
+    setText("active-loan-amount","No active loan");
+    setText("active-loan-rate","—");
+    setText("active-loan-term","—");
+    setText("active-loan-next","—");
+    setText("active-loan-balance","—");
+  }
+
+  // repayments for active loan (mock for now)
+  let repayments = [];
+  if (activeLoan){
+    repayments = [
+      { due_date:"2025-11-05", amount:2300, status:"upcoming", ref:"INV-2300A" },
+      { due_date:"2025-12-05", amount:2300, status:"upcoming", ref:"INV-2300B" },
+      { due_date:"2026-01-05", amount:2300, status:"upcoming", ref:"INV-2300C" }
+    ];
+  }
+  renderRepayments(repayments);
+
+  // history
+  const pastLoans = loans.filter(l=>l.closed_at);
+  renderHistory(pastLoans);
+}
+
+// init: auth, profile, loans
+try {
+  // auth guard
+  const { data:{ session } } = await supabase.auth.getSession();
+  if (!session){
+    const next = encodeURIComponent(location.pathname + location.search + location.hash);
+    location.replace(`/auth.html?tab=in&redirect=${next}`);
+    throw new Error("redirecting");
+  }
+
+  const { data:{ user } } = await supabase.auth.getUser();
+  const row = await ensureProfile(user.id, user.email || null);
+
+  // avatar
+  const avatarUrl = row?.avatar_url
+    ? `${row.avatar_url}${row.avatar_url.includes("?")?"&":"?"}v=${Date.now()}`
+    : null;
+  setSrc("hdr-avatar", avatarUrl);
+
+  // profile modal wiring
+  const modal = document.getElementById("profile-modal");
+  const pmEmail = document.getElementById("pm-email");
+  const btnOpen = document.getElementById("hdr-profile-btn");
+  const btnLogout = document.getElementById("pm-logout");
+
+  const open = () => {
+    pmEmail.textContent = user.email || "—";
+    modal?.classList.remove("hidden");
+  };
+  const close = () => modal?.classList.add("hidden");
+
+  btnOpen?.addEventListener("click",(e)=>{ e.preventDefault(); open(); });
+  modal?.addEventListener("click",(e)=>{
+    if (e.target === modal || e.target.classList.contains("bg-black/40")) close();
+  });
+  window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") close(); });
+
+  btnLogout?.addEventListener('click', async () => {
+    try{
+      await supabase.auth.signOut();
+      location.replace("/auth.html?tab=in");
+    }catch{
+      console.warn("Logout failed");
+    }
+  });
+
+  // ---- Fetch user's loans ----
+  // TODO: replace this mock with supabase.from("loans")...
+  const loans = [{
+    id: "ABC123",
+    principal: 25000,
+    apr: 24.5,
+    term_months: 12,
+    balance_outstanding: 17800,
+    next_payment_amount: 2300,
+    next_payment_date: "2025-11-05",
+    status: "good", // or "late"
+    closed_at: null
+  },{
+    id: "OLD001",
+    principal: 8000,
+    apr: 28.0,
+    term_months: 6,
+    balance_outstanding: 0,
+    next_payment_amount: 0,
+    next_payment_date: null,
+    status: "settled",
+    closed_at: "2025-08-10"
+  }];
+
+  renderSummaryAndActive(loans);
+
+} catch(e){
+  if (String(e?.message).toLowerCase() !== "redirecting"){
+    console.error(e);
+  }
+}
+</script>
+
+</body>
+</html>

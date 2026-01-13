@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Gold bullion logo">
+  <rect width="64" height="64" rx="12" fill="#fff8e1"/>
+  <g fill="#d4a017">
+    <rect x="12" y="30" width="16" height="12" rx="2"/>
+    <rect x="24" y="22" width="16" height="12" rx="2"/>
+    <rect x="36" y="30" width="16" height="12" rx="2"/>
+  </g>
+  <rect x="18" y="42" width="28" height="8" rx="2" fill="#b98900"/>
+</svg>

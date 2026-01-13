@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive — Legal</title>
+  <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --page: #0b1220;
+      --bg: #ffffff;
+      --muted: #64748b;
+      --ink: #0f172a;
+      --olive: #7e8d52;
+      --brand: #f59e0b;
+      --line: #e2e8f0;
+    }
+
+    html,
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      height: 100%;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      height: 40px;
+      padding: 0 .875rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-weight: 600;
+    }
+
+    .input {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 .75rem;
+    }
+    
+    /* UPDATED FOR RESPONSIVENESS */
+    #layout {
+      --sb: 220px;
+      display: grid;
+      grid-template-columns: 1fr; /* Mobile-first: 1 column */
+      min-height: 100vh;
+    }
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 280px; /* Mobile width */
+      max-width: 85vw;
+      position: fixed; /* Mobile overlay */
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%); /* Hidden by default */
+    }
+    #ah-sidebar.is-open {
+      transform: translateX(0); /* Show sidebar */
+    }
+
+    /* Desktop styles */
+    @media (min-width: 768px) {
+      #layout {
+        grid-template-columns: var(--sb) 1fr; /* 2-col grid on desktop */
+      }
+      #layout.is-collapsed {
+        --sb: 64px;
+      }
+      #ah-sidebar {
+        position: sticky; /* Back to sticky */
+        width: var(--sb); /* Use variable width */
+        max-width: none;
+        transform: translateX(0); /* Always visible */
+        z-index: auto;
+      }
+    }
+    /* END RESPONSIVE UPDATES */
+
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron {
+      display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details>.sub {
+      display: none !important;
+    }
+
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details>summary {
+      justify-content: center;
+      gap: .25rem;
+    }
+
+    #ah-sidebar .footer {
+      transition: all .2s ease;
+    }
+
+    #ah-sidebar[data-collapsed="true"] .footer {
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-collapse :is(svg, i) {
+      transition: transform .25s ease;
+    }
+
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+      transform: rotate(180deg);
+    }
+    
+    /* Hide desktop collapse button on mobile */
+    #ah-collapse { display: none; }
+    @media (min-width: 768px) {
+      #ah-collapse { display: inline-flex; } /* Show on desktop */
+    }
+
+    .btn-olive {
+      background: var(--olive);
+      color: #fff;
+      border: 0;
+    }
+
+    .btn-olive:hover {
+      filter: brightness(0.92);
+    }
+
+    .btn-olive:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    /* NEW: Digital Stopwatch Display Styles */
+    @font-face {
+        font-family: 'Digital-7 Mono';
+        src: url('https://fonts.cdnfonts.com/s/43424/digital-7%20(mono).woff') format('woff');
+        /* You might need to host this font yourself or use a different source */
+        font-weight: normal;
+        font-style: normal;
+    }
+    
+    .digital-display {
+      font-family: 'Digital-7 Mono', monospace; /* Will use a fallback if not available */
+      font-size: 3.5rem; /* Larger font size */
+      font-weight: normal; /* Digital fonts are usually not bold */
+      color: #000000; /* Black color */
+      letter-spacing: -3px; /* Tighter spacing for digital look */
+      line-height: 1;
+      text-align: center;
+      display: flex; /* To align minutes and seconds */
+      justify-content: center;
+      align-items: center;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .digital-display span {
+      position: relative;
+      padding: 0 5px; /* Add some padding around digits */
+    }
+
+    .digital-display span::before {
+      content: '88'; /* Ghosting effect for unlit segments */
+      position: absolute;
+      color: rgba(0, 0, 0, 0.1); /* Faded black for unlit segments */
+      left: 0;
+      top: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .digital-display span:first-child::before { content: '00'; } /* Minutes ghost */
+    .digital-display span:last-child::before { content: '88'; }  /* Seconds ghost */
+
+
+    /* Animation for attention - MODIFIED: changed to a fade */
+    @keyframes fade-timer {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .digital-display.active-warning {
+      animation: fade-timer 1.5s infinite linear; /* Apply animation when active */
+    }
+
+    /* Keep the pop-up centered and visible */
+    #session-timeout-modal .modal-content-custom {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90vw;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    /* END: Digital Stopwatch Styles */
+
+    /* Active state for the links */
+    .link-active {
+        background-color: #f1f5f9;
+        color: #0f172a;
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false"
+      class="border-r border-slate-200 h-screen bg-white flex flex-col overflow-hidden">
+      <div class="px-4 py-4 flex items-center gap-3 border-b border-slate-200">
+        <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png"
+          alt="AlgoHive Logo" class="w-10 h-10 object-contain" />
+        <div class="min-w-0">
+          <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+          <div class="text-[11px] text-slate-500 label">Where Smart Capital Gathers</div>
+        </div>
+      </div>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900"
+          href="/home.html" title="Home">
+          <i class="fa-solid fa-house text-slate-500 w-4 shrink-0"></i><span class="label">Home</span>
+        </a>
+
+        <details class="group mt-1">
+          <summary
+            class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <i class="fa-regular fa-user w-4 text-slate-500"></i><span class="label">Portfolio</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/my-strategies.html"><i
+                class="fa-solid fa-chart-pie w-4 text-slate-500"></i><span class="label">My Strategies</span></a>
+           </div>
+        </details>
+
+        <details class="group mt-1">
+          <summary
+            class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <i class="fa-solid fa-link w-4 text-slate-500"></i><span class="label">Invest</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="strategies.html"><i
+                class="fa-solid fa-chart-line w-4 text-slate-500"></i><span class="label">OpenStrategies</span></a>
+          </div>
+        </details>
+
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="news-insights.html"><i
+            class="fa-solid fa-newspaper w-4 text-slate-500"></i><span class="label">News &amp; Insights</span></a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="support.html"><i
+            class="fa-solid fa-life-ring w-4 text-slate-500"></i><span class="label">Support</span></a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 bg-slate-100 font-semibold" href="legal.html" aria-current="page"><i
+            class="fa-solid fa-scale-balanced w-4 text-slate-500"></i><span class="label">Legal</span></a>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl border-0" title="Settings" href="/settings.html">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <button id="ah-collapse" class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-30">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+           <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+           <h1 class="text-xl font-bold text-slate-800 md:hidden truncate">Legal</h1>
+          <div class="relative w-full hidden md:block max-w-[460px]">
+           
+           
+            </svg>
+          </div> 
+        </div>
+
+        <div class="flex items-center gap-3">
+          <img id="hdr-avatar"
+            src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>"
+            alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200" />
+          <button id="hdr-profile-btn" class="flex items-center gap-2 text-slate-900 font-medium hover:text-slate-700">
+            <span id="hdr-name" class="hidden lg:inline-block lg:truncate lg:max-w-xs">—</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <section id="legal" class="px-4 md:px-6 py-8">
+        <h1 class="text-2xl font-semibold text-slate-900">Policies and Legal Information</h1>
+        <hr class="mt-6 mb-8 border-slate-200" />
+
+        <div class="grid grid-cols-12 gap-8">
+          <aside class="col-span-12 md:col-span-4 lg:col-span-3">
+            <nav id="legal-nav" class="space-y-1">
+                <a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Terms%20and%20Conditions.pdf" class="legal-link w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Terms & Conditions</a>
+                <a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Privacy%20Policy.pdf" class="legal-link w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Privacy Policy</a>
+                <a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Advertising%20Policy.pdf" class="legal-link w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Advertising Policy</a>
+                <a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AlgoHive%20Risk%20Policy.pdf" class="legal-link w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Risk Policy</a>
+                <a href="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Legal%20Docs/AML%20&%20CTF.pdf" class="legal-link w-full block text-left px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-50">Anti-Money Laundering & CTF</a>
+            </nav>
+          </aside>
+
+          <div class="col-span-12 md:col-span-8 lg:col-span-9">
+             <div class="card border border-slate-200 rounded-2xl p-1 h-[75vh] md:h-[80vh] hidden md:block">
+                <iframe id="legal-frame" name="legal-frame" class="w-full h-full border-0 rounded-xl"></iframe>
+             </div>
+             <div class="block md:hidden">
+                <a id="mobile-legal-btn" href="#" target="_blank" class="btn btn-olive w-full">
+                    <i class="fa-solid fa-file-pdf mr-2"></i>
+                    View Document
+                </a>
+             </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-200">
+        <div class="text-sm font-semibold text-slate-900">Account</div>
+        <div id="pm-email" class="text-xs text-slate-500 truncate">—</div>
+      </div>
+      <div class="p-2">
+        <a href="settings.html" id="pm-profile" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-regular fa-user text-slate-500 w-4"></i>
+          <span>Profile settings</span>
+        </a>
+        <button id="pm-logout"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+          <i class="fa-solid fa-right-from-bracket w-4"></i>
+          <span>Log out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="session-timeout-modal" class="fixed inset-0 z-[600] hidden p-6 grid place-items-center backdrop-blur-lg bg-black/40">
+    <div class="relative w-full max-w-md rounded-2xl border border-slate-300 bg-white p-8 shadow-2xl text-center">
+      <h2 class="text-xl font-semibold text-slate-900">Are you still there?</h2>
+      <p class="text-slate-600 mt-2">
+        You've been inactive for a while. You will be automatically logged out in
+        <div id="session-countdown" class="digital-display mt-4">
+          <span id="countdown-minutes">00</span>:<span id="countdown-seconds">60</span>
+        </div>
+         seconds for security.
+      </p>
+      <button
+        id="session-stay-btn"
+        class="mt-6 inline-flex h-10 px-6 rounded-lg items-center justify-center font-medium
+               bg-[var(--olive)] text-white hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/40"
+      >
+        I'm still here
+      </button>
+    </div>
+  </div>
+  <script nonce="ALGOHIVE">
+    // SCRIPT FOR MOBILE SIDEBAR
+    (function () {
+      const btn = document.getElementById('ah-mobile-menu-btn');
+      const overlay = document.getElementById('ah-overlay');
+      const sidebar = document.getElementById('ah-sidebar');
+
+      function openMenu() {
+        sidebar.classList.add('is-open');
+        overlay.classList.remove('hidden');
+      }
+      function closeMenu() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.add('hidden');
+      }
+
+      btn?.addEventListener('click', openMenu);
+      overlay?.addEventListener('click', closeMenu);
+      
+      sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+          link.addEventListener('click', closeMenu);
+      });
+    })();
+  </script>
+  
+  <script nonce="ALGOHIVE">
+    // Sidebar collapse memory (This controls the DESKTOP collapse)
+    (function () {
+      const layout = document.getElementById('layout');
+      const aside = document.getElementById('ah-sidebar');
+      const btn = document.getElementById('ah-collapse');
+      const saved = localStorage.getItem('ah_collapsed') === 'true';
+      if (saved) { aside.setAttribute('data-collapsed', 'true'); layout.classList.add('is-collapsed'); }
+      btn?.addEventListener('click', () => {
+        const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+        if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+        aside.setAttribute('data-collapsed', String(!isCollapsed));
+        layout.classList.toggle('is-collapsed', !isCollapsed);
+        localStorage.setItem('ah_collapsed', String(!isCollapsed));
+      });
+    })();
+
+    // --- MODIFIED: Legal page iframe + mobile button loader ---
+    (function() {
+        const links = document.querySelectorAll('.legal-link');
+        const iframe = document.getElementById('legal-frame');
+        const mobileBtn = document.getElementById('mobile-legal-btn'); // Get mobile button
+
+        // Check for all required elements
+        if (!links.length || !iframe || !mobileBtn) return;
+
+        function setActiveLink(clickedLink) {
+            links.forEach(link => {
+                link.classList.remove('link-active', 'font-semibold');
+            });
+            clickedLink.classList.add('link-active', 'font-semibold');
+        }
+
+        links.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const url = this.getAttribute('href');
+                
+                // Set src for desktop iframe
+                iframe.src = url;
+                // Set href for mobile button
+                mobileBtn.href = url;
+                
+                setActiveLink(this);
+            });
+        });
+
+        // Load the first link by default
+        if (links.length > 0) {
+            links[0].click();
+        }
+    })();
+  </script>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    // --- ADDED: Helpers ---
+    const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>";
+    const setSrc  = (id, v) => { const el = document.getElementById(id); if (el) el.src = v || BLANK_AVATAR; };
+    // --- End Added Helpers ---
+
+    // ===== Authentication Guard =====
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+    }
+
+    // ===== Get User Data =====
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // ===== Helper function to ensure profile exists =====
+    async function ensureProfile(userId, email) {
+      let { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+      if (error && error.code !== "PGRST116") throw error;
+      if (data) return data;
+      const up = await supabase.from("profiles").upsert({ id: userId, email, updated_at: new Date().toISOString() }, { onConflict: "id" }).select("*").single();
+      if (up.error) throw up.error;
+      return up.data;
+    }
+
+    // ===== Load User Profile =====
+    const profile = await ensureProfile(user.id, user.email || null);
+
+    // ===== Header Profile Info =====
+    const displayName = profile.first_name && profile.last_name 
+      ? `${profile.first_name} ${profile.last_name}` 
+      : user.email?.split('@')[0] || "User";
+    document.getElementById("hdr-name").textContent = displayName;
+    document.getElementById("pm-email").textContent = user.email;
+
+    // --- ADDED: Avatar logic ---
+    const avatarUrl = profile?.avatar_url ? `${profile.avatar_url}${profile.avatar_url.includes("?") ? "&" : "?"}v=${Date.now()}` : BLANK_AVATAR;
+    setSrc("hdr-avatar", avatarUrl);
+    // --- End Added Avatar logic ---
+
+    const profileModal = document.getElementById("profile-modal");
+    const hdrProfileBtn = document.getElementById("hdr-profile-btn");
+    const btnLogout = document.getElementById("pm-logout");
+    function openProfileModal() { profileModal.classList.remove("hidden"); }
+    function closeProfileModal() { profileModal.classList.add("hidden"); }
+    hdrProfileBtn?.addEventListener("click", (e) => { e.preventDefault(); openProfileModal(); });
+    profileModal.addEventListener("click", (e) => { if (e.target === profileModal || e.target.classList.contains("bg-black/40")) closeProfileModal(); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeProfileModal(); });
+    btnLogout?.addEventListener("click", async () => {
+      try {
+        await supabase.auth.signOut();
+        location.replace("/auth.html?tab=in");
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("Sorry, logout failed. Please try again.");
+      }
+    });
+
+    // === [NEW] SESSION TIMEOUT LOGIC (10 MINUTES WITH BLACK FADING DISPLAY) ===
+    function setupSessionTimeout() {
+      const TIMEOUT_MINUTES = 10;
+      const WARNING_SECONDS = 60;
+      
+      let inactivityTimer;
+      let warningTimer;
+      let countdownInterval;
+
+      const modal = document.getElementById('session-timeout-modal');
+      const countdownContainer = document.getElementById('session-countdown'); // The new container div
+      const countdownMinutesEl = document.getElementById('countdown-minutes');
+      const countdownSecondsEl = document.getElementById('countdown-seconds');
+      const stayBtn = document.getElementById('session-stay-btn');
+
+      if (!modal || !countdownContainer || !countdownMinutesEl || !countdownSecondsEl || !stayBtn) {
+        console.warn('Session timeout modal elements not found or incomplete. Timeout disabled.');
+        return;
+      }
+
+      const logoutUser = () => {
+        supabase.auth.signOut();
+        location.replace("/auth.html?tab=in&reason=timeout");
+      };
+
+      const updateCountdownDisplay = (totalSeconds) => {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        countdownMinutesEl.textContent = String(minutes).padStart(2, '0');
+        countdownSecondsEl.textContent = String(seconds).padStart(2, '0');
+      };
+
+      const showWarning = () => {
+        modal.classList.remove('hidden');
+        countdownContainer.classList.add('active-warning'); // Add animation class
+
+        let remaining = WARNING_SECONDS;
+        updateCountdownDisplay(remaining);
+
+        countdownInterval = setInterval(() => {
+          remaining--;
+          updateCountdownDisplay(remaining);
+          if (remaining <= 0) {
+            clearInterval(countdownInterval);
+          }
+        }, 1000);
+
+        warningTimer = setTimeout(logoutUser, WARNING_SECONDS * 1000);
+      };
+
+      const resetTimer = () => {
+        clearTimeout(inactivityTimer);
+        clearTimeout(warningTimer);
+        clearInterval(countdownInterval);
+        modal.classList.add('hidden');
+        countdownContainer.classList.remove('active-warning'); 
+        updateCountdownDisplay(WARNING_SECONDS); 
+
+        // Set timer
+        inactivityTimer = setTimeout(showWarning, TIMEOUT_MINUTES * 60 * 1000); 
+      };
+
+      const userActivityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+      userActivityEvents.forEach(event => {
+        window.addEventListener(event, resetTimer, true);
+      });
+
+      stayBtn.addEventListener('click', resetTimer);
+
+      // Initial start
+      resetTimer();
+    }
+
+    // Start the timer
+    setupSessionTimeout();
+    // === END SESSION TIMEOUT LOGIC ===
+  </script>
+
+</body>
+</html>

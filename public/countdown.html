@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Launch Countdown</title>
+
+  <!-- Load Tailwind CSS and the Inter font, mirroring the setup from your main file -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    /* Replicate the color variables and base font from your original style block */
+    :root {
+      --page: #0b1220;
+      --bg: #ffffff;
+      --muted: #64748b;
+      --ink: #0f172a;
+      --olive: #556B2F; /* Deep Olive Green */
+      --brand: #f59e0b; /* Vibrant Orange/Amber */
+      --line: #e2e8f0;
+    }
+
+    /* Set the background to the deep page color for a dramatic launch feel */
+    html,
+    body {
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--page); /* Use the dark page background */
+      color: var(--bg); /* White text */
+      height: 100vh;
+      margin: 0;
+      overflow: hidden; /* Prevent scrolling */
+    }
+
+    /* Custom CSS for Excitement and Animation */
+    @keyframes pulse-glow {
+      /* Glow is now olive-based */
+      0%, 100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(85, 107, 47, 0.4), 0 0 20px rgba(85, 107, 47, 0.2);
+      }
+      50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 15px var(--olive), 0 0 30px rgba(85, 107, 47, 0.6);
+      }
+    }
+
+    #countdown {
+      /* Animation is disabled initially in JS */
+      line-height: 1;
+      font-weight: 900; /* Extra bold */
+      font-size: 6rem; /* Reduced size for desktop */
+      /* Switched to White/BG stroke and Olive/Brand fill */
+      text-stroke: 3px var(--bg); 
+      -webkit-text-stroke: 3px var(--bg);
+      color: var(--olive); /* Fill color: Olive */
+      text-shadow: 0 0 15px rgba(85, 107, 47, 0.7); /* Olive Shadow */
+    }
+
+    /* Media query for mobile responsiveness */
+    @media (max-width: 768px) {
+      #countdown {
+        font-size: 4rem; /* Reduced size for mobile */
+        -webkit-text-stroke: 2px var(--bg);
+      }
+      #status-message {
+        font-size: 1.25rem !important; /* Reduced mobile status message size (~text-xl) */
+      }
+    }
+
+    /* Confetti (Simple, CSS-only effect for the end) */
+    @keyframes confetti-fall {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        /* Using Brand color for contrast confetti */
+        background-color: var(--brand); 
+        opacity: 0;
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="flex items-center justify-center">
+
+  <div id="content-container" class="text-center p-6">
+    <!-- Top Excitement Message - Set initial text for auto-start -->
+    <p id="status-message" class="text-xl md:text-2xl font-bold mb-4 uppercase tracking-widest text-white/80">
+      LAUNCH COUNTDOWN INITIATED
+    </p>
+
+    <!-- Countdown Display -->
+    <div id="countdown" class="transition-all duration-300">10</div>
+
+    <!-- Sub Message - Set initial text for auto-start -->
+    <p id="sub-message" class="text-lg md:text-xl font-semibold mt-4 text-white/70">
+      T-MINUS 10 SECONDS...
+    </p>
+    
+  </div>
+
+  <div id="confetti-container"></div>
+  
+  <!-- START BUTTON REMOVED -->
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const countdownElement = document.getElementById('countdown');
+      const statusMessage = document.getElementById('status-message');
+      const subMessage = document.getElementById('sub-message');
+      const confettiContainer = document.getElementById('confetti-container');
+      let count = 10;
+      let timer = null;
+
+      // Initial setup to ensure the pulsing animation is off
+      countdownElement.style.animation = 'none';
+
+      // Function to handle the countdown interval
+      function startCountdown() {
+        // Start the pulsing animation immediately
+        countdownElement.style.animation = 'pulse-glow 1s infinite alternate';
+        
+        // Update messages (though they are set in the HTML, they are reset here on auto-start)
+        statusMessage.textContent = 'LAUNCH COUNTDOWN INITIATED';
+        subMessage.textContent = 'Get Ready for the Future.';
+        
+        // Ensure the count starts visible at 10 (already set in HTML, but safe to repeat)
+        countdownElement.textContent = count;
+
+        timer = setInterval(() => {
+          count--;
+          
+          // Apply a scale effect to emphasize the change
+          countdownElement.classList.remove('scale-100');
+          countdownElement.classList.add('scale-110');
+          setTimeout(() => {
+            countdownElement.classList.remove('scale-110');
+            countdownElement.classList.add('scale-100');
+          }, 150);
+
+          countdownElement.textContent = count;
+          
+          // Update messages for the final seconds
+          if (count === 3) {
+            statusMessage.textContent = 'T-Minus Three Seconds';
+            subMessage.textContent = 'Hold on tight!';
+          } else if (count === 0) {
+            clearInterval(timer);
+            handleLaunch();
+          }
+        }, 1000);
+      }
+
+      // Function to handle the final launch state
+      function handleLaunch() {
+        // Update display to the final message
+        countdownElement.textContent = 'LIVE!';
+        countdownElement.style.animation = 'none'; // Stop the pulsing number animation
+
+        // Change colors for a celebratory look (White text, Olive glow/stroke)
+        countdownElement.style.color = 'var(--bg)';
+        countdownElement.style.textShadow = '0 0 20px var(--olive)';
+        countdownElement.style.webkitTextStroke = '2px var(--olive)';
+        
+        statusMessage.textContent = 'WE ARE LIVE!';
+        subMessage.textContent = 'Redirecting to the main site...';
+        
+        // Trigger confetti
+        createConfetti();
+
+        // Automatically redirect the user after 5 seconds
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 5000); 
+      }
+
+      // Simple Confetti Generator
+      function createConfetti() {
+        // Use brand (orange), white/bg, and a pop of olive
+        const colors = ['var(--brand)', 'var(--bg)', 'var(--olive)'];
+        for (let i = 0; i < 50; i++) {
+          const piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.left = `${Math.random() * 100}vw`;
+          piece.style.top = `-${Math.random() * 20}vh`; // Start above the viewport
+          piece.style.width = piece.style.height = `${5 + Math.random() * 10}px`;
+          piece.style.borderRadius = `${Math.random() > 0.5 ? '50%' : '0'}`; // Mix of squares and circles
+          
+          // Use CSS variables for animation to customize speed and delay
+          piece.style.animation = `confetti-fall ${3 + Math.random() * 5}s linear ${Math.random() * 2}s forwards`;
+          
+          confettiContainer.appendChild(piece);
+        }
+      }
+
+      // Automatically start the countdown on page load
+      startCountdown();
+    });
+  </script>
+</body>
+
+</html>

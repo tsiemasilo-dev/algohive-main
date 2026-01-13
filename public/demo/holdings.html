@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive — Demo Holdings</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --page: #0b1220;
+      --bg: #ffffff;
+      --muted: #64748b;
+      --ink: #0f172a;
+      --olive: #7e8d52;
+      --olive-700: #576138;
+      --brand: #7e8d52;
+      --line: #e2e8f0
+    }
+
+    html,
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink)
+    }
+
+    #layout {
+      --sb: 275px;
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100vh
+    }
+
+    #ah-sidebar {
+      transition: transform .3s ease, width .2s ease;
+      width: 350px;
+      max-width: 85vw;
+      position: fixed;
+      top: 0;
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%)
+    }
+
+    #ah-sidebar.is-open {
+      transform: translateX(0)
+    }
+
+    @media (min-width: 768px) {
+      #layout {
+        grid-template-columns: var(--sb) 1fr
+      }
+
+      #layout.is-collapsed {
+        --sb: 64px
+      }
+
+      #ah-sidebar {
+        position: sticky;
+        top: 0;
+        width: var(--sb);
+        max-width: none;
+        height: 100vh;
+        transform: translateX(0);
+        z-index: auto
+      }
+    }
+
+    #ah-sidebar[data-collapsed="true"] .label,
+    #ah-sidebar[data-collapsed="true"] .chevron {
+      display: none
+    }
+
+    #ah-sidebar[data-collapsed="true"] #main-nav {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-menu {
+      display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] details>.sub {
+      display: none !important
+    }
+
+    #ah-sidebar[data-collapsed="true"] nav a,
+    #ah-sidebar[data-collapsed="true"] details>summary {
+      justify-content: center
+    }
+
+    #ah-sidebar[data-collapsed="true"] details>summary span {
+      width: auto;
+      margin-left: 0
+    }
+
+    #ah-sidebar .footer {
+      transition: all .2s ease
+    }
+
+    #ah-sidebar[data-collapsed="true"] .footer {
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg, i) {
+      rotate: 180deg
+    }
+
+    .avatar-ring {
+      box-shadow: 0 0 0 2px #fff, 0 0 0 3px #e2e8f0;
+    }
+
+    .asset-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    /* Brand switcher */
+    #ah-brand-switcher {
+      position: relative;
+    }
+
+    #ah-brand-switcher summary {
+      list-style: none;
+      cursor: pointer
+    }
+
+    #ah-brand-switcher summary::-webkit-details-marker {
+      display: none
+    }
+
+    .brand-toggle {
+      margin: 10px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff);
+      box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    #ah-brand-switcher[open] .brand-toggle {
+      border-color: #cbd5e1;
+      background: #fff;
+      box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55);
+    }
+
+    .brand-marker {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #111827;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .brand-menu {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: calc(100% - 6px);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .brand-menu-header {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 700;
+      color: #475569;
+      padding: 4px 4px 2px;
+    }
+
+    .brand-option {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        transition: background-color .2s ease, color .2s ease, filter .2s ease;
+    }
+
+    .brand-option:hover {
+      background: linear-gradient(135deg, #000000, #7c3aed);
+    }
+
+    .brand-option:hover img {
+      filter: brightness(0) invert(1);
+    }
+
+    .brand-option:hover .algomoney-word {
+      color: #fff;
+    }
+
+    .brand-option img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        object-fit: contain;
+        background: transparent;
+    }
+
+    .brand-option .algomoney-word {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: #0f172a;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle {
+        margin: 12px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        justify-content: center;
+        gap: 0;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .label,
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-toggle .fa-chevron-down {
+        display: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker {
+        background: transparent;
+        width: 38px;
+        height: 38px;
+        box-shadow: none;
+    }
+
+    #ah-sidebar[data-collapsed="true"] #ah-brand-switcher .brand-marker img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+    }
+
+    #ah-brand-switcher .brand-option img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain
+    }
+
+    #ah-brand-switcher .brand-marker img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain
+    }
+
+    #ah-sidebar .footer .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      height: 40px;
+      padding: 0 .875rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-weight: 600
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+    <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 h-[100vh] bg-white flex flex-col overflow-hidden">
+      <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+        <summary class="brand-toggle">
+          <div class="brand-marker">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Logo" class="w-7 h-7 object-contain" />
+          </div>
+          <div class="min-w-0">
+            <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+            <div class="text-[11px] text-slate-500 label">Markets</div>
+          </div>
+          <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+        </summary>
+        <div class="brand-menu">
+          <div class="brand-menu-header">Switch workspace</div>
+          <a href="https://thealgohive.com/money/home" class="brand-option">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" />
+            <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoMoney</div>
+          </a>
+        </div>
+      </details>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/demo/dashboard.html" title="Home">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Markets</p>
+
+        <details class="group mt-1">
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/market-analysis-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Invest</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/demo/strategies.html" title="OpenStrategies">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">OpenStrategies</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="#" title="Funds">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4" />
+              <span class="flex items-center gap-2">
+                <span class="label">Funds</span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+              </span>
+            </a>
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="/demo/markets.html" title="Markets">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/earth-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Markets</span>
+            </a>
+          </div>
+        </details>
+
+        <a class="mt-1 px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="/demo/news-insights.html" title="News &amp; Insights">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/news-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">News &amp; Insights</span>
+        </a>
+
+        <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Account</p>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900 bg-slate-50" href="/demo/holdings.html" title="Holdings">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Holdings</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="/demo/account-statements.html" title="Account Statements">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Account Statements</span>
+        </a>
+        <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 font-medium text-slate-900" href="#" title="Rewards">
+          <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/gift-stroke-rounded.svg" alt="" class="w-4 h-4" />
+          <span class="flex items-center gap-2">
+            <span class="label">Rewards</span>
+            <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span>
+          </span>
+        </a>
+
+        <details class="group mt-4">
+          <summary class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center">
+              <span class="label">Other</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="#" title="Help">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/help-circle-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Help</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="#" title="Legal">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/audit-01-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="label">Legal</span>
+            </a>
+            <a class="px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-50 font-medium text-slate-900" href="#" title="Learn">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pencil-stroke-rounded.svg" alt="" class="w-4 h-4" /><span class="flex items-center gap-2"><span class="label">Learn</span><span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 border border-slate-200 rounded-full px-2 py-[2px]">Coming Soon</span></span>
+            </a>
+          </div>
+        </details>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+        <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/demo/settings.html" title="Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+        <button id="ah-collapse" class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 min-w-0">
+      <div class="px-4 md:px-6 pt-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0">
+            <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-800 font-semibold">
+              <div class="h-8 w-8 rounded-full border border-blue-200 bg-white grid place-items-center text-blue-600 text-base">ⓘ</div>
+              <p class="whitespace-normal">Demo Account</p>
+            </div>
+          </div>
+
+          <button id="profile-btn" class="shrink-0 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm hover:bg-slate-50">
+            <img id="profile-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>" alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200 avatar-ring" />
+            <span id="profile-name" class="text-sm font-semibold text-slate-900 hidden sm:inline">Demo User</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-4 md:px-6 py-6 space-y-6">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--olive)]">Portfolio</p>
+            <h1 class="text-2xl font-bold text-slate-900">Your Demo Holdings</h1>
+            <p class="text-slate-600">Track how the sample portfolio is performing before going live.</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="/demo/markets.html" class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+              <i class="fa-solid fa-earth-americas text-slate-500"></i>
+              Markets
+            </a>
+</div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <span>Total allocated</span>
+              <i class="fa-solid fa-wallet text-[var(--olive)]"></i>
+            </div>
+            <div id="total-invested" class="mt-3 text-3xl font-extrabold text-slate-900">—</div>
+            <p class="mt-1 text-sm text-slate-500">Across all demo strategies.</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <span>Distinct assets</span>
+              <i class="fa-solid fa-chart-pie text-[var(--olive)]"></i>
+            </div>
+            <div id="distinct-assets" class="mt-3 text-3xl font-extrabold text-slate-900">—</div>
+            <p class="mt-1 text-sm text-slate-500">Aggregated from target weights.</p>
+          </div>
+        </div>
+
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">Aggregate Holdings</p>
+              <p class="text-xs text-slate-500">Across all demo strategies using target weights.</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+              <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th class="px-4 py-3">Asset</th>
+                  <th class="px-4 py-3">Allocation</th>
+                  <th class="px-4 py-3">Market value</th>
+                  <th class="px-4 py-3">Strategy mix</th>
+                  <th class="px-4 py-3">P/L</th>
+                </tr>
+              </thead>
+              <tbody id="holdings-body" class="divide-y divide-slate-100 bg-white">
+                <tr>
+                  <td colspan="5" class="px-4 py-4 text-sm text-slate-500">Loading holdings…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="profile-menu" class="fixed inset-0 z-[120] hidden">
+    <div id="profile-overlay" class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-4 top-20 w-[320px] max-w-[calc(100%-2rem)] rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div class="flex items-center gap-3 px-4 py-3">
+        <img id="profile-menu-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>" alt="Profile" class="w-12 h-12 rounded-full object-cover border border-slate-200 avatar-ring" />
+        <div class="min-w-0">
+          <div id="profile-menu-name" class="text-sm font-semibold text-slate-900 truncate">Demo User</div>
+          <div id="profile-email" class="text-xs text-slate-500 truncate">demo@user.com</div>
+        </div>
+      </div>
+      <div class="border-t border-slate-200 px-3 py-2 text-sm text-slate-700">
+        <a href="/demo/settings.html#basic" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-solid fa-gear text-slate-500"></i>
+          Settings
+        </a>
+        <a href="/demo/strategies.html" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-solid fa-diagram-project text-slate-500"></i>
+          View strategies
+        </a>
+        <button id="profile-logout" class="flex w-full items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-left text-rose-700">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          Sign out of demo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="ALGOHIVE">
+    (function () {
+      const layout = document.getElementById('layout');
+      const aside = document.getElementById('ah-sidebar');
+      const btn = document.getElementById('ah-collapse');
+      const saved = localStorage.getItem('ah_collapsed') === 'true';
+
+      if (saved) {
+        aside.setAttribute('data-collapsed', 'true');
+        layout.classList.add('is-collapsed');
+        aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+      }
+
+      btn?.addEventListener('click', () => {
+        const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+        if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+        aside.setAttribute('data-collapsed', String(!isCollapsed));
+        layout.classList.toggle('is-collapsed', !isCollapsed);
+        localStorage.setItem('ah_collapsed', String(!isCollapsed));
+        layout.offsetHeight;
+        window.dispatchEvent(new Event('resize'));
+      });
+    })();
+  </script>
+
+  <script nonce="ALGOHIVE">
+    (function () {
+      const btn = document.getElementById('ah-mobile-menu-btn');
+      const overlay = document.getElementById('ah-overlay');
+      const sidebar = document.getElementById('ah-sidebar');
+
+      function openMenu() {
+        sidebar.classList.add('is-open');
+        overlay.classList.remove('hidden');
+      }
+      function closeMenu() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.add('hidden');
+      }
+
+      btn?.addEventListener('click', openMenu);
+      overlay?.addEventListener('click', closeMenu);
+
+      sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+      });
+    })();
+  </script>
+
+  <script nonce="ALGOHIVE">
+    (function () {
+    })();
+  </script>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    const profileBtn = document.getElementById('profile-btn');
+    const profileMenu = document.getElementById('profile-menu');
+    const profileOverlay = document.getElementById('profile-overlay');
+    const profileName = document.getElementById('profile-name');
+    const profileMenuName = document.getElementById('profile-menu-name');
+    const profileEmail = document.getElementById('profile-email');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const profileMenuAvatar = document.getElementById('profile-menu-avatar');
+    const profileLogout = document.getElementById('profile-logout');
+
+    const holdingsBody = document.getElementById('holdings-body');
+    const totalInvested = document.getElementById('total-invested');
+    const distinctAssets = document.getElementById('distinct-assets');
+
+    let displayName = '—';
+    const strategyMetricsCache = new Map();
+
+    function formatMoney(value, currency = 'USD') {
+      if (!Number.isFinite(value)) return '—';
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    }
+
+    function normalizeWeight(weight) {
+      const num = Number(weight);
+      if (!Number.isFinite(num) || num <= 0) return 0;
+      return num > 1 ? num / 100 : num;
+    }
+
+    function setAvatar(src) {
+      if (!profileAvatar) return;
+      if (src) {
+        profileAvatar.src = src;
+        if (profileMenuAvatar) profileMenuAvatar.src = src;
+        return;
+      }
+
+      const initial = (displayName.match(/[A-Za-z]/)?.[0] || '?').toUpperCase();
+      const svg = encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'>
+           <rect width='100%' height='100%' rx='12' ry='12' fill='#0f172a'/>
+           <text x='50%' y='54%' text-anchor='middle' dominant-baseline='middle'
+                 font-family='Inter, Arial, sans-serif' font-size='32' fill='#fff'>${initial}</text>
+         </svg>`
+      );
+      profileAvatar.src = `data:image/svg+xml;utf8,${svg}`;
+      if (profileMenuAvatar) profileMenuAvatar.src = profileAvatar.src;
+    }
+
+    function syncProfileChrome(user, profile = {}) {
+      const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || profile?.full_name || user?.email || 'Demo User';
+      displayName = fullName;
+      if (profileName) profileName.textContent = fullName;
+      if (profileMenuName) profileMenuName.textContent = fullName;
+      if (profileEmail) profileEmail.textContent = user?.email || fullName;
+      const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
+      setAvatar(avatarUrl);
+    }
+
+    function wireProfileMenu() {
+      profileBtn?.addEventListener('click', () => {
+        profileMenu?.classList.toggle('hidden');
+      });
+      profileOverlay?.addEventListener('click', () => profileMenu?.classList.add('hidden'));
+      profileMenu?.addEventListener('click', (e) => {
+        if (e.target === profileMenu) profileMenu.classList.add('hidden');
+      });
+      profileLogout?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        location.replace('/auth.html');
+      });
+    }
+
+    async function guard() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        location.replace(`/auth.html?redirect=${encodeURIComponent('/demo/holdings.html')}`);
+        return null;
+      }
+      const metaType = session.user?.user_metadata?.account_type;
+      if (metaType !== 'paper') {
+        location.replace('/demo/dashboard.html');
+        return null;
+      }
+      return session.user;
+    }
+
+    async function fetchDemoProfile(userId = '') {
+      if (!userId) return null;
+      try {
+        const { data, error } = await supabase.from('demo_profiles').select('*').eq('id', userId).maybeSingle();
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.warn('demo_profiles fetch failed; using fallback profile', error);
+        return null;
+      }
+    }
+
+    async function fetchDemoAllocations(profileId = '') {
+      if (!profileId) return [];
+      try {
+        const { data, error } = await supabase
+          .from('demo_allocations')
+          .select('id, strategy_id, amount_invested, latest_value, base_currency, status, strategies(name, code)')
+          .eq('demo_profile_id', profileId);
+
+        if (error) throw error;
+        return data || [];
+      } catch (error) {
+        console.warn('demo_allocations fetch failed', error);
+        return [];
+      }
+    }
+
+    async function fetchStrategyMetrics(strategyIds = []) {
+      const ids = Array.from(new Set(strategyIds.filter(Boolean)));
+      const results = new Map();
+      const uncached = ids.filter((id) => !strategyMetricsCache.has(id));
+
+      if (uncached.length) {
+        try {
+          const { data, error } = await supabase
+            .from('strategy_metrics')
+            .select('strategy_id, portfolio_holdings')
+            .in('strategy_id', uncached);
+
+          if (error) throw error;
+          (data || []).forEach((row) => strategyMetricsCache.set(row.strategy_id, row));
+        } catch (error) {
+          console.warn('strategy_metrics fetch failed', error);
+        }
+      }
+
+      ids.forEach((id) => {
+        if (strategyMetricsCache.has(id)) results.set(id, strategyMetricsCache.get(id));
+      });
+      return results;
+    }
+
+    function aggregateHoldings(allocations = [], metricsMap = new Map()) {
+      const activeAllocs = allocations.filter((row) => (row?.status || '').toLowerCase() === 'active');
+      const rows = activeAllocs.length ? activeAllocs : allocations;
+      const holdingsMap = new Map();
+
+      let totalAmount = 0;
+      let currency = 'USD';
+
+      rows.forEach((allocation) => {
+        const amount = Number(allocation?.latest_value ?? allocation?.amount_invested ?? 0) || 0;
+        if (amount <= 0) return;
+
+        currency = allocation?.base_currency || currency;
+        totalAmount += amount;
+
+        const metrics = metricsMap.get(allocation?.strategy_id) || {};
+        const strategyName = allocation?.strategies?.name || allocation?.strategies?.code || `Strategy ${allocation?.strategy_id || ''}`;
+        const holdings = Array.isArray(metrics?.portfolio_holdings) ? metrics.portfolio_holdings : [];
+
+        holdings.forEach((holding) => {
+          const weight = normalizeWeight(holding?.weight_pct ?? holding?.weight);
+          if (!weight) return;
+
+          const value = amount * weight;
+          const symbol = (holding?.symbol || holding?.name || '—').toString().trim();
+          if (!symbol) return;
+
+          if (!holdingsMap.has(symbol)) {
+            holdingsMap.set(symbol, {
+              symbol,
+              name: (holding?.company_name || holding?.name || symbol || 'Unknown').toString().trim() || 'Unknown',
+              logo: holding?.logo_url || holding?.logo || null,
+              value: 0,
+              changePct: holding?.daily_change_pct ?? holding?.change_pct ?? null,
+              breakdown: [],
+            });
+          }
+
+          const record = holdingsMap.get(symbol);
+          record.value += value;
+          const existing = record.breakdown.find((item) => item.strategyId === allocation?.strategy_id);
+          const contribution = { strategyId: allocation?.strategy_id, strategyName, weightPct: weight * 100, value };
+          if (existing) {
+            existing.value += value;
+            existing.weightPct = weight * 100;
+          } else {
+            record.breakdown.push(contribution);
+          }
+          if (record.changePct == null && holding?.daily_change_pct != null) {
+            record.changePct = holding.daily_change_pct;
+          }
+        });
+      });
+
+      const holdings = Array.from(holdingsMap.values())
+        .map((item) => ({
+          ...item,
+          weightPct: totalAmount ? (item.value / totalAmount) * 100 : 0,
+        }))
+        .sort((a, b) => b.value - a.value);
+
+      return { holdings, totalAmount, currency };
+    }
+
+    function renderHoldings({ holdings = [], totalAmount = 0, currency = 'USD' }) {
+      if (totalInvested) totalInvested.textContent = formatMoney(totalAmount, currency);
+      if (distinctAssets) distinctAssets.textContent = `${holdings.length}`;
+
+      if (!holdingsBody) return;
+      holdingsBody.innerHTML = '';
+
+      if (!holdings.length) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td class="px-4 py-3 text-sm text-slate-500" colspan="5">No holdings available for your demo allocations.</td>';
+        holdingsBody.appendChild(row);
+        return;
+      }
+
+      holdings.forEach((asset, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 1 ? 'bg-slate-50/40' : '';
+        const logo = asset.logo
+          ? `<img src="${asset.logo}" alt="${asset.symbol} logo" class="asset-logo" />`
+          : `<div class="asset-logo">${asset.symbol.slice(0, 2).toUpperCase()}</div>`;
+
+        const tone = asset.changePct == null ? 'text-slate-600' : asset.changePct >= 0 ? 'text-emerald-600' : 'text-rose-600';
+        const changeLabel = asset.changePct == null ? '—' : `${asset.changePct >= 0 ? '+' : ''}${Number(asset.changePct).toFixed(2)}%`;
+
+        const breakdown = (asset.breakdown || [])
+          .map((row) => `
+            <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+              <div class="font-semibold text-slate-800">${row.strategyName || 'Strategy'}</div>
+              <div class="text-slate-600">${row.weightPct.toFixed(2)}% · ${formatMoney(row.value, currency)}</div>
+            </div>`)
+          .join('');
+
+        const breakdownKey = `asset-${asset.symbol}-${idx}`;
+
+        tr.innerHTML = `
+          <td class="px-4 py-3 font-semibold text-slate-900">
+            <div class="flex items-center gap-3">
+              ${logo}
+              <div>
+                <a href="/demo/symbol.html?instrument=${encodeURIComponent(asset.symbol)}" class="text-[var(--olive)] hover:underline">${asset.symbol}</a>
+                <div class="text-xs text-slate-500">
+                  <a href="/demo/symbol.html?instrument=${encodeURIComponent(asset.symbol)}" class="hover:underline">${asset.name}</a>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-slate-700">${asset.weightPct.toFixed(2)}%</td>
+          <td class="px-4 py-3 text-slate-700">${formatMoney(asset.value, currency)}</td>
+          <td class="px-4 py-3 text-slate-700">
+            <button type="button" class="view-breakdown inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-[var(--olive)] hover:bg-slate-50" aria-expanded="false" data-breakdown="${breakdownKey}">
+              View allocation
+              <i class="fa-solid fa-chevron-down text-[10px]"></i>
+            </button>
+          </td>
+          <td class="px-4 py-3 font-semibold ${tone}">${changeLabel}</td>
+        `;
+        const breakdownRow = document.createElement('tr');
+        breakdownRow.dataset.breakdownFor = breakdownKey;
+        breakdownRow.className = 'hidden bg-slate-50/60';
+        breakdownRow.innerHTML = `
+          <td class="px-4 py-3" colspan="5">
+            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Strategy mix</div>
+            <div class="mt-2 space-y-2">${breakdown || '<div class="text-xs text-slate-500">No strategies found.</div>'}</div>
+          </td>
+        `;
+
+        const toggle = tr.querySelector('.view-breakdown');
+        toggle?.addEventListener('click', () => {
+          const isOpen = !breakdownRow.classList.contains('hidden');
+          holdingsBody.querySelectorAll('tr[data-breakdown-for]').forEach((row) => row.classList.add('hidden'));
+          holdingsBody.querySelectorAll('button.view-breakdown').forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
+          if (!isOpen) {
+            breakdownRow.classList.remove('hidden');
+            toggle.setAttribute('aria-expanded', 'true');
+          }
+        });
+
+        holdingsBody.appendChild(tr);
+        holdingsBody.appendChild(breakdownRow);
+      });
+    }
+
+    (async function init() {
+      try {
+        const user = await guard();
+        if (!user) return;
+
+        const profile = await fetchDemoProfile(user.id);
+        syncProfileChrome(user, profile || {});
+        wireProfileMenu();
+
+        const allocations = await fetchDemoAllocations(user.id);
+        const metrics = await fetchStrategyMetrics(allocations.map((row) => row.strategy_id));
+        const summary = aggregateHoldings(allocations, metrics);
+        renderHoldings(summary);
+      } catch (error) {
+        console.error('Failed to load holdings', error);
+        renderHoldings({ holdings: [], totalAmount: 0 });
+      }
+    })();
+  </script>
+</body>
+
+</html>

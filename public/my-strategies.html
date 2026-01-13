@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AlgoHive – My Strategies</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{ --page:#0b1220; --bg:#f9fafb; --muted:#64748b; --ink:#0f172a; --olive:#556B2F; --brand:#f59e0b; --line:#e5e7ef }
+    html,body{ font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink) }
+    .card{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow:0 1px 2px rgba(0,0,0,.04) }
+    .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.5rem; height:40px; padding:0 .875rem; border-radius:10px; border:1px solid var(--line); font-weight:600 }
+    .chip{ display:inline-flex; align-items:center; border-radius:9999px; padding:.2rem .55rem; font-size:.74rem; font-weight:600 }
+    .topbar{ height:52px }
+    
+    /* UPDATED FOR RESPONSIVENESS */
+    #layout{ --sb:220px; display:grid; grid-template-columns:1fr; min-height:100vh } /* Mobile-first: 1 column */
+    #ah-sidebar{ 
+      transition: transform .3s ease, width .2s ease; /* Add transform transition */
+      width: 280px; /* Mobile width */
+      max-width: 85vw;
+      position: fixed; /* Mobile overlay */
+      z-index: 50;
+      height: 100vh;
+      transform: translateX(-100%); /* Hidden by default */
+    }
+    #ah-sidebar.is-open {
+      transform: translateX(0); /* Show sidebar */
+    }
+    
+    /* Desktop styles */
+    @media (min-width: 768px) {
+      #layout{ grid-template-columns:var(--sb) 1fr } /* 2-col grid on desktop */
+      #layout.is-collapsed{ --sb:64px }
+      #ah-sidebar {
+        position: sticky; /* Back to sticky */
+        width: var(--sb); /* Use variable width */
+        max-width: none;
+        transform: translateX(0); /* Always visible */
+        z-index: auto;
+      }
+    }
+    /* END RESPONSIVE UPDATES */
+    
+    #ah-sidebar[data-collapsed="true"] .label, #ah-sidebar[data-collapsed="true"] .chevron{ display:none }
+    #ah-sidebar details .sub{ transition: height .2s ease }
+    #ah-sidebar[data-collapsed="true"] details>.sub{ display:none!important }
+    #ah-sidebar[data-collapsed="true"] nav a, #ah-sidebar[data-collapsed="true"] details>summary{ justify-content:center; gap:.25rem }
+    #ah-sidebar[data-collapsed="true"] details>summary span{ gap:0 }
+    #ah-sidebar .footer{ transition:all .2s ease }
+    #ah-sidebar[data-collapsed="true"] .footer{ justify-content:center; flex-direction:column; gap:12px }
+    #ah-sidebar[data-collapsed="true"] .btn-collapse :is(svg,i){ transform:rotate(180deg) }
+
+    /* Hide desktop collapse button on mobile */
+    #ah-collapse { display: none; }
+    @media (min-width: 768px) {
+      #ah-collapse { display: inline-flex; } /* Show on desktop */
+    }
+
+    /* table styles */
+    .tbl-wrap { background:#fff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden }
+    /* --- MODIFIED: Added table-layout: fixed --- */
+    table { width:100%; border-collapse:separate; border-spacing:0; table-layout: fixed; }
+    thead th { position:sticky; top:0; background:#fff; z-index:1; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; border-bottom:1px solid #e5e7eb; padding:.875rem .875rem; text-align:left }
+    tbody td { padding:1rem .875rem; border-bottom:1px solid #f1f5f9; font-size:.925rem; vertical-align: middle; } /* Added vertical-align */
+    tbody tr:hover { background:#f8fafc }
+    /* --- MODIFIED: Re-added .th-min and added .th-center --- */
+    .th-min { width:1%; white-space:nowrap; }
+    .th-center { text-align: center; }
+    .cell-name { font-weight:600 }
+    .text-right { text-align:right }
+
+    /* --- NEW: Mobile Carousel Styles (with Center Snapping) --- */
+    .mobile-carousel {
+      display: flex;
+      gap: 1.25rem; /* 20px */
+      overflow-x: auto;
+      
+      /* --- NEW SNAPPING STYLES --- */
+      scroll-snap-type: x mandatory;
+      padding-left: calc(50vw - 150px) !important;
+      padding-right: calc(50vw - 150px) !important;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    .mobile-carousel::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
+    }
+    .mobile-strat-card {
+      width: 300px; 
+      flex-shrink: 0;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      background: #fff;
+      padding: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+      scroll-snap-align: center;
+    }
+    /* --- END NEW --- */
+
+    /* NEW: Digital Stopwatch Display Styles */
+    @font-face {
+        font-family: 'Digital-7 Mono';
+        src: url('https://fonts.cdnfonts.com/s/43424/digital-7%20(mono).woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+    }
+    
+    .digital-display {
+      font-family: 'Digital-7 Mono', monospace; /* Will use a fallback if not available */
+      font-size: 3.5rem; /* Larger font size */
+      font-weight: normal; /* Digital fonts are usually not bold */
+      color: #000000; /* Black color */
+      letter-spacing: -3px; /* Tighter spacing for digital look */
+      line-height: 1;
+      text-align: center;
+      display: flex; /* To align minutes and seconds */
+      justify-content: center;
+      align-items: center;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .digital-display span {
+      position: relative;
+      padding: 0 5px; /* Add some padding around digits */
+    }
+
+    .digital-display span::before {
+      content: '88'; /* Ghosting effect for unlit segments */
+      position: absolute;
+      color: rgba(0, 0, 0, 0.1); /* Faded black for unlit segments */
+      left: 0;
+      top: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .digital-display span:first-child::before { content: '00'; } /* Minutes ghost */
+    .digital-display span:last-child::before { content: '88'; }  /* Seconds ghost */
+
+
+    /* Animation for attention - fade */
+    @keyframes fade-timer {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .digital-display.active-warning {
+      animation: fade-timer 1.5s infinite linear; /* Apply animation when active */
+    }
+
+    /* Keep the pop-up centered and visible */
+    #session-timeout-modal .modal-content-custom {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90vw;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    /* END: Digital Stopwatch Styles */
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #layout { grid-template-columns: 1fr; }
+      #layout.is-collapsed { --sb: 275px; }
+      #ah-sidebar {
+        position: fixed;
+        top: 0;
+        width: 350px;
+        max-width: 85vw;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 50;
+      }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      #ah-collapse { display: none; }
+      #ah-mobile-menu-btn { display: inline-flex !important; }
+      #ah-overlay { display: none; }
+      #ah-overlay:not(.hidden) { display: block; }
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden">
+  <div id="layout">
+    <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+       <aside id="ah-sidebar" data-collapsed="false"
+      class="border-r border-slate-200 h-screen bg-white flex flex-col overflow-hidden">
+      <div class="px-4 py-4 flex items-center gap-3 border-b border-slate-200">
+        <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png"
+          alt="AlgoHive Logo" class="w-10 h-10 object-contain" />
+        <div class="min-w-0">
+          <div class="font-bold text-[15px] text-slate-900 label">AlgoHive</div>
+          <div class="text-[11px] text-slate-500 label">Where Smart Capital Gathers</div>
+        </div>
+      </div>
+
+      <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900"
+          href="/home.html" title="Home">
+          <i class="fa-solid fa-house text-slate-500 w-4 shrink-0"></i><span class="label">Home</span>
+        </a>
+
+        <details class="group mt-1" open>
+          <summary
+            class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <i class="fa-regular fa-user w-4 text-slate-500"></i><span class="label">Portfolio</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 bg-slate-100 font-semibold" href="/my-strategies.html"><i
+                class="fa-solid fa-chart-pie w-4 text-slate-500"></i><span class="label">My Strategies</span></a>
+           </div>
+        </details>
+
+        <details class="group mt-1">
+          <summary
+            class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer font-medium text-slate-900">
+            <span class="flex items-center gap-3">
+              <i class="fa-solid fa-link w-4 text-slate-500"></i><span class="label">Invest</span>
+            </span>
+            <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition-transform chevron"></i>
+          </summary>
+          <div class="ml-8 mt-1 flex flex-col sub">
+            <a class="px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2" href="strategies.html"><i
+                class="fa-solid fa-chart-line w-4 text-slate-500"></i><span class="label">OpenStrategies</span></a>
+          </div>
+        </details>
+
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="news-insights.html"><i
+            class="fa-solid fa-newspaper w-4 text-slate-500"></i><span class="label">News &amp; Insights</span></a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="support.html"><i
+            class="fa-solid fa-life-ring w-4 text-slate-500"></i><span class="label">Support</span></a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50" href="legal.html"><i
+            class="fa-solid fa-scale-balanced w-4 text-slate-500"></i><span class="label">Legal</span></a>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+          <a href="settings.html" id="ah-settings" aria-current="page"
+            class="btn btn-settings h-10 w-10 p-0 rounded-xl border-0" title="Settings">
+            <i class="fa-solid fa-gear"></i>
+          </a>
+      
+          <button id="ah-collapse"
+            class="btn btn-collapse h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" title="Collapse">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+      </div>
+    </aside>
+    <main class="flex-1 min-w-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-30">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+           <button id="ah-mobile-menu-btn" class="md:hidden btn h-10 w-10 p-0 rounded-xl border-0" title="Open Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h1 class="text-xl font-bold text-slate-800 truncate">My Strategies</h1>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <img id="hdr-avatar"
+               src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>"
+               alt="Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200"/>
+          <button id="hdr-profile-btn" class="flex items-center gap-2 text-slate-900 font-medium hover:text-slate-700">
+           <span id="hdr-name" class="hidden md:inline">User</span>
+            <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <section class="sticky top-[69px] z-20 bg-white/70 backdrop-blur border-b border-slate-200 px-0 py-3">
+          <div class="hidden md:flex flex-wrap items-center gap-3">
+            <div class="text-sm font-semibold">Filters</div>
+             <input id="q" class="h-9 w-full sm:w-64 pl-3 pr-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--olive)] text-sm" placeholder="Search my strategies…"/>
+            <select id="fRisk" class="h-9 rounded-lg border px-2 text-sm">
+              <option value="">Risk: Any</option>
+              <option>Conservative</option>
+              <option>Low</option>
+              <option>Moderate</option>
+              <option>High</option>
+              <option>High Risk</option>
+              <option>Very High Risk</option>
+            </select>
+            <select id="fCur" class="h-9 rounded-lg border px-2 text-sm">
+              <option value="">Currency: Any</option>
+              <option>ZAR</option>
+              <option>USD</option>
+              <option>EUR</option>
+            </select>
+            <select id="fStyle" class="h-9 rounded-lg border px-2 text-sm">
+              <option value="">Style: Any</option>
+            </select>
+            <select id="fSort" class="h-9 rounded-lg border px-2 text-sm ml-auto">
+              <option value="value-desc">Sort: My Value (High→Low)</option>
+              <option value="name-asc">Sort: Name (A→Z)</option>
+              <option value="cagr-desc">Sort: 1Y CAGR (High→Low)</option>
+              <option value="dd-asc">Sort: Max DD (Low→High)</option>
+            </select>
+            <button id="clearBtn" class="h-9 px-3 rounded-lg border hover:bg-slate-50 text-sm">Clear</button>
+          </div>
+          
+           <div class="md:hidden">
+            <button id="mobile-filter-btn" class="btn w-full bg-white">
+              <i class="fa-solid fa-filter"></i>
+              <span>Filters & Sort</span>
+            </button>
+          </div>
+        </section>
+
+        <div class="flex items-center justify-between py-4">
+          <div id="resultCount" class="text-sm text-slate-500">Showing 0 strategies</div>
+          <div class="text-xs text-slate-400 hidden sm:block">* Metrics are simulated from monthly returns (net of TIF).</div>
+        </div>
+
+        <section id="mobile-carousel-section" class="block md:hidden -mx-6">
+          <div id="mobile-carousel-container" class="mobile-carousel !px-6">
+            </div>
+        </section>
+
+        <section id="tbl-wrap" class="tbl-wrap hidden md:block">
+          <div class="overflow-x-auto">
+            <table id="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="hidden md:table-cell">Unit Price</th>
+                  <th class="hidden md:table-cell">Ccy</th>
+                  <th class="hidden md:table-cell">Risk</th>
+                  <th class="hidden md:table-cell">Universe</th>
+                  <th class="hidden md:table-cell">Chart</th>
+                  <th class="hidden md:table-cell">YTD %</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div id="empty" class="hidden py-10 text-center text-slate-500">You are not invested in any strategies yet.</div>
+      </div>
+    </main>
+  </div>
+
+  <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-200">
+        <div class="text-sm font-semibold text-slate-900">Account</div>
+        <div id="pm-email" class="text-xs text-slate-500 truncate">user@example.com</div>
+      </div>
+      <div class="p-2">
+        <a id="pm-profile" href="/settings.html#basic" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-regular fa-user text-slate-500 w-4"></i>
+          <span>Profile settings</span>
+        </a>
+        <button id="pm-logout" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+          <i class="fa-solid fa-right-from-bracket w-4"></i>
+          <span>Log out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="filter-modal" class="fixed inset-0 z-[60] p-4 hidden">
+      <div id="filter-overlay" class="absolute inset-0 bg-black/40"></div>
+      <div class="relative w-full max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-6 mt-10">
+          <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Filters & Sort</h3>
+              <button id="filter-close-btn" class="btn h-9 w-9 p-0 rounded-lg border-0 bg-slate-100 hover:bg-slate-200">
+                  <i class="fa-solid fa-times"></i>
+              </button>
+          </div>
+          
+          <div class="space-y-4">
+              <div>
+                  <label for="q-m" class="block text-sm font-medium text-slate-600 mb-1">Search</label>
+                  <input id="q-m" class="h-10 w-full pl-3 pr-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--olive)] text-sm" placeholder="Search my strategies…"/>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                  <div>
+                      <label for="fRisk-m" class="block text-sm font-medium text-slate-600 mb-1">Risk</label>
+                      <select id="fRisk-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                          <option value="">Any</option>
+                          <option>Conservative</option>
+                          <option>Low</option>
+                          <option>Moderate</option>
+                          <option>High</option>
+                          <option>High Risk</option>
+                          <option>Very High Risk</option>
+                      </select>
+                  </div>
+                  <div>
+                      <label for="fCur-m" class="block text-sm font-medium text-slate-600 mb-1">Currency</label>
+                      <select id="fCur-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                          <option value="">Any</option>
+                          <option>ZAR</option>
+                          <option>USD</option>
+                          <option>EUR</option>
+                      </select>
+                  </div>
+              </div>
+               <div>
+                  <label for="fStyle-m" class="block text-sm font-medium text-slate-600 mb-1">Style</label>
+                  <select id="fStyle-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                       <option value="">Any</option>
+                  </select>
+              </div>
+              <div>
+                  <label for="fSort-m" class="block text-sm font-medium text-slate-600 mb-1">Sort by</label>
+                  <select id="fSort-m" class="h-10 w-full rounded-lg border px-2 text-sm border-slate-200">
+                      <option value="value-desc">Sort: My Value (High→Low)</option>
+                      <option value="name-asc">Sort: Name (A→Z)</option>
+                      <option value="cagr-desc">Sort: 1Y CAGR (High→Low)</option>
+                      <option value="dd-asc">Sort: Max DD (Low→High)</option>
+                  </select>
+              </div>
+          </div>
+          
+          <div class="flex items-center justify-between mt-6">
+              <button id="clearBtn-m" class="btn h-10 text-sm">Clear</button>
+              <button id="filter-apply-btn" class="btn h-10 text-sm bg-[var(--olive)] text-white border-none hover:opacity-90">
+                  Apply Filters
+              </button>
+          </div>
+      </div>
+  </div>
+
+  <div id="session-timeout-modal" class="fixed inset-0 z-[600] hidden p-6 grid place-items-center backdrop-blur-lg bg-black/40">
+    <div class="relative w-full max-w-md rounded-2xl border border-slate-300 bg-white p-8 shadow-2xl text-center">
+      <h2 class="text-xl font-semibold text-slate-900">Are you still there?</h2>
+      <p class="text-slate-600 mt-2">
+        You've been inactive for a while. You will be automatically logged out in
+        <div id="session-countdown" class="digital-display mt-4">
+          <span id="countdown-minutes">00</span>:<span id="countdown-seconds">60</span>
+        </div>
+         seconds for security.
+      </p>
+      <button
+        id="session-stay-btn"
+        class="mt-6 inline-flex h-10 px-6 rounded-lg items-center justify-center font-medium
+               bg-[var(--olive)] text-white hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--olive)]/40"
+      >
+        I'm still here
+      </button>
+    </div>
+  </div>
+  
+<script nonce="ALGOHIVE">
+  // SCRIPT FOR MOBILE SIDEBAR
+  (function () {
+    const btn = document.getElementById('ah-mobile-menu-btn');
+    const overlay = document.getElementById('ah-overlay');
+    const sidebar = document.getElementById('ah-sidebar');
+
+    function openMenu() {
+      sidebar.classList.add('is-open');
+      overlay.classList.remove('hidden');
+    }
+    function closeMenu() {
+      sidebar.classList.remove('is-open');
+      overlay.classList.add('hidden');
+    }
+
+    btn?.addEventListener('click', openMenu);
+    overlay?.addEventListener('click', closeMenu);
+    
+    // Also close mobile menu on nav link click
+    sidebar?.querySelectorAll('nav a, nav details a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+    });
+  })();
+</script>
+  
+<script nonce="ALGOHIVE">
+  // Sidebar collapse memory
+    (function () {
+      const layout = document.getElementById('layout');
+      const aside = document.getElementById('ah-sidebar');
+      const btn = document.getElementById('ah-collapse');
+      const saved = localStorage.getItem('ah_collapsed') === 'true';
+      if (saved) { aside.setAttribute('data-collapsed', 'true'); layout.classList.add('is-collapsed'); }
+      btn?.addEventListener('click', () => {
+        const isCollapsed = aside.getAttribute('data-collapsed') === 'true';
+        if (!isCollapsed) aside.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+        aside.setAttribute('data-collapsed', String(!isCollapsed));
+        layout.classList.toggle('is-collapsed', !isCollapsed);
+        localStorage.setItem('ah_collapsed', String(!isCollapsed));
+      });
+    })();
+</script>
+
+<script nonce="ALGOHIVE">
+  (function () {
+    // Desktop filters
+    const $q = document.getElementById('q');
+    const $risk = document.getElementById('fRisk');
+    const $cur = document.getElementById('fCur');
+    const $style = document.getElementById('fStyle');
+    const $sort = document.getElementById('fSort');
+
+    // Mobile modal and its filters
+    const $modal = document.getElementById('filter-modal');
+    const $mobileBtn = document.getElementById('mobile-filter-btn');
+    const $closeBtn = document.getElementById('filter-close-btn');
+    const $overlay = document.getElementById('filter-overlay');
+    const $applyBtn = document.getElementById('filter-apply-btn');
+    const $clearMobileBtn = document.getElementById('clearBtn-m');
+    
+    const $q_m = document.getElementById('q-m');
+    const $risk_m = document.getElementById('fRisk-m');
+    const $cur_m = document.getElementById('fCur-m');
+    const $style_m = document.getElementById('fStyle-m');
+    const $sort_m = document.getElementById('fSort-m');
+
+    function openModal() {
+      // Sync desktop values to mobile modal
+      $q_m.value = $q.value;
+      $risk_m.value = $risk.value;
+      $cur_m.value = $cur.value;
+      $style_m.value = $style.value;
+      $sort_m.value = $sort.value;
+      $modal.classList.remove('hidden');
+    }
+    
+    function closeModal() {
+      $modal.classList.add('hidden');
+    }
+
+    function applyModalFilters() {
+      // Sync mobile modal values to desktop filters
+      $q.value = $q_m.value;
+      $risk.value = $risk_m.value;
+      $cur.value = $cur_m.value;
+      $style.value = $style_m.value;
+      $sort.value = $sort_m.value;
+      
+      closeModal();
+      
+      // Manually trigger the 'input' event on a desktop filter to run applyFilters()
+      $q.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    function clearModalFilters() {
+      // Only clear the modal's inputs
+      $q_m.value = '';
+      $risk_m.value = '';
+      $cur_m.value = '';
+      $style_m.value = '';
+      $sort_m.value = 'value-desc'; // Default sort for this page
+    }
+    
+    $mobileBtn?.addEventListener('click', openModal);
+    $closeBtn?.addEventListener('click', closeModal);
+    $overlay?.addEventListener('click', closeModal);
+    $applyBtn?.addEventListener('click', applyModalFilters);
+    $clearMobileBtn?.addEventListener('click', clearModalFilters);
+    
+  })();
+</script>
+
+  <script type="module" nonce="ALGOHIVE">
+  import { supabase } from "/js/supabase.js";
+
+  // ------- helpers -------
+  const moneyFmt = (ccy) => new Intl.NumberFormat(ccy==='ZAR'?'en-ZA':'en-US',{style:'currency',currency:ccy||'USD',maximumFractionDigits:2}); // Use 2 decimal places for unit price
+  const money = (n, ccy) => moneyFmt(ccy).format(n||0);
+  const percent = (n) => `${((n || 0) * 100).toFixed(2)}%`;
+  const decimal = (n) => new Intl.NumberFormat('en-US', {minimumFractionDigits: 4, maximumFractionDigits: 4}).format(n || 0);
+
+  // filters
+  const $q     = document.getElementById('q');
+  const $risk  = document.getElementById('fRisk');
+  const $cur   = document.getElementById('fCur');
+  const $style = document.getElementById('fStyle'); // NEW
+  const $sort  = document.getElementById('fSort');
+  const $clear = document.getElementById('clearBtn');
+  
+  // NEW: Chart helpers
+  let chartInstances = {};
+
+  function curveFromPct(points, base = 100) {
+    const out = []; let lvl = base;
+    for (const p of points) {
+      const rDec = Number(p?.pct); 
+      if (Number.isFinite(rDec)) lvl *= (1 + rDec); 
+      out.push(Number(lvl.toFixed(2)));
+    }
+    return out;
+  }
+
+  function drawCardChart(canvasId, seriesData, percentage) {
+    const ctx = document.getElementById(canvasId)?.getContext('2d');
+    if (!ctx) return;
+    
+    if (chartInstances[canvasId]) {
+      chartInstances[canvasId].destroy();
+    }
+
+    const pcts = (seriesData || []).map(x => ({ pct: Number(x?.pct) }));
+    const curve = curveFromPct(pcts, 100); 
+    const labels = (seriesData || []).map(x => x.label || '');
+    
+    const positiveColor = '#16a34a'; 
+    const positiveGradient = 'rgba(22, 163, 74, 0.35)';
+    const negativeColor = '#dc2626'; 
+    const negativeGradient = 'rgba(220, 38, 38, 0.35)';
+    const neutralColor = '#2563eb'; 
+    const neutralGradient = 'rgba(37, 99, 235, 0.35)';
+    
+    let borderColor = neutralColor;
+    let gradientStart = neutralGradient;
+
+    if (percentage > 0.0001) { 
+        borderColor = positiveColor;
+        gradientStart = positiveGradient;
+    } else if (percentage < -0.0001) {
+        borderColor = negativeColor;
+        gradientStart = negativeGradient;
+    }
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+    gradient.addColorStop(0, gradientStart);
+    gradient.addColorStop(1, 'rgba(0,0,0,0.01)');
+
+    chartInstances[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: { 
+        labels: labels,
+        datasets: [{ 
+          data: curve, 
+          tension: .35, 
+          borderWidth: 2, 
+          borderColor: borderColor, 
+          backgroundColor: gradient, 
+          fill: true, 
+          pointRadius: 0 
+        }] 
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false, 
+        plugins: {
+          legend: { display: false },
+          tooltip: { display: false } 
+        },
+        scales: {
+          x: { display: false }, 
+          y: { display: false }  
+        }
+      }
+    });
+  }
+
+  // ------- fetch user's strategies from Supabase -------
+  // MODIFIED: To fetch series_ytd as well
+  async function fetchMyStrategies(user) {
+    const { data: account, error: accountError } = await supabase
+        .from('investment_accounts')
+        .select('id')
+        .eq('profile_id', user.id)
+        .maybeSingle();
+
+    if (accountError) {
+        console.error('Error fetching investment account:', accountError.message);
+        return [];
+    }
+    if (!account) {
+        console.warn('No investment account found for this user.');
+        return [];
+    }
+
+    const { data: ledger, error: ledgerError } = await supabase
+        .from('unit_ledger')
+        .select('strategy_id, tx_type, units')
+        .eq('account_id', account.id);
+
+    if (ledgerError) {
+        console.error('Failed to fetch unit ledger:', ledgerError.message);
+        throw new Error(`Failed to fetch unit ledger: ${ledgerError.message}`);
+    }
+    if (!ledger || ledger.length === 0) {
+        return [];
+    }
+
+    const holdingsMap = new Map();
+    for (const entry of ledger) {
+        const currentUnits = holdingsMap.get(entry.strategy_id) || 0;
+        const change = (entry.tx_type === 'MINT' || entry.tx_type === 'SUBSCRIPTION')
+            ? Number(entry.units)
+            : -Number(entry.units);
+        holdingsMap.set(entry.strategy_id, currentUnits + change);
+    }
+
+    const finalHoldings = Array.from(holdingsMap.entries())
+        .map(([strategy_id, total_units]) => ({ strategy_id, total_units }))
+        .filter(h => h.total_units > 0.000001); 
+
+    if (finalHoldings.length === 0) {
+        return [];
+    }
+
+    const strategyIds = finalHoldings.map(h => h.strategy_id);
+    const { data: strategiesData, error: strategiesError } = await supabase
+        .from('strategies')
+        .select(`
+            id, name, creator, currency, risk_level, style, asset_universe,
+            strategy_metrics ( perf_summary, series_ytd )
+        `)
+        .in('id', strategyIds);
+
+    if (strategiesError) {
+        console.error('Failed to fetch strategy details:', strategiesError.message);
+        throw new Error(`Failed to fetch strategies: ${strategiesError.message}`);
+    }
+
+    return strategiesData.map(strat => {
+        const holding = finalHoldings.find(h => h.strategy_id === strat.id);
+        const perf_summary = strat.strategy_metrics?.[0]?.perf_summary || {};
+        const series_ytd = strat.strategy_metrics?.[0]?.series_ytd || []; // NEW
+        const nav = perf_summary.nav || 0; 
+        const myValue = (holding?.total_units || 0) * nav;
+
+        return {
+            id: strat.id,
+            name: strat.name,
+            provider: strat.creator || '—',
+            currency: strat.currency || 'USD',
+            risk: strat.risk_level || '—',
+            style: strat.style || '—',
+            universe: strat.asset_universe || '—',
+            units_held: holding?.total_units || 0,
+            my_value: myValue,
+            unit_price: nav, // NEW: for table column
+            cagr_1y: perf_summary.cagr_1y || 0,
+            max_dd: perf_summary.max_drawdown || 0,
+            series_ytd: series_ytd // NEW
+        };
+    });
+}
+
+
+  // ------- MODIFIED: renderStrategies (was renderTable) -------
+  function renderStrategies(items){
+    const tbody = document.getElementById('tbody');
+    const carouselContainer = document.getElementById('mobile-carousel-container');
+    
+    tbody.innerHTML = '';
+    carouselContainer.innerHTML = '';
+    
+    Object.values(chartInstances).forEach(chart => chart.destroy());
+    chartInstances = {};
+
+    items.forEach((s, idx) => {
+      const riskChip = s.risk==='Low' ? 'bg-emerald-50 text-emerald-700'
+                     : s.risk==='Conservative' ? 'bg-emerald-50 text-emerald-700'
+                     : s.risk==='High' ? 'bg-rose-50 text-rose-700'
+                     : s.risk==='High Risk' ? 'bg-rose-50 text-rose-700'
+                     : s.risk==='Very High Risk' ? 'bg-red-50 text-red-700'
+                     : 'bg-amber-50 text-amber-700';
+
+      // --- Calculate YTD Growth Stats & define IDs ---
+      let growthPct = '—';
+      let growthColor = 'text-slate-600';
+      let hasChart = false;
+      let percentage = 0; 
+      const seriesData = s.series_ytd || [];
+
+      if (seriesData.length > 0) {
+        hasChart = true;
+        const pcts = seriesData.map(x => ({ pct: Number(x?.pct) }));
+        const curve = curveFromPct(pcts, 100);
+        const lastVal = curve.at(-1);
+        
+        if (lastVal) {
+          percentage = (lastVal - 100); 
+          growthPct = `${percentage >= 0 ? '+' : ''}${percentage.toFixed(1)}%`;
+          growthColor = percentage >= 0 ? 'text-green-600' : 'text-red-600';
+        }
+      }
+      
+      const chartIdMobile = `chart-mobile-${s.id}`;
+      const chartIdDesktop = `chart-desktop-${s.id}`;
+      // --- End Stats ---
+
+
+      // --- 1. Desktop Table Row ---
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="cell-name">
+          <div class="flex items-center gap-2">
+            <a href="my-investment.html?strategy=${encodeURIComponent(s.id)}" class="hover:underline" title="${s.name}">${s.name}</a>
+          </div>
+        </td>
+        <td class="text-slate-600 hidden md:table-cell">${money(s.unit_price, s.currency)}</td>
+        <td class="text-slate-600 hidden md:table-cell">${s.currency}</td>
+        <td class="hidden md:table-cell">
+          <span class="chip ${riskChip}">${s.risk}</span>
+        </td>
+        <td class="text-slate-600 hidden md:table-cell" title="${s.universe}">${s.universe}</td>
+        
+        <td class="hidden md:table-cell">
+          <div class="h-[30px] w-27">
+            ${hasChart ? `<canvas id="${chartIdDesktop}"></canvas>` : '<div class="h-full grid place-items-center text-sm text-slate-400">—</div>'}
+          </div>
+        </td>
+        
+        <td class="hidden md:table-cell font-medium ${growthColor}">
+          ${growthPct}
+        </td>
+        
+        <td>
+          <a class="btn bg-[var(--olive)] text-white hover:opacity-95 h-9 text-sm"
+             href="my-investment.html?strategy=${encodeURIComponent(s.id)}">
+            <i class="fa-regular fa-note-sticky mr-1.5"></i>
+            Details
+          </a>
+        </td>`;
+      tbody.appendChild(tr);
+
+      // --- 2. Mobile Carousel Card ---
+      const card = document.createElement('div');
+      card.className = 'mobile-strat-card flex flex-col';
+      
+      card.innerHTML = `
+        <div>
+          <h3 class="font-bold text-lg text-slate-900 truncate" title="${s.name}">${s.name}</h3>
+          <p class="text-sm text-slate-600 truncate mt-1">${s.provider}</p>
+          
+          <div class="mt-3">
+            <div class="flex items-baseline gap-2">
+              <span class="text-xl font-bold ${growthColor}">${growthPct}</span>
+            </div>
+            <div class="h-[100px] mt-2">
+              ${hasChart ? `<canvas id="${chartIdMobile}"></canvas>` : '<div class="h-full grid place-items-center text-sm text-slate-400">No chart data</div>'}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 mt-3 flex-wrap">
+            <span class="chip bg-slate-100 text-slate-700 !px-3">${s.currency}</span>
+            <span class="chip ${riskChip}">${s.risk}</span>
+            <span class="chip bg-blue-50 text-blue-700">YTD</span>
+          </div>
+        </div>
+        
+        <a class="btn bg-[var(--olive)] text-white hover:opacity-95 h-9 text-sm mt-4"
+           href="my-investment.html?strategy=${encodeURIComponent(s.id)}">
+          <i class="fa-regular fa-note-sticky mr-1.5"></i>
+          View Details
+        </a>
+      `;
+      carouselContainer.appendChild(card);
+      
+      // --- 3. Draw the charts ---
+      if (hasChart) {
+        setTimeout(() => {
+          drawCardChart(chartIdMobile, seriesData, percentage);
+          drawCardChart(chartIdDesktop, seriesData, percentage);
+        }, 0);
+      }
+    });
+
+    const resultText = `Showing ${items.length} ${items.length===1?'strategy':'strategies'}`;
+    document.getElementById('resultCount').textContent = resultText;
+
+    const emptyEl = document.getElementById('empty');
+    emptyEl.classList.toggle('hidden', items.length !== 0);
+    if (ALL.length === 0) {
+        emptyEl.innerHTML = `
+            You are not invested in any strategies yet.
+            <br>
+            <a href="strategies.html" class="btn bg-[var(--olive)] text-white hover:opacity-95 h-9 text-sm mt-4">
+                <i class="fa-solid fa-chart-line"></i>
+                Explore Strategies
+            </a>
+        `;
+    } else if (items.length === 0) {
+        emptyEl.textContent = 'No strategies match your filters.';
+    }
+    
+    // --- 4. Toggle visibility ---
+    const isMobile = window.innerWidth < 768;
+    document.getElementById('tbl-wrap').classList.toggle('hidden', items.length === 0 || isMobile);
+    document.getElementById('mobile-carousel-section').classList.toggle('hidden', items.length === 0 || !isMobile);
+  }
+
+  // ------- filtering/sorting -------
+  let ALL = [];
+
+  function applyFilters(){
+    const q  = ($q.value||'').trim().toLowerCase();
+    const r  = $risk.value;
+    const c  = $cur.value;
+    const st = $style.value; // NEW
+    const sortVal = $sort.value;
+
+    let rows = ALL.filter(s => {
+      const text = `${s.name} ${s.provider} ${s.style} ${s.universe}`.toLowerCase();
+      if (q && !text.includes(q)) return false;
+      if (r && s.risk !== r) return false;
+      if (c && s.currency !== c) return false;
+      if (st && s.style !== st) return false; // NEW
+      return true;
+    });
+
+    rows.sort((a,b)=>{
+      if (sortVal==='name-asc') return a.name.localeCompare(b.name);
+      if (sortVal==='value-desc') return b.my_value - a.my_value;
+      if (sortVal==='cagr-desc') return b.cagr_1y - a.cagr_1y; // MODIFIED
+      if (sortVal==='dd-asc')   return a.max_dd - b.max_dd;
+      return 0;
+    });
+
+    renderStrategies(rows); // MODIFIED
+  }
+  
+  // NEW: init style dropdown
+  function initStyleOptions(items){
+    const desktopSel = document.getElementById('fStyle');
+    const mobileSel = document.getElementById('fStyle-m');
+    const styles = [...new Set(items.map(s => s.style).filter(Boolean))].sort();
+    
+    desktopSel.options.length = 1;
+    mobileSel.options.length = 1;
+
+    styles.forEach(st => { 
+      const o1=document.createElement('option'); o1.value=st; o1.textContent=st; desktopSel.appendChild(o1); 
+      const o2=document.createElement('option'); o2.value=st; o2.textContent=st; mobileSel.appendChild(o2);
+    });
+  }
+
+  // clear button
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    $q.value=''; $risk.value=''; $cur.value=''; $style.value=''; $sort.value='value-desc';
+    applyFilters();
+  });
+  [$q, $risk, $cur, $style, $sort].forEach(el => el.addEventListener('input', applyFilters)); // MODIFIED
+
+  // ------- boot -------
+  async function boot(user) {
+    try{
+      ALL = await fetchMyStrategies(user);
+      initStyleOptions(ALL); // NEW
+      applyFilters();
+    }catch(e){
+      console.error(e);
+      document.getElementById('tbody').innerHTML = '<tr><td colspan="9" class="py-10 text-center text-slate-500">Sorry, failed to load your strategies.</td></tr>';
+    }
+  }
+
+  // Make boot function globally accessible so the auth script can call it
+  window.boot = boot;
+</script>
+
+  <script type="module" nonce="ALGOHIVE">
+  import { supabase } from "/js/supabase.js";
+
+  // --- tiny helpers ---
+  const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%23f1f5f9'/></svg>";
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? "—"; };
+  const setSrc  = (id, v) => { const el = document.getElementById(id); if (el) el.src = v || BLANK_AVATAR; };
+
+  // === [NEW] PROFILE GATING HELPERS (from home.html) ===
+  const REQUIRED_PROFILE_FIELDS = [
+    "first_name", "last_name", "phone", "dob", "id_number", "nationality",
+    "country_residence", "employment_status", "occupation", "employer",
+    "income_bracket", "source_of_funds", "net_worth_range", "experience_level",
+    "risk_tolerance", "objectives",
+  ];
+  const hasValue = (value) => String(value ?? "").trim().length > 0;
+  const computeProfileComplete = (row) =>
+    REQUIRED_PROFILE_FIELDS.every((key) => hasValue(row?.[key]));
+
+  function resolveKycBoolean(row) {
+    const v = row?.kyc_status;
+    if (typeof v === "boolean") return v;
+    if (typeof v === "string")
+      return ["verified", "approved", "done", "passed", "kyc_done"].includes(
+        v.toLowerCase()
+      );
+    return false;
+  }
+  function gateBannerMessage(profileComplete, kycDone) {
+    if (!profileComplete && !kycDone)
+      return "Please finish Additional Info and complete KYC first.";
+    if (!profileComplete) return "Please finish Additional Info first.";
+    if (!kycDone) return "Please complete KYC first.";
+    return "";
+  }
+  // === [END NEW GATING HELPERS] ===
+  
+  // === [NEW] SESSION TIMEOUT FUNCTION (Black, Fading) ===
+  function setupSessionTimeout() {
+    const TIMEOUT_MINUTES = 10; // Set to 10 minutes
+    const WARNING_SECONDS = 60;
+    
+    let inactivityTimer;
+    let warningTimer;
+    let countdownInterval;
+
+    const modal = document.getElementById('session-timeout-modal');
+    const countdownContainer = document.getElementById('session-countdown'); // The new container div
+    const countdownMinutesEl = document.getElementById('countdown-minutes');
+    const countdownSecondsEl = document.getElementById('countdown-seconds');
+    const stayBtn = document.getElementById('session-stay-btn');
+
+    if (!modal || !countdownContainer || !countdownMinutesEl || !countdownSecondsEl || !stayBtn) {
+      console.warn('Session timeout modal elements not found or incomplete. Timeout disabled.');
+      return;
+    }
+
+    const logoutUser = () => {
+      supabase.auth.signOut();
+      // Manually redirect to be safe
+      location.replace("/auth.html?tab=in&reason=timeout");
+    };
+
+    const updateCountdownDisplay = (totalSeconds) => {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      countdownMinutesEl.textContent = String(minutes).padStart(2, '0');
+      countdownSecondsEl.textContent = String(seconds).padStart(2, '0');
+    };
+
+    const showWarning = () => {
+      modal.classList.remove('hidden');
+      countdownContainer.classList.add('active-warning'); // Add animation class
+
+      let remaining = WARNING_SECONDS;
+      updateCountdownDisplay(remaining);
+
+      countdownInterval = setInterval(() => {
+        remaining--;
+        updateCountdownDisplay(remaining);
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+
+      warningTimer = setTimeout(logoutUser, WARNING_SECONDS * 1000);
+    };
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      clearTimeout(warningTimer);
+      clearInterval(countdownInterval);
+      modal.classList.add('hidden');
+      countdownContainer.classList.remove('active-warning'); // Remove animation class
+      updateCountdownDisplay(WARNING_SECONDS); // Reset display to default
+      
+      inactivityTimer = setTimeout(showWarning, TIMEOUT_MINUTES * 60 * 1000); 
+    };
+
+    const userActivityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    userActivityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer, true);
+    });
+
+    stayBtn.addEventListener('click', resetTimer);
+
+    // Initial start
+    resetTimer();
+  }
+  // === [END SESSION TIMEOUT FUNCTION] ===
+
+  async function ensureProfile(id, email) {
+    let { data, error } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+    if (error && error.code !== "PGRST116") throw error;
+    if (data) return data;
+    const up = await supabase.from("profiles")
+      .upsert({ id, email, updated_at: new Date().toISOString() }, { onConflict: "id" })
+      .select("*").single();
+    if (up.error) throw up.error;
+    return up.data;
+  }
+
+  // --- auth guard + hydrate header + modal ---
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const next = encodeURIComponent(location.pathname + location.search + location.hash);
+      location.replace(`/auth.html?tab=in&redirect=${next}`);
+      throw new Error("redirecting");
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { // Added this check
+        throw new Error("User not found despite session.");
+    }
+    const row = await ensureProfile(user.id, user.email || null);
+    
+    const profileComplete = computeProfileComplete(row || {});
+    const kycDone = resolveKycBoolean(row || {});
+    
+    // --> CRITICAL STEP <--
+    // Call the main boot function from the other script and pass the user object.
+    if(window.boot) {
+      window.boot(user);
+    }
+
+    const fn = (row?.first_name || "").trim();
+    const ln = (row?.last_name || "").trim();
+    const fallback = (user.email || "User").split("@")[0];
+    setText("hdr-name", (fn || ln) ? `${fn} ${ln}`.trim() : fallback);
+
+    const avatarUrl = row?.avatar_url ? `${row.avatar_url}${row.avatar_url.includes("?") ? "&" : "?"}v=${Date.now()}` : BLANK_AVATAR;
+    setSrc("hdr-avatar", avatarUrl);
+
+    if (row?.account_number) setText("sidebar-acc", row.account_number);
+
+    const modal = document.getElementById("profile-modal");
+    const pmEmail = document.getElementById("pm-email");
+    const btnOpen = document.getElementById("hdr-profile-btn");
+    const btnLogout = document.getElementById("pm-logout");
+
+    const open = () => { pmEmail.textContent = user.email || "—"; modal?.classList.remove("hidden"); };
+    const close = () => modal?.classList.add("hidden");
+
+    btnOpen?.addEventListener("click", (e) => { e.preventDefault(); open(); });
+    modal?.addEventListener("click", (e) => {
+      if (e.target === modal || e.target.classList.contains("bg-black/40")) close();
+    });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+    btnLogout?.addEventListener("click", async () => {
+      try {
+        await supabase.auth.signOut();
+        location.replace("/auth.html?tab=in");
+      } catch {
+        console.warn("Logout failed");
+      }
+    });
+    
+    // === [NEW] START THE SESSION TIMEOUT ===
+    setupSessionTimeout();
+    
+  } catch (e) {
+    if (String(e?.message).toLowerCase() !== "redirecting") console.error(e);
+  }
+</script>
+
+</body>
+</html>

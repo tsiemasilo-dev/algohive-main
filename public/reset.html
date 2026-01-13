@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AlgoHive — Reset password</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --olive: #7e8d52;
+      --olive-700: #576138;
+      --ink: #0B1215;
+    }
+    body { background: #f6f7f6; }
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: #f6f7f6;
+      color: var(--ink);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: opacity .45s ease;
+    }
+    .preloader__logo {
+      height: 3rem;
+      width: auto;
+      animation: heroSlideUp .6s ease-out, preloaderPulse 2.4s ease-in-out .45s infinite;
+    }
+    .preloader__brand {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      animation: heroSlideUp .6s ease-out .08s both;
+    }
+    .preloader__tagline {
+      font-size: .95rem;
+      color: rgba(11, 18, 21, 0.68);
+      animation: heroSlideUp .6s ease-out .14s both;
+    }
+    .preloader--hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .btn-shine { position: relative; overflow: hidden; transition: transform .25s ease, box-shadow .25s ease; }
+    .btn-shine::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.7) 50%, transparent 100%); transform: translateX(-120%); transition: transform .8s ease; }
+    .btn-shine:hover::before { transform: translateX(120%); }
+    .btn-shine:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -16px rgba(11,18,21,0.4); }
+    .btn-shine:disabled { box-shadow: none; transform: none; }
+    .btn-shine:disabled::before { display: none; }
+    .auth-left { animation: heroSlideUp .7s ease-out .25s both; }
+    .auth-right { animation: heroScaleIn .9s cubic-bezier(.2,.8,.2,1) .35s both; }
+    @keyframes heroScaleIn { 0% { transform: scale(1.06); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes heroSlideUp { 0% { transform: translateY(16px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    @keyframes preloaderPulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+    .swap-anim { animation: heroSlideUp .5s ease both; }
+    .testimonial-block {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 0.5rem 0;
+    }
+    .testimonial-quote {
+      font-size: clamp(1.4rem, 2.3vw, 1.85rem);
+      line-height: 1.4;
+      font-weight: 600;
+      color: #0b1215;
+    }
+    .testimonial-quote .highlight {
+      color: var(--olive);
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      color: rgba(11,18,21,0.64);
+    }
+    .testimonial-avatar {
+      height: 52px;
+      width: 52px;
+      border-radius: 9999px;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 14px 40px -22px rgba(11, 18, 21, 0.45);
+    }
+    .orb-gradient {
+      background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.75), rgba(255,255,255,0) 60%),
+                        radial-gradient(circle at 80% 20%, rgba(126,141,82,0.18), rgba(255,255,255,0) 55%),
+                        radial-gradient(circle at 50% 80%, rgba(126,141,82,0.12), rgba(255,255,255,0) 55%);
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body class="min-h-screen antialiased text-slate-900">
+  <div id="preloader" class="preloader">
+    <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="preloader__logo" />
+    <span class="preloader__brand">AlgoHive</span>
+    <span class="preloader__tagline">Where Smart Capital Gathers</span>
+  </div>
+  <div class="flex min-h-screen flex-col bg-transparent lg:flex-row lg:items-stretch">
+    <!-- Left: Reset -->
+    <main class="auth-left relative mx-auto w-full max-w-2xl bg-white px-6 py-12 shadow-sm sm:px-10 sm:py-14 lg:flex lg:min-h-screen lg:max-w-lg lg:flex-col lg:justify-between lg:px-16 lg:py-20 lg:shadow">
+      <!-- Brand -->
+      <div class="flex items-center gap-2">
+        <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive" class="h-8 w-auto" />
+        <span class="text-lg font-semibold tracking-tight text-[var(--ink)]">AlgoHive</span>
+      </div>
+
+      <!-- Reset content -->
+      <div class="mt-10 flex-1 lg:mt-16">
+        <header class="mb-9 space-y-3">
+          <p class="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--olive)]">Reset password</p>
+          <h1 class="text-3xl font-semibold text-slate-900 sm:text-[34px]">Set a new password</h1>
+          <p class="text-sm text-slate-500">Choose a strong password and confirm it below to secure your account.</p>
+        </header>
+
+        <!-- Messages -->
+        <div id="msg" class="hidden mb-5 max-w-md rounded-lg border px-3 py-2 text-sm text-left"></div>
+
+        <section class="space-y-8">
+          <form id="reset-form" class="space-y-5 text-left sm:max-w-md">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="new-password">New password</label>
+              <input id="new-password" name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[rgba(126,141,82,0.25)]" required />
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="confirm-password">Confirm password</label>
+              <input id="confirm-password" name="confirm_password" type="password" placeholder="Re-enter your password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[rgba(126,141,82,0.25)]" required />
+              <p id="confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+            </div>
+            <label class="flex items-start gap-3 rounded-2xl bg-slate-50/90 p-4 text-xs text-slate-600">
+              <input id="agree" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[var(--olive)] focus:ring-[var(--olive)]" />
+              <span>
+                I agree to the
+                <a href="/terms.html" class="font-semibold text-[var(--olive)] hover:text-[var(--olive-700)]">Terms &amp; Conditions</a>,
+                <a href="/privacy.html" class="font-semibold text-[var(--olive)] hover:text-[var(--olive-700)]">Privacy Policy</a>,
+                <a href="/risk.html" class="font-semibold text-[var(--olive)] hover:text-[var(--olive-700)]">Risk Disclosure</a>, and
+                <a href="/investment-disclaimer.html" class="font-semibold text-[var(--olive)] hover:text-[var(--olive-700)]">Investment Disclaimer</a>.
+              </span>
+            </label>
+            <button id="reset-btn" type="submit" class="btn-shine w-full rounded-2xl bg-[var(--olive)] px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--olive-700)] disabled:cursor-not-allowed disabled:opacity-60" disabled>
+              Update password
+            </button>
+            <p class="text-[11px] leading-relaxed text-slate-500">We’ll update your credentials and sign you back in so you can continue with AlgoHive.</p>
+          </form>
+        </section>
+      </div>
+
+      <!-- Notice -->
+      <footer class="mt-14 border-t border-slate-100 pt-6 text-left text-[11px] leading-5 text-slate-500">
+        AlgoHive (<b>FSP 55118</b>) is an authorised Financial Services Provider. All investment activity carries risk, including the possible loss of capital and liquidity constraints. Any information provided here is educational in nature, does not constitute personalised financial advice, and should not be relied on as a recommendation to buy or sell securities. Please consider whether investing is appropriate for your circumstances and consult an independent adviser where necessary.
+      </footer>
+    </main>
+
+    <!-- Right: Preview -->
+    <aside class="auth-right relative hidden w-full bg-[#f7f9ff] px-6 py-14 shadow-inner lg:flex lg:flex-1 lg:items-stretch lg:rounded-none lg:px-20 lg:py-20">
+      <div class="absolute inset-0 orb-gradient opacity-95"></div>
+      <div class="relative z-10 ml-auto flex w-full max-w-5xl flex-col items-start gap-12">
+        <section class="w-full max-w-xl space-y-6 text-left text-slate-700">
+          <article class="testimonial-block">
+            <p class="testimonial-quote">“We lift the veil so <span class="highlight">every strategy is in the open.</span>”</p>
+            <div class="testimonial-author">
+              <img
+                src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Media%20Assets/1673431038869.jpeg"
+                alt="Lonwabo Damane"
+                class="testimonial-avatar"
+              />
+              <div>
+                <p class="text-sm font-semibold text-slate-900">Lonwabo Damane</p>
+                <p class="text-[11px] uppercase tracking-[0.3em] text-slate-500">CEO · AlgoHive</p>
+              </div>
+            </div>
+          </article>
+        </section>
+        <figure class="relative w-full overflow-hidden rounded-[10px] bg-[#0b1215] shadow-[0_45px_120px_-60px_rgba(11,18,21,0.45)]">
+          <video
+            class="block w-full"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="auto"
+          >
+            <source src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Media%20Assets/Screen%20Recording%202025-11-05%20at%2018.14.15.mov" />
+            Your browser does not support the video tag.
+          </video>
+        </figure>
+
+      </div>
+    </aside>
+  </div>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { supabase } from "/js/supabase.js";
+
+    const preloader = document.getElementById("preloader");
+    window.addEventListener("load", () => {
+      if (!preloader) return;
+      preloader.classList.add("preloader--hide");
+      setTimeout(() => preloader.remove(), 450);
+    });
+
+    const msg = document.getElementById("msg");
+    const form = document.getElementById("reset-form");
+    const passwordInput = document.getElementById("new-password");
+    const confirmInput = document.getElementById("confirm-password");
+    const confirmHint = document.getElementById("confirm-hint");
+    const agree = document.getElementById("agree");
+    const btn = document.getElementById("reset-btn");
+
+    const REQUIRED_PROFILE_FIELDS = [
+      "first_name", "last_name", "phone", "dob", "id_number", "nationality",
+      "country_residence", "employment_status", "occupation", "employer",
+      "income_bracket", "source_of_funds", "net_worth_range", "experience_level",
+      "risk_tolerance", "objectives",
+    ];
+    const hasValue = (value) => String(value ?? "").trim().length > 0;
+    const computeProfileComplete = (row) =>
+      REQUIRED_PROFILE_FIELDS.every((key) => hasValue(row?.[key]));
+    const resolveKycBoolean = (row) => {
+      const v = row?.kyc_status;
+      if (typeof v === "boolean") return v;
+      if (typeof v === "string")
+        return ["verified", "approved", "done", "passed", "kyc_done"].includes(v.toLowerCase());
+      return false;
+    };
+    const gateBannerMessage = (profileComplete, kycDone) => {
+      if (!profileComplete && !kycDone) return "Please finish Additional Info and complete KYC first.";
+      if (!profileComplete) return "Please finish Additional Info first.";
+      if (!kycDone) return "Please complete KYC first.";
+      return "";
+    };
+
+    async function redirectAfterReset(preferred = "/home.html") {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        location.replace(preferred);
+        return;
+      }
+
+      location.replace(preferred);
+    }
+
+    function showMsg(text, type = "info") {
+      msg.classList.remove("hidden", "bg-rose-50", "text-rose-700", "border-rose-200", "bg-emerald-50", "text-emerald-700", "border-emerald-200");
+      msg.classList.add("border", "border-slate-200", "bg-white", "text-slate-600");
+      if (type === "success") {
+        msg.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-200");
+        msg.classList.remove("bg-white", "text-slate-600", "border-slate-200");
+      }
+      if (type === "error") {
+        msg.classList.add("bg-rose-50", "text-rose-700", "border-rose-200");
+        msg.classList.remove("bg-white", "text-slate-600", "border-slate-200");
+      }
+      msg.textContent = text;
+    }
+
+    function hideMsg() {
+      msg.classList.add("hidden");
+      msg.textContent = "";
+    }
+
+    function setLoading(on) {
+      btn.disabled = on;
+      btn.textContent = on ? "Updating…" : "Update password";
+    }
+
+    function updateConfirmHint() {
+      const pass = passwordInput.value.trim();
+      const confirm = confirmInput.value.trim();
+      const mismatch = confirm.length > 0 && pass !== confirm;
+      confirmHint.classList.toggle("hidden", !mismatch);
+      return !mismatch && pass.length > 0 && confirm.length > 0;
+    }
+
+    function updateButtonState() {
+      const passwordsMatch = updateConfirmHint();
+      const hasValues = passwordInput.value.trim().length > 0 && confirmInput.value.trim().length > 0;
+      const canSubmit = passwordsMatch && hasValues && agree.checked;
+      btn.disabled = !canSubmit;
+    }
+
+    passwordInput.addEventListener("input", () => {
+      updateButtonState();
+      hideMsg();
+    });
+    confirmInput.addEventListener("input", () => {
+      updateButtonState();
+      hideMsg();
+    });
+    agree.addEventListener("change", () => {
+      updateButtonState();
+      hideMsg();
+    });
+
+    async function ensureRecoverySession() {
+      let { data: { session } } = await supabase.auth.getSession();
+      if (session) return session;
+
+      const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const type = hash.get("type");
+      const access_token = hash.get("access_token");
+      const refresh_token = hash.get("refresh_token");
+
+      if (type === "recovery" && access_token && refresh_token) {
+        const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (error) {
+          console.error(error);
+          return null;
+        }
+        return data.session;
+      }
+      return null;
+    }
+
+    const session = await ensureRecoverySession();
+    if (!session) {
+      showMsg("Recovery link invalid or expired. Click the email link again.", "error");
+      form.classList.add("hidden");
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMsg();
+
+      const pass = passwordInput.value.trim();
+      const confirm = confirmInput.value.trim();
+      if (pass !== confirm) {
+        updateButtonState();
+        showMsg("Passwords must match before we can update them.", "error");
+        return;
+      }
+      if (!agree.checked) {
+        showMsg("Please accept the Terms, Privacy, Risk and Investment Disclaimer.", "error");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const { error } = await supabase.auth.updateUser({ password: pass });
+        if (error) throw error;
+        showMsg("Password updated. Redirecting…", "success");
+        await redirectAfterReset();
+      } catch (err) {
+        showMsg(err.message || "Failed to update password.", "error");
+      } finally {
+        setLoading(false);
+        updateButtonState();
+      }
+    });
+
+    updateButtonState();
+  </script>
+</body>
+</html>

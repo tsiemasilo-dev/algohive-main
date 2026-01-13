@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custodial Ledger — AlgoHive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="icon" href="/favicon.png" sizes="any">
+  <style>
+    :root {
+      --olive: #7e8d52;
+      --olive-700: #576138;
+      --ink: #0b1215;
+      --muted: #525a67;
+      --surface: #f8faf8;
+    }
+    html, body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, sans-serif;
+      background: #fff;
+      color: var(--ink);
+      min-height: 100%;
+      width: 100%;
+    }
+    .grid-bg {
+      background-image: radial-gradient(rgba(69,98,67,.08) 1px, transparent 1px);
+      background-size: 18px 18px;
+      background-position: -10px -10px;
+    }
+    .glass {
+      position: relative;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(126,141,82,0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .ledger-row:hover {
+      background: rgba(126,141,82,0.06);
+    }
+    select:disabled,
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="grid-bg">
+  <header class="w-full sticky top-3 z-50 px-3 sm:px-4 lg:px-6">
+    <div class="mx-auto max-w-5xl">
+      <nav aria-label="Primary" class="relative flex items-center justify-between gap-2 rounded-full border border-black/10 bg-white px-3 py-2 shadow-lg">
+        <a href="index.html" class="flex flex-shrink-0 items-center gap-2 rounded-full px-2 py-1.5 hover:bg-black/5">
+          <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="h-7 w-auto">
+          <span class="hidden md:inline text-sm font-extrabold tracking-tight text-[var(--ink)]">AlgoHive</span>
+        </a>
+        <div class="hidden md:flex items-center gap-1">
+          <a href="home.html" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] hover:bg-black/5">Dashboard</a>
+          <a href="strategies.html" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] hover:bg-black/5">Strategies</a>
+          <a href="support.html" class="px-3 py-2 rounded-full text-sm font-medium text-[var(--ink)] hover:bg-black/5">Support</a>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="auth.html" class="inline-flex items-center gap-2 rounded-full bg-[var(--olive)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--olive-700)]">Logout</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 pb-16 pt-24">
+    <section class="space-y-10">
+      <div class="flex flex-col gap-2 text-center">
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Custodial Ledger</h1>
+        <p class="text-sm sm:text-base text-[var(--muted)] max-w-2xl mx-auto">
+          View the aggregate holdings for each instrument and drill down to the client-level allocations, including volumes and average execution prices.
+        </p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5" id="portfolio-summary"></div>
+
+      <section class="space-y-6" id="analytics-section">
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-[var(--muted)] shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-[var(--ink)]">Time frame</span>
+            <select class="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olive)]" aria-label="Select performance time frame" disabled>
+              <option>3 Years</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-[var(--ink)]">Filter by</span>
+            <select class="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--olive)]" aria-label="Filter portfolio data" disabled>
+              <option>Fund</option>
+            </select>
+          </div>
+          <button type="button" class="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-1.5 font-medium text-[var(--ink)] shadow-sm transition hover:bg-black/5" disabled>
+            Customize
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+              <path d="m4.94 3.94 1.12-1.13A1.5 1.5 0 0 1 7.12 2h5.76c.4 0 .78.16 1.06.44l1.12 1.12c.28.29.44.67.44 1.07v12.62a.75.75 0 0 1-1.28.53l-2.59-2.58a1.5 1.5 0 0 0-1.06-.44H7.12c-.4 0-.78.16-1.06.44l-2.6 2.58a.75.75 0 0 1-1.28-.53V5.01c0-.4.16-.78.44-1.07Z" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2" id="portfolio-analytics">
+          <article class="glass border border-black/10 rounded-2xl bg-white/70 shadow-sm" aria-labelledby="composition-heading">
+            <header class="flex items-center justify-between border-b border-black/5 px-6 py-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-[var(--muted)]">Portfolio Composition</p>
+                <h2 id="composition-heading" class="text-lg font-semibold text-[var(--ink)]">Data</h2>
+              </div>
+              <span class="rounded-full bg-[var(--olive)]/10 px-3 py-1 text-xs font-medium text-[var(--olive-700)]">Holdings</span>
+            </header>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-black/5 text-left text-sm">
+                <thead class="bg-[var(--surface)]/60 text-xs uppercase tracking-widest text-[var(--muted)]">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 font-medium">Instrument</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Par</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Market Value</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Book Value</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-black/5" data-role="composition-table-body"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="glass border border-black/10 rounded-2xl bg-white/70 shadow-sm" aria-labelledby="exposure-heading">
+            <header class="flex items-center justify-between border-b border-black/5 px-6 py-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-[var(--muted)]">Portfolio Composition</p>
+                <h2 id="exposure-heading" class="text-lg font-semibold text-[var(--ink)]">Exposure</h2>
+              </div>
+              <span class="rounded-full bg-[var(--olive)]/10 px-3 py-1 text-xs font-medium text-[var(--olive-700)]">Visual</span>
+            </header>
+            <div class="flex h-full flex-col gap-6 px-6 py-5 md:flex-row md:items-center">
+              <div class="mx-auto flex h-48 w-48 items-center justify-center" data-role="donut-chart" aria-label="Instrument exposure donut chart"></div>
+              <ul class="flex-1 space-y-3 text-sm" data-role="donut-legend" aria-label="Instrument exposure legend"></ul>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2" id="risk-analytics">
+          <article class="glass border border-black/10 rounded-2xl bg-white/70 shadow-sm" aria-labelledby="policy-heading">
+            <header class="flex items-center justify-between border-b border-black/5 px-6 py-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-[var(--muted)]">Portfolio vs Policy</p>
+                <h2 id="policy-heading" class="text-lg font-semibold text-[var(--ink)]">Concentration</h2>
+              </div>
+              <span class="rounded-full bg-[var(--olive)]/10 px-3 py-1 text-xs font-medium text-[var(--olive-700)]">Risk</span>
+            </header>
+            <div class="flex h-64 flex-col justify-between px-6 py-5">
+              <div class="flex h-40 items-end gap-4" data-role="policy-chart" aria-label="Policy deviation bar chart"></div>
+              <div class="flex items-center justify-between text-xs text-[var(--muted)]">
+                <span>Policy Limit</span>
+                <span>Portfolio Weight</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="glass border border-black/10 rounded-2xl bg-white/70 shadow-sm" aria-labelledby="benchmark-heading">
+            <header class="flex items-center justify-between border-b border-black/5 px-6 py-4">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-[var(--muted)]">Return vs Benchmark</p>
+                <h2 id="benchmark-heading" class="text-lg font-semibold text-[var(--ink)]">US Treasury 3 Month Rate</h2>
+              </div>
+              <span class="rounded-full bg-[var(--olive)]/10 px-3 py-1 text-xs font-medium text-[var(--olive-700)]">Trend</span>
+            </header>
+            <div class="px-6 py-5" data-role="benchmark-chart" aria-label="Benchmark comparison line chart"></div>
+          </article>
+        </div>
+      </section>
+
+      <div class="grid gap-4" id="ledger-container"></div>
+    </section>
+  </main>
+
+  <template id="instrument-template">
+    <details class="group rounded-2xl border border-black/10 bg-[var(--surface)] p-0 overflow-hidden shadow-sm transition">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 text-left">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
+          <div class="flex items-center gap-4">
+            <div class="h-12 w-12 flex items-center justify-center rounded-xl border border-black/5 bg-white/70">
+              <img data-role="instrument-logo" alt="Instrument logo" class="h-8 w-8 object-contain" />
+            </div>
+            <div>
+              <p class="text-sm uppercase tracking-widest text-[var(--muted)]">Instrument</p>
+              <p class="text-xl font-semibold" data-role="instrument-name"></p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 text-sm sm:text-base">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-[var(--muted)]">Total Holdings</p>
+              <p class="font-semibold" data-role="total-quantity"></p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-widest text-[var(--muted)]">Market Value</p>
+              <p class="font-semibold" data-role="total-value"></p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-widest text-[var(--muted)]">Average Price</p>
+              <p class="font-semibold" data-role="average-price"></p>
+            </div>
+            <div>
+              <p class="text-xs uppercase tracking-widest text-[var(--muted)]">Currency</p>
+              <p class="font-semibold" data-role="currency"></p>
+            </div>
+          </div>
+        </div>
+        <svg class="h-5 w-5 text-[var(--muted)] transition-transform duration-200 group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 9 6 6 6-6" />
+        </svg>
+      </summary>
+      <div class="bg-white/80">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-black/5 text-left">
+            <thead class="bg-[var(--surface)]/60 text-xs uppercase tracking-widest text-[var(--muted)]">
+              <tr>
+                <th scope="col" class="px-6 py-3 font-medium">Client</th>
+                <th scope="col" class="px-6 py-3 font-medium">Account #</th>
+                <th scope="col" class="px-6 py-3 font-medium">Quantity</th>
+                <th scope="col" class="px-6 py-3 font-medium">% of Instrument</th>
+                <th scope="col" class="px-6 py-3 font-medium">Avg. Price</th>
+                <th scope="col" class="px-6 py-3 font-medium">Market Value</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-black/5" data-role="client-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </template>
+  <script type="module" src="/js/custodial-ledger.js"></script>
+</body>
+</html>

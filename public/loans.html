@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive — Start Loan Application</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:#0B1215;
+      --muted:#64748b;
+      --brand:#6b8e23;
+      --brand-soft:rgba(107, 142, 35, 0.12);
+      --brand-strong:#3d4d14;
+      --page-bg:#f9fafb;
+    }
+    html, body {
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--page-bg);
+      color: var(--ink);
+      min-height: 100%;
+    }
+    .shape {
+      position:absolute;
+      width:110px;
+      height:120px;
+      background:linear-gradient(145deg, rgba(168,189,108,0.95), rgba(84,113,18,0.85));
+      clip-path:polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+      box-shadow:0 24px 48px rgba(17, 29, 8, 0.18);
+      border:1px solid rgba(255,255,255,0.15);
+    }
+    .shape--muted {
+      background:linear-gradient(145deg, rgba(15,23,42,0.16), rgba(107,142,35,0.65));
+      filter:blur(0.4px);
+    }
+    .card {
+      background:#fff;
+      border-radius: 28px;
+      box-shadow:0 16px 40px rgba(15,23,42,0.12);
+      border:1px solid rgba(148,163,184,0.25);
+    }
+    .view-shell {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .pill {
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      font-weight: 600;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .step-panel {
+      padding:2rem clamp(1.5rem, 4vw, 2.5rem) 2.5rem;
+    }
+    .step-panel:not(.hidden) {
+      animation:fadeIn 0.35s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(12px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+    .return-link {
+      display:inline-flex;
+      align-items:center;
+      gap:0.45rem;
+      font-weight:600;
+      color:#0f172a;
+    }
+    .return-link span {
+      font-size:0.9rem;
+    }
+    .return-link:hover {
+      color:var(--brand-strong);
+    }
+    .profile-card {
+      margin-top:2.5rem;
+      background:linear-gradient(135deg, rgba(15,23,42,0.04), rgba(107,142,35,0.1));
+      border:1px solid rgba(148,163,184,0.25);
+      border-radius:28px;
+      padding:1.75rem;
+      box-shadow:0 24px 48px rgba(15,23,42,0.14);
+      backdrop-filter:blur(12px);
+      position:relative;
+      overflow:hidden;
+    }
+    .profile-card::after {
+      content:"";
+      position:absolute;
+      width:140px;
+      height:150px;
+      right:-40px;
+      top:-30px;
+      background:linear-gradient(160deg, rgba(107,142,35,0.2), rgba(61,77,20,0.35));
+      clip-path:polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+      filter:blur(0.5px);
+    }
+    .footer {
+      margin-top:auto;
+      padding:3.5rem 0 2.5rem;
+      display:flex;
+      justify-content:center;
+    }
+    .footer-shell {
+      background:#061a33;
+      color:#fff;
+      border-radius:72px;
+      overflow:hidden;
+      position:relative;
+      box-shadow:0 26px 48px rgba(6,26,51,0.35);
+    }
+    .footer-inner {
+      position:relative;
+      overflow:hidden;
+    }
+    .footer-top {
+      position:relative;
+      padding:3.5rem 0 2.75rem;
+    }
+    .footer-content {
+      position:relative;
+      z-index:1;
+      margin:0 auto;
+      width:100%;
+      display:grid;
+      gap:2.5rem;
+      padding:0 clamp(1.75rem, 4vw, 3rem);
+    }
+    @media (min-width: 768px) {
+      .footer-content {
+        grid-template-columns:1.4fr 1fr 1fr;
+        align-items:start;
+      }
+    }
+    .footer-column ul {
+      margin:0;
+      padding:0;
+    }
+    .footer-column h3 {
+      letter-spacing:0.08em;
+    }
+    .footer-column ul li {
+      list-style:none;
+    }
+    .footer-column--brand {
+      display:flex;
+      flex-direction:column;
+      gap:0.5rem;
+    }
+    .footer-social {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      height:2.5rem;
+      width:2.5rem;
+      border-radius:999px;
+      background:rgba(255,255,255,0.08);
+      color:#fff;
+      transition:all 0.2s ease;
+    }
+    .footer-social:hover {
+      background:rgba(107,142,35,0.85);
+      color:#061a33;
+    }
+    .footer-shape {
+      position:absolute;
+      border-radius:999px;
+      background:rgba(107,142,35,0.2);
+      filter:blur(0.5px);
+    }
+    .footer-shape--left {
+      left:-3rem;
+      top:1rem;
+      width:0.75rem;
+      height:9rem;
+      background:rgba(107,142,35,0.5);
+    }
+    .footer-shape--center {
+      left:50%;
+      transform:translateX(-50%);
+      top:-3rem;
+      width:1.25rem;
+      height:11rem;
+      background:rgba(107,142,35,0.3);
+    }
+    .footer-shape--right {
+      right:-2.5rem;
+      top:2rem;
+      width:0.6rem;
+      height:8rem;
+      background:rgba(107,142,35,0.4);
+    }
+    .footer-bottom {
+      border-top:1px solid rgba(255,255,255,0.08);
+      background:rgba(0,0,0,0.15);
+    }
+    .footer-bottom-inner {
+      margin:0 auto;
+      width:100%;
+      padding:1.5rem clamp(1.75rem, 4vw, 3rem);
+      display:flex;
+      flex-direction:column;
+      gap:1.25rem;
+    }
+    @media (min-width: 768px) {
+      .footer-bottom-inner {
+        flex-direction:row;
+        align-items:center;
+        justify-content:space-between;
+      }
+    }
+    .footer-home {
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      padding:0.75rem 1.5rem;
+      border-radius:999px;
+      background:rgba(107,142,35,0.18);
+      color:#fff;
+      font-weight:600;
+      text-decoration:none;
+      transition:all 0.2s ease;
+      width:max-content;
+    }
+    .footer-home:hover {
+      background:rgba(107,142,35,0.35);
+      color:#fff;
+    }
+    .footer-links {
+      display:flex;
+      flex-wrap:wrap;
+      gap:1.5rem;
+      font-size:0.85rem;
+      color:rgba(255,255,255,0.7);
+    }
+    .footer-links a {
+      color:inherit;
+      text-decoration:none;
+    }
+    .footer-links a:hover {
+      color:#fff;
+    }
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="w-full py-6">
+    <div class="view-shell flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-2">
+        <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="h-8 w-auto" />
+        <span class="hidden sm:inline text-lg font-extrabold tracking-tight">AlgoHive</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <a href="support.html" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-white">
+          <span>Need help?</span>
+        </a>
+        <div class="flex items-center gap-3 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 shadow-sm backdrop-blur">
+          <img id="hdr-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56'><rect width='100%' height='100%' fill='%23f8fafc' rx='16' ry='16'/><text x='50%' y='56%' text-anchor='middle' font-family='Inter, sans-serif' font-size='22' fill='%2394a3b8'>AH</text></svg>" alt="AlgoHive member avatar" class="h-10 w-10 rounded-full object-cover ring-2 ring-white" />
+          <div class="leading-tight">
+            <p id="hdr-name" class="text-sm font-semibold text-[color:var(--ink)]">—</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="relative isolate flex-1">
+    <div class="absolute inset-y-10 -left-12 hidden w-64 rotate-6 sm:block">
+      <span class="shape -left-2 top-0"></span>
+      <span class="shape shape--muted" style="left:3rem; top:4rem; transform:scale(0.85); opacity:0.75;"></span>
+      <span class="shape" style="left:6.5rem; top:8rem; transform:scale(0.7);"></span>
+    </div>
+
+    <div class="view-shell grid gap-12 pb-20 pt-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
+      <section class="relative z-10 space-y-8">
+        <div class="flex flex-wrap gap-3">
+          <a href="index.html" class="return-link">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            <span>Return to home</span>
+          </a>
+        </div>
+
+        <div class="space-y-6">
+          <span class="pill inline-block">Start application</span>
+          <h1 class="text-4xl font-extrabold leading-tight sm:text-5xl">Tailor your AlgoHive loan</h1>
+          <p class="text-lg text-[color:var(--muted)] sm:max-w-md">
+            Calculate the ideal amount and repayment schedule before you accept the lending agreements. Once you’re comfortable, continue to confirm your personalised AlgoHive loan in a few clicks.
+          </p>
+        </div>
+
+        <dl class="grid max-w-lg grid-cols-1 gap-6 text-sm sm:grid-cols-2">
+          <div class="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+            <dt class="text-[color:var(--muted)]">Loan type</dt>
+            <dd class="mt-2 text-lg font-semibold text-[color:var(--ink)]">Fixed interest</dd>
+          </div>
+          <div class="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+            <dt class="text-[color:var(--muted)]">Approval rate</dt>
+            <dd class="mt-2 text-lg font-semibold text-[color:var(--ink)]">92% of applicants</dd>
+          </div>
+          <div class="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+            <dt class="text-[color:var(--muted)]">Support</dt>
+            <dd class="mt-2 text-lg font-semibold text-[color:var(--ink)]">24/7 lending desk</dd>
+          </div>
+          <div class="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+            <dt class="text-[color:var(--muted)]">Turnaround</dt>
+            <dd class="mt-2 text-lg font-semibold text-[color:var(--ink)]">Average 4 minutes</dd>
+          </div>
+        </dl>
+
+        <article class="profile-card">
+          <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+            <div class="relative flex h-28 w-28 flex-shrink-0 items-center justify-center">
+              <span class="shape" style="position:absolute; width:115px; height:125px; opacity:0.45; left:50%; top:50%; transform:translate(-50%, -50%) scale(1.05);"></span>
+              <img id="profile-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><rect width='100%' height='100%' rx='28' ry='28' fill='%23e2e8f0'/><text x='50%' y='56%' text-anchor='middle' font-family='Inter, sans-serif' font-size='42' fill='%23647a23'>AH</text></svg>" alt="AlgoHive profile portrait" class="relative h-24 w-24 rounded-3xl object-cover ring-4 ring-white/70" />
+            </div>
+            <div class="flex-1 space-y-4">
+              <div class="space-y-1">
+                <p class="text-sm uppercase tracking-[0.18em] text-[color:var(--muted)]">Your profile</p>
+                <p id="profile-name" class="text-2xl font-semibold text-[color:var(--ink)]">—</p>
+                <p id="profile-summary" class="text-sm text-[color:var(--muted)]">Personalised AlgoHive member profile.</p>
+              </div>
+              <dl class="grid gap-3 text-sm sm:grid-cols-2">
+                <div class="rounded-2xl border border-white/50 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
+                  <dt class="text-[color:var(--muted)]">Invested AUM</dt>
+                  <dd id="profile-aum" class="mt-1 text-lg font-semibold text-[color:var(--ink)]">R 0</dd>
+                </div>
+                <div class="rounded-2xl border border-white/50 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
+                  <dt class="text-[color:var(--muted)]">AlgoHive net worth</dt>
+                  <dd id="profile-networth" class="mt-1 text-lg font-semibold text-[color:var(--ink)]">R 0</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="relative z-10 space-y-6">
+        <div class="card overflow-hidden shadow-xl">
+          <div class="step-panel" data-step-panel="calculator">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 class="text-2xl font-semibold">Loan calculator</h2>
+                <p class="text-sm text-[color:var(--muted)]">Dial in your AlgoHive loan before continuing to the agreements.</p>
+              </div>
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--brand-soft)] text-[color:var(--brand-strong)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.7 2.25a.75.75 0 01.6 0l7.5 3.3a.75.75 0 01.45.69v6.06c0 4.042-2.466 7.608-6.229 9.075l-.271.104a2.25 2.25 0 01-1.5 0l-.271-.104A10.125 10.125 0 015.25 12.3V6.24a.75.75 0 01.45-.69l7.5-3.3z" />
+                </svg>
+              </span>
+            </header>
+
+            <div class="mt-6 space-y-6">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--muted)]">Currency</span>
+                <div class="inline-flex overflow-hidden rounded-full border border-slate-200 bg-white text-sm font-semibold text-[color:var(--muted)] shadow-sm">
+                  <button type="button" data-currency="ZAR" class="px-4 py-2 text-[color:var(--ink)]">ZAR</button>
+                  <button type="button" data-currency="USD" class="px-4 py-2 opacity-60 cursor-not-allowed" disabled>USD</button>
+                </div>
+                <span class="rounded-full bg-[color:var(--brand-soft)] px-3 py-1 text-xs font-semibold text-[color:var(--brand-strong)]">Defaulting to South African rand</span>
+              </div>
+
+              <div class="space-y-4 rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                <div class="flex items-center justify-between text-sm text-[color:var(--muted)]">
+                  <span>Loan amount</span>
+                  <span id="loan-amount-display" class="text-base font-semibold text-[color:var(--ink)]">R 230,000</span>
+                </div>
+                <input id="loan-amount" type="range" min="50000" max="500000" value="230000" step="5000" class="w-full accent-[color:var(--brand)]" />
+                <div class="flex justify-between text-xs text-[color:var(--muted)]">
+                  <span>R 50,000</span>
+                  <span>R 500,000</span>
+                </div>
+              </div>
+
+              <div class="space-y-4 rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                <div class="flex items-center justify-between text-sm text-[color:var(--muted)]">
+                  <span>Repayment period</span>
+                  <span id="repayment-period-display" class="text-base font-semibold text-[color:var(--ink)]">36 months</span>
+                </div>
+                <input id="repayment-period" type="range" min="12" max="72" value="36" step="6" class="w-full accent-[color:var(--brand)]" />
+                <div class="flex justify-between text-xs text-[color:var(--muted)]">
+                  <span>12 months</span>
+                  <span>72 months</span>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2 rounded-3xl border border-white/40 bg-white/70 p-6 text-sm shadow-sm ring-1 ring-black/5 backdrop-blur">
+                <div class="flex items-center justify-between">
+                  <span class="text-[color:var(--muted)]">Estimated monthly payment</span>
+                  <span id="monthly-payment-display" class="text-xl font-semibold text-[color:var(--ink)]">R 6,900</span>
+                </div>
+                <p class="text-xs text-[color:var(--muted)]">Includes a representative fixed annual interest rate of 11.5%. Actual rates may vary depending on your AlgoHive profile.</p>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-xs text-[color:var(--muted)]">We’ll carry these selections into the agreement review.</p>
+              <button id="to-agreements" type="button" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--brand)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--brand-strong)]">
+                Review agreements
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="step-panel hidden" data-step-panel="agreements" aria-hidden="true">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 class="text-2xl font-semibold">Agreements</h2>
+                <p class="text-sm text-[color:var(--muted)]">Confirm the AlgoHive lending terms to continue.</p>
+              </div>
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--brand-soft)] text-[color:var(--brand-strong)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5l3.75 3.75L20.25 3" />
+                </svg>
+              </span>
+            </header>
+
+            <div class="mt-6 space-y-4">
+              <label class="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-5 py-4 text-sm text-slate-600">
+                <input type="checkbox" data-tnc class="mt-1 h-4 w-4 rounded border-slate-300 text-[color:var(--brand)] focus:ring-[color:var(--brand)]" />
+                <span>I acknowledge and accept the <a href="legal.html#terms" class="font-semibold text-[color:var(--brand)] hover:text-[color:var(--brand-strong)]">AlgoHive terms &amp; conditions</a>.</span>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-5 py-4 text-sm text-slate-600">
+                <input type="checkbox" data-tnc class="mt-1 h-4 w-4 rounded border-slate-300 text-[color:var(--brand)] focus:ring-[color:var(--brand)]" />
+                <span>I consent to AlgoHive conducting the necessary credit and compliance checks for this application.</span>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-5 py-4 text-sm text-slate-600">
+                <input type="checkbox" data-tnc class="mt-1 h-4 w-4 rounded border-slate-300 text-[color:var(--brand)] focus:ring-[color:var(--brand)]" />
+                <span>I confirm the financial details provided are accurate and belong to my AlgoHive investor profile.</span>
+              </label>
+              <p id="agreement-warning" class="hidden text-sm font-semibold text-red-600">Please agree to all AlgoHive lending terms before continuing.</p>
+            </div>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button type="button" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-[color:var(--muted)] transition hover:text-[color:var(--ink)]" data-step-back="calculator">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Back to calculator
+              </button>
+              <button id="to-confirmation" type="button" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--brand)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--brand-strong)] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500" disabled>
+                Continue to confirmation
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="step-panel hidden" data-step-panel="confirmation" aria-hidden="true" id="confirmation-panel">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 class="text-2xl font-semibold">Loan confirmation</h2>
+                <p class="text-sm text-[color:var(--muted)]">Please check the information and confirm the loan.</p>
+              </div>
+              <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--brand-soft)] text-[color:var(--brand-strong)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75" />
+                </svg>
+              </span>
+            </header>
+
+            <div class="mt-6 space-y-6">
+              <div class="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                <div class="flex items-center justify-between text-sm text-[color:var(--muted)]">
+                  <span>Loan amount</span>
+                  <span id="confirmation-loan-amount" class="text-base font-semibold text-[color:var(--ink)]">R 230,000</span>
+                </div>
+                <div class="mt-3 text-xs text-[color:var(--muted)]">Currency: <span id="confirmation-loan-currency">South African Rand (ZAR)</span></div>
+              </div>
+
+              <div class="rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                <div class="flex items-center justify-between text-sm text-[color:var(--muted)]">
+                  <span>Repayment period</span>
+                  <span id="confirmation-repayment" class="text-base font-semibold text-[color:var(--ink)]">36 months</span>
+                </div>
+                <div class="mt-3 text-xs text-[color:var(--muted)]">Monthly payment: <span id="confirmation-monthly">R 6,900</span></div>
+              </div>
+
+              <div class="space-y-3 rounded-3xl border border-white/40 bg-white/70 p-6 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                <div class="flex items-center gap-3">
+                  <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--brand-soft)] text-[color:var(--brand-strong)]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+                    </svg>
+                  </span>
+                  <div>
+                    <p class="font-semibold text-[color:var(--ink)]">Expected transfer</p>
+                    <p class="text-sm text-[color:var(--muted)]">Funds clear within 4 minutes of AlgoHive confirmation.</p>
+                  </div>
+                </div>
+                <p class="text-xs text-[color:var(--muted)]">AlgoHive aligns transfers with your preferred Algo strategies. Monitor your AlgoHive dashboard for real-time confirmations.</p>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button type="button" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-[color:var(--muted)] transition hover:text-[color:var(--ink)]" data-step-back="agreements">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Back to agreements
+              </button>
+              <button type="button" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--brand)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--brand-strong)]">
+                Confirm AlgoHive loan
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-shell view-shell">
+      <div class="footer-inner">
+        <div class="footer-top">
+          <span class="footer-shape footer-shape--left"></span>
+          <span class="footer-shape footer-shape--center"></span>
+          <span class="footer-shape footer-shape--right"></span>
+
+          <div class="footer-content">
+            <div class="footer-column footer-column--brand">
+              <a href="index.html" class="flex items-center gap-3">
+                <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="h-10 w-auto" />
+                <span class="text-xl font-bold tracking-tight">AlgoHive</span>
+              </a>
+              <p class="mt-4 max-w-xs text-sm text-white/70">Data-driven lending support that keeps your growth goals on track with proactive human guidance.</p>
+              <div class="mt-6 flex gap-3">
+                <a href="#" class="footer-social" aria-label="Follow AlgoHive on Twitter">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                    <path d="M19.636 3H22.5l-6.403 7.313L22.5 21h-5.313l-4.157-5.449L8.12 21H1.5l6.864-7.834L1.5 3h5.438l3.776 4.982L19.636 3Zm-1.866 16.2h2.088L8.322 4.687H6.09L17.77 19.2Z" />
+                  </svg>
+                </a>
+                <a href="#" class="footer-social" aria-label="Follow AlgoHive on LinkedIn">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5">
+                    <path d="M4.983 3.5a2.482 2.482 0 1 1 0 4.965 2.482 2.482 0 0 1 0-4.965ZM3.25 9h3.466v12H3.25V9Zm6.616 0h3.32v1.657h.047c.463-.877 1.597-1.802 3.29-1.802 3.521 0 4.171 2.319 4.171 5.337V21H17.23v-5.208c0-1.243-.024-2.838-1.73-2.838-1.733 0-1.998 1.355-1.998 2.75V21h-3.636V9Z" />
+                  </svg>
+                </a>
+                <a href="#" class="footer-social" aria-label="Follow AlgoHive on YouTube">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="h-5 w-5">
+                    <path d="M21.8 8.001c-.124-.925-.73-1.654-1.53-1.776C18.273 5.9 12 5.9 12 5.9s-6.272 0-8.27.325c-.8.122-1.406.85-1.53 1.776C1.9 9.001 1.9 12 1.9 12s0 2.999.301 3.999c.124.925.73 1.654 1.53 1.776 1.998.325 8.27.325 8.27.325s6.272 0 8.27-.325c.8-.122 1.406-.85 1.53-1.776.301-1 .301-3.999.301-3.999s0-2.999-.301-3.999ZM10 15.5v-7l5.5 3.5L10 15.5Z" />
+                  </svg>
+                </a>
+                <a href="#" class="footer-social" aria-label="Follow AlgoHive on Instagram">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3h-9A4.5 4.5 0 003 7.5v9A4.5 4.5 0 007.5 21h9a4.5 4.5 0 004.5-4.5v-9A4.5 4.5 0 0016.5 3ZM12 15.75A3.75 3.75 0 1 0 12 8.25a3.75 3.75 0 0 0 0 7.5Zm5.25-8.625h.008v.008h-.008v-.008Z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="footer-column">
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-white/70">Products</h3>
+              <ul class="mt-4 space-y-2 text-sm text-white/80">
+                <li><a href="strategies.html" class="hover:text-white">openstrategies</a></li>
+                <li><a href="#" class="hover:text-white">Funds</a></li>
+              </ul>
+            </div>
+
+            <div class="footer-column">
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-white/70">Contact us</h3>
+              <ul class="mt-4 space-y-2 text-sm text-white/80">
+                <li>3 Gwen Lane, Sandton</li>
+                <li>Johannesburg, South Africa</li>
+                <li>support@thealgohive.com</li>
+                <li>+27 10 555 1234</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div class="footer-bottom-inner">
+            <a href="index.html" class="footer-home">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              <span>Return to home</span>
+            </a>
+            <nav class="footer-links">
+              <a href="legal.html">Privacy policy</a>
+              <a href="legal.html">Personal data protection</a>
+              <a href="legal.html#terms">Terms and conditions</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" nonce="ALGOHIVE">
+  import { supabase } from "/js/supabase.js";
+
+  const moneyFmt = new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency: 'ZAR',
+    maximumFractionDigits: 0
+  });
+
+  const currencyLabels = {
+    ZAR: 'South African Rand (ZAR)'
+  };
+
+  const currencyFormatters = {
+    ZAR: new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 })
+  };
+
+  const loanAmountInput = document.getElementById('loan-amount');
+  const repaymentInput = document.getElementById('repayment-period');
+  const loanAmountDisplay = document.getElementById('loan-amount-display');
+  const repaymentDisplay = document.getElementById('repayment-period-display');
+  const monthlyDisplay = document.getElementById('monthly-payment-display');
+  const confirmationAmount = document.getElementById('confirmation-loan-amount');
+  const confirmationCurrency = document.getElementById('confirmation-loan-currency');
+  const confirmationRepayment = document.getElementById('confirmation-repayment');
+  const confirmationMonthly = document.getElementById('confirmation-monthly');
+  const toAgreements = document.getElementById('to-agreements');
+  const toConfirmation = document.getElementById('to-confirmation');
+  const agreementWarning = document.getElementById('agreement-warning');
+  const agreements = Array.from(document.querySelectorAll('input[data-tnc]'));
+  const currencyButtons = Array.from(document.querySelectorAll('button[data-currency]'));
+  const stepPanels = new Map(Array.from(document.querySelectorAll('[data-step-panel]')).map((panel) => [panel.dataset.stepPanel, panel]));
+  const backButtons = Array.from(document.querySelectorAll('[data-step-back]'));
+
+  let selectedCurrency = 'ZAR';
+  let activeStep = 'calculator';
+  const unlockedSteps = new Set(['calculator']);
+
+  const formatCurrency = (value) => {
+    const formatter = currencyFormatters[selectedCurrency] || currencyFormatters.ZAR;
+    return formatter.format(Math.max(0, Number(value) || 0));
+  };
+
+  const calculateMonthlyPayment = (principal, months, annualRate = 0.115) => {
+    const monthlyRate = annualRate / 12;
+    if (!months || monthlyRate === 0) {
+      return principal / Math.max(months, 1);
+    }
+    const factor = Math.pow(1 + monthlyRate, months);
+    return (principal * monthlyRate * factor) / (factor - 1);
+  };
+
+  const updateCalculator = () => {
+    if (!loanAmountInput || !repaymentInput) return;
+    const amount = Number(loanAmountInput.value || 0);
+    const months = Number(repaymentInput.value || 0);
+    if (loanAmountDisplay) loanAmountDisplay.textContent = formatCurrency(amount);
+    if (repaymentDisplay) repaymentDisplay.textContent = `${months} months`;
+    if (monthlyDisplay) monthlyDisplay.textContent = formatCurrency(calculateMonthlyPayment(amount, months));
+    if (activeStep === 'confirmation') {
+      updateConfirmation();
+    }
+  };
+
+  const updateConfirmation = () => {
+    if (!confirmationAmount || !confirmationRepayment || !confirmationMonthly || !confirmationCurrency) return;
+    const amount = Number(loanAmountInput?.value || 0);
+    const months = Number(repaymentInput?.value || 0);
+    confirmationAmount.textContent = formatCurrency(amount);
+    confirmationRepayment.textContent = `${months} months`;
+    confirmationMonthly.textContent = formatCurrency(calculateMonthlyPayment(amount, months));
+    confirmationCurrency.textContent = currencyLabels[selectedCurrency] || currencyLabels.ZAR;
+  };
+
+  const syncAgreements = () => {
+    const complete = agreements.every((checkbox) => checkbox.checked);
+    if (toConfirmation) toConfirmation.disabled = !complete;
+    if (agreementWarning && complete) {
+      agreementWarning.classList.add('hidden');
+    }
+    return complete;
+  };
+
+  agreements.forEach((checkbox) => {
+    checkbox.addEventListener('change', syncAgreements);
+  });
+
+  const setCurrency = (code) => {
+    if (!currencyFormatters[code]) return;
+    selectedCurrency = code;
+    currencyButtons.forEach((button) => {
+      const isActive = button.dataset.currency === code;
+      if (button.disabled) {
+        return;
+      }
+      button.classList.toggle('bg-[color:var(--brand)]', isActive);
+      button.classList.toggle('text-white', isActive);
+      button.classList.toggle('text-[color:var(--ink)]', !isActive);
+      button.classList.toggle('opacity-70', !isActive);
+    });
+    updateCalculator();
+  };
+
+  currencyButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.disabled) return;
+      setCurrency(button.dataset.currency);
+    });
+  });
+
+  if (loanAmountInput) {
+    loanAmountInput.addEventListener('input', updateCalculator);
+  }
+
+  if (repaymentInput) {
+    repaymentInput.addEventListener('input', updateCalculator);
+  }
+
+  const unlockStep = (step) => {
+    if (!step) return;
+    unlockedSteps.add(step);
+  };
+
+  const setStep = (step) => {
+    if (!step || !unlockedSteps.has(step)) return;
+    activeStep = step;
+    stepPanels.forEach((panel, key) => {
+      const isActive = key === step;
+      panel.classList.toggle('hidden', !isActive);
+      panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+    });
+    if (step === 'confirmation') {
+      updateConfirmation();
+    }
+  };
+
+  backButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.stepBack;
+      if (target) {
+        setStep(target);
+      }
+    });
+  });
+
+  if (toAgreements) {
+    toAgreements.addEventListener('click', () => {
+      unlockStep('agreements');
+      setStep('agreements');
+    });
+  }
+
+  if (toConfirmation) {
+    toConfirmation.addEventListener('click', () => {
+      const ready = syncAgreements();
+      if (!ready) {
+        agreementWarning?.classList.remove('hidden');
+        agreementWarning?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return;
+      }
+      unlockStep('confirmation');
+      setStep('confirmation');
+      document.getElementById('confirmation-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  setStep('calculator');
+
+  setCurrency('ZAR');
+  syncAgreements();
+
+  const text = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value ?? '—';
+  };
+
+  const cleanNumber = (value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+      const normalised = value
+        .replace(/,/g, '')
+        .replace(/\s+/g, '')
+        .replace(/rand/gi, '')
+        .replace(/zar/gi, '')
+        .replace(/R(?=\d)/gi, '')
+        .replace(/(?:million|m)\b/gi, 'e6')
+        .replace(/(?:billion|bn)\b/gi, 'e9');
+
+      const exponentMatches = [...normalised.matchAll(/[0-9.]+e[+\-]?[0-9]+/gi)]
+        .map((m) => Number(m[0]))
+        .filter((n) => Number.isFinite(n));
+      if (exponentMatches.length) {
+        return Math.max(...exponentMatches);
+      }
+
+      const sciCandidate = Number(normalised.replace(/[^0-9eE+\.\-]/g, ''));
+      if (Number.isFinite(sciCandidate)) return sciCandidate;
+
+      const numericCandidate = Number(normalised.replace(/[^0-9.\-]/g, ''));
+      if (Number.isFinite(numericCandidate)) return numericCandidate;
+
+      const plainMatches = normalised.match(/[0-9]+(?:\.[0-9]+)?/g);
+      if (plainMatches?.length) {
+        const asNumber = Number(plainMatches.at(-1));
+        if (Number.isFinite(asNumber)) return asNumber;
+      }
+    }
+    return null;
+  };
+
+  const pickNumber = (...candidates) => {
+    for (const value of candidates) {
+      if (Array.isArray(value)) {
+        const nested = pickNumber(...value);
+        if (nested !== null) return nested;
+        continue;
+      }
+      const parsed = cleanNumber(value);
+      if (parsed !== null) return parsed;
+    }
+    return null;
+  };
+
+  const setAvatar = (id, url, name) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const initial = (name?.match(/[A-Za-z]/)?.[0] || 'A').toUpperCase();
+    const fallbackSvg = encodeURIComponent(`
+      <svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'>
+        <rect width='100%' height='100%' rx='28' ry='28' fill='#e2e8f0'/>
+        <text x='50%' y='56%' text-anchor='middle' font-family='Inter, sans-serif' font-size='48' fill='#475569'>${initial}</text>
+      </svg>
+    `.trim());
+    if (url) {
+      el.src = url.startsWith('data:') ? url : `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`;
+    } else {
+      el.src = `data:image/svg+xml;utf8,${fallbackSvg}`;
+    }
+    if (name) {
+      el.alt = `Profile photo of ${name}`;
+    }
+  };
+
+  async function ensureProfile(id, email) {
+    let { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error && error.code !== 'PGRST116') throw error;
+    if (data) return data;
+    const up = await supabase
+      .from('profiles')
+      .upsert({ id, email, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+      .select('*')
+      .single();
+    if (up.error) throw up.error;
+    return up.data;
+  }
+
+  const redirectToAuth = () => {
+    const next = encodeURIComponent(location.pathname + location.search + location.hash);
+    location.replace(`/auth.html?tab=in&redirect=${next}`);
+  };
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      redirectToAuth();
+      throw new Error('redirecting');
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      redirectToAuth();
+      throw new Error('redirecting');
+    }
+
+    const profile = await ensureProfile(user.id, user.email || null);
+    const meta = user.user_metadata || {};
+
+    const bestName = [
+      profile?.full_name,
+      [profile?.first_name, profile?.last_name].filter(Boolean).join(' '),
+      meta.full_name,
+      [meta.first_name, meta.last_name].filter(Boolean).join(' '),
+      meta.name,
+      user.email?.split('@')[0]
+    ].find((value) => value && String(value).trim()) || 'AlgoHive member';
+
+    const summary = [
+      profile?.headline,
+      profile?.bio,
+      profile?.title,
+      profile?.role,
+      profile?.occupation,
+      meta.headline,
+      meta.role
+    ].find((value) => value && String(value).trim()) || 'Active AlgoHive portfolio member with personalised optimisation.';
+
+    text('hdr-name', bestName);
+    text('profile-name', bestName);
+    text('profile-summary', summary);
+
+    const avatarUrl = profile?.avatar_url || meta.avatar_url || null;
+    setAvatar('hdr-avatar', avatarUrl, bestName);
+    setAvatar('profile-avatar', avatarUrl, bestName);
+
+    const investedAum = pickNumber([
+      profile?.aum_invested,
+      profile?.aum,
+      profile?.aum_total,
+      profile?.portfolio_aum,
+      profile?.portfolio_value,
+      profile?.aum_rands,
+      profile?.aum_zar,
+      meta?.aum,
+      meta?.aum_invested
+    ]);
+
+    const netWorth = pickNumber([
+      profile?.algohive_networth,
+      profile?.networth,
+      profile?.net_worth,
+      profile?.total_networth,
+      profile?.total_net_worth,
+      profile?.portfolio_net_worth,
+      meta?.net_worth,
+      meta?.networth,
+      meta?.algohive_networth
+    ]);
+
+    const aumDisplay = moneyFmt.format((investedAum ?? 0) || 0);
+    const netWorthDisplay = moneyFmt.format((netWorth ?? investedAum ?? 0) || 0);
+
+    text('profile-aum', aumDisplay);
+    text('profile-networth', netWorthDisplay);
+  } catch (err) {
+    if (String(err?.message).toLowerCase() !== 'redirecting') {
+      console.error(err);
+    }
+  }
+  </script>
+</body>
+</html>

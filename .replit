@@ -1,4 +1,3 @@
-
 modules = ["nodejs-20"]
 [nix]
 channel = "stable-25_05"
@@ -7,15 +6,6 @@ packages = ["unzip"]
 [agent]
 expertMode = true
 
-
-modules = ["web", "nodejs-20", "python-3.12"]
-[agent]
-expertMode = true
-
-[nix]
-channel = "stable-25_05"
-
-7b06bdf (Update API endpoints to use CommonJS modules and Express routing)
 [workflows]
 runButton = "Project"
 
@@ -26,26 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-
 args = "Credit Check Server"
 
 [[workflows.workflow]]
 name = "Credit Check Server"
-
-args = "Start application"
-
-[[workflows.workflow]]
-7b06bdf (Update API endpoints to use CommonJS modules and Express routing)
-name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-
 args = "cd \"the button\" && npm start"
-
-7b06bdf (Update API endpoints to use CommonJS modules and Express routing)
-args = "node server.js"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -54,10 +33,3 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-
-[deployment]
-
->>>>>>> 7b06bdf (Update API endpoints to use CommonJS modules and Express routing)
-deploymentTarget = "autoscale"
-run = ["node", "server.js"]

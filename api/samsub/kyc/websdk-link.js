@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 
 const SUMSUB_BASE = process.env.SUMSUB_BASE_URL || 'https://api.sumsub.com';
 const APP_TOKEN = process.env.SUMSUB_APP_TOKEN;
@@ -9,7 +9,7 @@ function sign(ts, method, path, body = '') {
   return crypto.createHmac('sha256', SECRET).update(toSign).digest('hex');
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

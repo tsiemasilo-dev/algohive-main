@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # replit.md
 
 ## Overview
@@ -105,3 +106,51 @@ The server implements a weighted scoring algorithm with these components:
 - `STITCH_CLIENT_ID` - Stitch OAuth client ID
 - `STITCH_CLIENT_SECRET` - Stitch OAuth client secret
 - `STITCH_REDIRECT_URI` - OAuth callback URL (optional, defaults to app domain)
+=======
+# AlgoHive
+
+## Overview
+AlgoHive is an investment portfolio platform offering ready-made investment strategies. It's a Node.js/Express application serving static HTML pages with a Supabase backend.
+
+## Project Structure
+- `public/` - Static HTML/JS/CSS files for the frontend
+- `api/` - Serverless-style API endpoints (adapted for Express)
+- `server.js` - Express server serving static files and API routes
+- `samsubServices.js` - Sumsub KYC service utilities
+
+## Tech Stack
+- **Runtime**: Node.js 20
+- **Server**: Express.js
+- **Database/Auth**: Supabase (external)
+- **Frontend**: Static HTML with Tailwind CSS, React (via CDN), Chart.js
+- **Third-party APIs**: Sumsub (KYC), Paystack (payments), Alpaca (trading)
+
+## Running the Application
+The application runs on port 5000:
+```bash
+node server.js
+```
+
+## API Endpoints
+- `GET /api/health` - Health check
+- `POST /api/auth/signin` - User sign in
+- `POST /api/auth/signup` - User sign up
+- `GET /api/alpaca/account` - Alpaca trading account info
+- `POST /api/paystack/init` - Initialize Paystack payment
+- `POST /api/samsub/kyc/init` - Initialize Sumsub KYC
+- `POST /api/samsub/kyc/access-token` - Get Sumsub access token
+- `POST /api/samsub/kyc/create-applicant` - Create KYC applicant
+- `POST /api/samsub/kyc/init-websdk` - Initialize Sumsub WebSDK
+- `POST /api/samsub/kyc/websdk-link` - Get Sumsub WebSDK link
+- `GET /api/samsub/kyc/status/:applicantId` - Get KYC status
+
+## Environment Variables (Optional)
+The app has hardcoded defaults but can be configured via:
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUMSUB_APP_TOKEN` - Sumsub API token
+- `SUMSUB_SECRET_KEY` / `SUMSUB_APP_SECRET` - Sumsub secret
+- `PAYSTACK_SECRET_KEY` - Paystack secret key
+- `ALPACA_KEY_ID` - Alpaca API key
+- `ALPACA_SECRET_KEY` - Alpaca secret key
+>>>>>>> 7b06bdf (Update API endpoints to use CommonJS modules and Express routing)

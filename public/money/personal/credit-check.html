@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan score Engine</title>
+    <script src="https://cdn.tailwindcss.com" nonce="ALGOHIVE"></script>
+    <script nonce="ALGOHIVE">
+      (function () {
+        const originalWarn = console.warn;
+        console.warn = function (msg, ...rest) {
+          if (typeof msg === 'string' && msg.includes('cdn.tailwindcss.com should not be used in production')) return;
+          originalWarn.call(console, msg, ...rest);
+        };
+      })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" nonce="ALGOHIVE"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+      :root {
+        --bg: #f8f8f8;
+        --card: #ffffff;
+        --border: #e8e8ed;
+        --text-primary: #1d1d1f;
+        --text-secondary: #86868b;
+        --text-muted: #d2d2d7;
+        --purple: #6a43ff;
+        --purple-dark: #4b22d6;
+        --lavender: #f2edff;
+        --success: #34c759;
+        --danger: #ff3b30;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      /* Sidebar layout (aligned with home.html) */
+      #layout { --sb: 275px; display: grid; grid-template-columns: 1fr; min-height: 100vh; }
+      #ah-overlay { position: fixed; inset: 0; z-index: 40; }
+      #ah-sidebar { transition: transform .3s ease, width .2s ease; width: 350px; max-width: 85vw; position: fixed; top: 0; z-index: 50; height: 100vh; transform: translateX(-100%); background: #fff; }
+      #ah-sidebar.is-open { transform: translateX(0); }
+      @media (min-width: 768px) {
+        #layout { grid-template-columns: var(--sb) 1fr; }
+        #ah-sidebar { position: sticky; top: 0; width: var(--sb); max-width: none; height: 100vh; transform: translateX(0); z-index: auto; }
+      }
+
+      /* Brand switcher */
+      #ah-brand-switcher { position: relative; }
+      #ah-brand-switcher summary { list-style: none; }
+      #ah-brand-switcher summary::-webkit-details-marker { display: none; }
+      .brand-toggle { margin: 10px 12px; border: 1px solid #e2e8f0; border-radius: 14px; background: linear-gradient(135deg, #f8fafc, #eef2ff); box-shadow: 0 10px 30px -18px rgba(15, 23, 42, 0.4); display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: all 0.2s ease; }
+      #ah-brand-switcher[open] .brand-toggle { border-color: #cbd5e1; background: #fff; box-shadow: 0 14px 36px -18px rgba(15, 23, 42, 0.55); }
+      .brand-marker { width: 42px; height: 42px; border-radius: 12px; background: #fff; border: 1px solid #e2e8f0; display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12); }
+      .brand-menu { position: absolute; left: 12px; right: 12px; top: calc(100% - 6px); border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; box-shadow: 0 24px 48px -20px rgba(15, 23, 42, 0.5); padding: 12px; display: grid; gap: 8px; z-index: 10; }
+      .brand-menu-header { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #475569; padding: 4px 4px 2px; }
+      .brand-option { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; transition: background-color 0.2s ease, color 0.2s ease, filter 0.2s ease; }
+      .brand-option:hover { background: linear-gradient(135deg, #000000, #7c3aed); }
+      .brand-option:hover img { filter: brightness(0) invert(1); }
+      .brand-option:hover .algomoney-word { color: #fff; }
+      .brand-option img { width: 38px; height: 38px; border-radius: 10px; object-fit: contain; background: #fff; border: 1px solid #e2e8f0; padding: 6px; }
+
+      /* Sidebar navigation */
+      #main-nav { padding: 8px; font-size: 14px; flex: 1; overflow-y: auto; }
+      #main-nav .nav-section-label { padding: 8px 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; }
+      #main-nav a { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; font-weight: 500; color: #0f172a; text-decoration: none; transition: background 0.2s ease; }
+      #main-nav a:hover { background: #f1f5f9; }
+      #main-nav a.nav-active { background: #f1f5f9; font-weight: 600; }
+      #main-nav a img { width: 16px; height: 16px; flex-shrink: 0; }
+
+      #ah-mobile-menu-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        width: 44px;
+        padding: 0;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        cursor: pointer;
+        margin-bottom: 16px;
+      }
+
+      @media (min-width: 768px) {
+        #ah-mobile-menu-btn { display: none; }
+      }
+
+      .sidebar-footer { padding: 12px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .btn-settings { height: 40px; width: 40px; padding: 0; border-radius: 12px; background: #f1f5f9; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s ease; }
+      .btn-settings:hover { background: #e2e8f0; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Space Grotesk', sans-serif;
+        background: var(--bg);
+        color: var(--text-primary);
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .app-shell {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 2rem 1.25rem 3rem;
+        min-height: calc(100vh - 4rem);
+        justify-content: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 1rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        background: linear-gradient(120deg, var(--purple), var(--purple-dark));
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(106, 67, 255, 0.3);
+        margin-bottom: 1.5rem;
+      }
+
+      .badge.violet {
+        background: var(--lavender);
+        color: var(--purple);
+        box-shadow: none;
+      }
+
+      .badge.soft {
+        background: rgba(106, 67, 255, 0.08);
+        color: var(--purple-dark);
+        box-shadow: none;
+      }
+
+      .app-shell section {
+        background: var(--card);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        padding: 2rem 2.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      .intake-panel h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+      }
+
+      .intro {
+        margin: 0 0 3rem;
+        color: var(--text-secondary);
+        font-size: 1.25rem;
+        font-weight: 400;
+        max-width: 600px;
+        line-height: 1.5;
+      }
+
+      .quick-form {
+        margin-top: 1rem;
+      }
+
+      .quick-form label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+      }
+
+      .quick-form input,
+      .quick-form select {
+        width: 100%;
+        padding: 0.95rem 1.1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: white;
+        font-size: 1rem;
+        color: var(--text-primary);
+        font-family: inherit;
+        -webkit-appearance: none;
+        transition: all 0.2s ease;
+      }
+
+      .quick-form input:focus,
+      .quick-form select:focus {
+        outline: none;
+        border-color: var(--purple);
+        box-shadow: 0 0 0 4px rgba(106, 67, 255, 0.1);
+      }
+
+      .quick-form input::placeholder {
+        color: var(--text-muted);
+      }
+
+      .input-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem 1.2rem;
+      }
+
+      .input-grid .full-width {
+        grid-column: 1 / -1;
+      }
+
+      .pill-toggle {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+
+      .pill-toggle button {
+        border-radius: 999px;
+        border: 1px solid rgba(31, 27, 44, 0.12);
+        background: rgba(106, 67, 255, 0.05);
+        color: var(--text-primary);
+        padding: 0.65rem 1.4rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-size: 0.82rem;
+        transition: border 0.2s ease, background 0.2s ease, color 0.2s ease;
+      }
+
+      .pill-toggle button[aria-pressed="true"] {
+        background: linear-gradient(120deg, var(--purple), var(--purple-dark));
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(106, 67, 255, 0.3);
+      }
+
+      .search-feedback {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.3rem;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+      }
+
+      .search-feedback strong {
+        color: var(--purple-dark);
+      }
+
+      .helper-text,
+      .hint {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin: 0.25rem 0 0;
+      }
+
+      .hint.error {
+        color: var(--danger);
+        font-weight: 500;
+      }
+
+      .intake-actions {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .primary-btn,
+      .ghost-btn,
+      .link-btn,
+      button {
+        font-family: inherit;
+        border: none;
+        cursor: pointer;
+      }
+
+      .primary-btn {
+        -webkit-appearance: none;
+        user-select: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        outline: none;
+        padding: 0 2rem;
+        height: 65px;
+        background-image: linear-gradient(to top, #D8D9DB 0%, #fff 80%, #FDFDFD 100%);
+        border-radius: 32px;
+        border: 1px solid #8F9092;
+        box-shadow: 
+          0 4px 3px 1px #FCFCFC,
+          0 6px 8px #D6D7D9,
+          0 -4px 4px #CECFD1,
+          0 -6px 4px #FEFEFE,
+          inset 0 0 3px 0 #CECFD1,
+          0 0 20px rgba(106, 67, 255, 0.15);
+        transition: all .2s ease;
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-shadow: 0 1px #fff;
+        position: relative;
+      }
+
+      .primary-btn::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 34px;
+        background: linear-gradient(135deg, rgba(106, 67, 255, 0.3), rgba(75, 34, 214, 0.3));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+        filter: blur(8px);
+      }
+
+      .primary-btn:hover::before {
+        opacity: 1;
+      }
+
+      .primary-btn > * {
+        transition: transform .2s ease;
+      }
+
+      .primary-btn:hover:not([disabled]) {
+        box-shadow: 
+          0 4px 3px 1px #FCFCFC,
+          0 6px 8px #D6D7D9,
+          0 -4px 4px #CECFD1,
+          0 -6px 4px #FEFEFE,
+          inset 0 0 3px 3px #CECFD1,
+          0 0 30px rgba(106, 67, 255, 0.3);
+      }
+
+      .primary-btn:hover:not([disabled]) > * {
+        transform: scale(.975);
+      }
+
+      .primary-btn:focus:not(:active) {
+        animation: active-button .9s alternate infinite;
+        outline: none;
+      }
+
+      @keyframes active-button {
+        from {
+          box-shadow: 
+            0 4px 3px 1px #FCFCFC,
+            0 6px 8px #D6D7D9,
+            0 -4px 4px #CECFD1,
+            0 -6px 4px #FEFEFE,
+            inset 0 0 10px 0px rgba(75, 34, 214, .7),
+            0 0 40px rgba(106, 67, 255, 0.5);
+        }
+        to {
+          box-shadow: 
+            0 4px 3px 1px #FCFCFC,
+            0 6px 8px #D6D7D9,
+            0 -4px 4px #CECFD1,
+            0 -6px 4px #FEFEFE,
+            inset 0 0 3px 3px #CECFD1,
+            0 0 30px rgba(106, 67, 255, 0.3);
+        }
+      }
+
+      .primary-btn:active:not([disabled]) {
+        box-shadow: 
+          0 4px 3px 1px #FCFCFC,
+          0 6px 8px #D6D7D9,
+          0 -4px 4px #CECFD1,
+          0 -6px 4px #FEFEFE,
+          inset 0 0 5px 3px #999, 
+          inset 0 0 30px #aaa;
+      }
+
+      .primary-btn:active:not([disabled]) > * {
+        transform: scale(.95);
+      }
+      
+      .intake-panel .primary-btn {
+        align-self: flex-start;
+      }
+
+      .primary-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .ghost-btn {
+        margin-top: 0.4rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .ghost-btn:hover {
+        background: #f5f5f7;
+        border-color: var(--purple);
+        color: var(--purple);
+      }
+
+      .link-btn {
+        margin-top: 0.25rem;
+        background: none;
+        color: var(--purple-dark);
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: underline;
+        padding: 0.5rem 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .link-btn:hover {
+        opacity: 0.7;
+      }
+
+      .engine-panel.hidden,
+      .detail-sections.hidden,
+      .hidden {
+        display: none !important;
+      }
+
+      .engine-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 1.5rem;
+      }
+
+      .engine-console-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .engine-loader-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .engine-loader-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .engine-loader {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+        display: grid;
+        place-items: center;
+        gap: 1rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .engine-loader:focus-visible {
+        outline: 3px solid rgba(106, 67, 255, 0.4);
+        outline-offset: 4px;
+      }
+
+      .engine-loader-circle {
+        --progress: 0;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.6) 55%, rgba(255, 255, 255, 0)),
+          conic-gradient(
+            from -90deg,
+            #6a43ff 0deg,
+            #9370ff calc(var(--progress) * 0.8deg),
+            #8d6bff calc(var(--progress) * 1deg),
+            rgba(106, 67, 255, 0.15) calc(var(--progress) * 1deg),
+            rgba(106, 67, 255, 0.08) 360deg
+          );
+        position: relative;
+        box-shadow:
+          inset 0 8px 20px rgba(255, 255, 255, 0.8),
+          inset 0 -12px 24px rgba(75, 34, 214, 0.15),
+          inset 2px 2px 8px rgba(255, 255, 255, 0.4),
+          0 20px 48px rgba(75, 34, 214, 0.25),
+          0 8px 16px rgba(106, 67, 255, 0.15);
+        display: grid;
+        place-items: center;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .engine-loader:hover .engine-loader-circle {
+        transform: scale(1.02);
+      }
+
+      .engine-loader-circle::before {
+        content: '';
+        position: absolute;
+        inset: 14px;
+        border-radius: 50%;
+        background:
+          linear-gradient(145deg, #ffffff 0%, #faf8ff 40%, #f2edff 100%);
+        box-shadow:
+          0 4px 12px rgba(75, 34, 214, 0.1),
+          inset 0 8px 16px rgba(0, 0, 0, 0.02),
+          inset 0 -4px 12px rgba(106, 67, 255, 0.04);
+        z-index: 1;
+      }
+
+      .engine-loader-circle::after {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: 18px;
+        right: 18px;
+        height: 50%;
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent);
+        filter: blur(8px);
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .engine-loader-content {
+        position: relative;
+        text-align: center;
+        z-index: 3;
+      }
+
+      .engine-loader-percent {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #4b22d6 0%, #6a43ff 50%, #8d6bff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        filter: drop-shadow(0 2px 4px rgba(75, 34, 214, 0.15));
+      }
+
+      .engine-loader-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: rgba(95, 90, 114, 0.75);
+        letter-spacing: 0.02em;
+        margin-top: 0.25rem;
+      }
+
+      .engine-loader-status {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        min-height: 1.2em;
+        text-align: center;
+        opacity: 0.8;
+      }
+
+      .console-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+
+      .console-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--purple);
+        box-shadow: 0 0 12px rgba(106, 67, 255, 0.8);
+        animation: pulse 1.5s infinite;
+      }
+
+      .engine-console {
+        margin-top: 1rem;
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+
+      .console-line {
+        margin: 0.2rem 0;
+        padding: 0.55rem 0.75rem;
+        border-radius: 8px;
+        background: rgba(106, 67, 255, 0.05);
+        color: var(--purple-dark);
+        font-size: 0.9rem;
+      }
+
+      .console-line.muted {
+        background: #f5f5f7;
+        color: var(--text-secondary);
+      }
+
+      .console-line.success {
+        background: rgba(52, 199, 89, 0.1);
+        color: var(--success);
+      }
+
+      .console-line.error {
+        background: rgba(255, 59, 48, 0.1);
+        color: var(--danger);
+      }
+
+      @keyframes pulse {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+      }
+
+      .score-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 320px;
+        text-align: center;
+      }
+
+      .score-ring {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 8px solid rgba(106, 67, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 1rem 0 0.5rem;
+        position: relative;
+        background: radial-gradient(circle at top, rgba(106, 67, 255, 0.22), transparent 70%);
+      }
+
+      .score-ring small {
+        position: absolute;
+        bottom: 18px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .score-value {
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .score-subtitle {
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .status-line {
+        margin: 0.75rem 0 1rem;
+        color: var(--text-secondary);
+        min-height: 1.2em;
+        display: none;
+      }
+
+      .detail-sections {
+        padding: 2.25rem;
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .breakdown-card,
+      .reasons-card,
+      .engine-details-card,
+      .exposure-card,
+      .accounts-card,
+      .employment-card,
+      .download-card {
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        background: #fff;
+      }
+
+      .engine-details-card header h2,
+      .breakdown-card h2,
+      .reasons-card h2,
+      .exposure-card h2,
+      .accounts-card h2,
+      .employment-card h2,
+      .download-card h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1.05rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .formula-line {
+        margin: 0.35rem 0;
+        font-family: 'Space Grotesk', 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .engine-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid rgba(31, 27, 44, 0.06);
+      }
+
+      .engine-row:last-child {
+        border-bottom: none;
+      }
+
+      .engine-row strong {
+        color: var(--purple-dark);
+      }
+
+      .engine-row.total strong {
+        font-size: 1.1rem;
+      }
+
+      .breakdown-toggle {
+        margin-top: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(106, 67, 255, 0.2);
+        background: rgba(106, 67, 255, 0.05);
+        color: var(--purple-dark);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .breakdown-toggle:hover {
+        background: rgba(106, 67, 255, 0.1);
+        border-color: rgba(106, 67, 255, 0.3);
+      }
+
+      .breakdown-list.collapsed {
+        display: none;
+      }
+
+      .reason-list {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .reason-list li {
+        font-size: 0.92rem;
+        color: var(--text-primary);
+      }
+
+      .exposure-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .exposure-metric {
+        padding: 0.75rem;
+        border-radius: 16px;
+        border: 1px dashed rgba(31, 27, 44, 0.12);
+        background: rgba(106, 67, 255, 0.03);
+      }
+
+      .exposure-metric label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(31, 27, 44, 0.6);
+        margin-bottom: 0.25rem;
+      }
+
+      .exposure-metric strong {
+        font-size: 1rem;
+        color: var(--purple-dark);
+      }
+
+      .table-scroll {
+        overflow-x: auto;
+        margin-top: 1rem;
+      }
+
+      .accounts-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        min-width: 560px;
+      }
+
+      .accounts-table th,
+      .accounts-table td {
+        padding: 0.55rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(31, 27, 44, 0.08);
+      }
+
+      .accounts-table thead th {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.72rem;
+        color: rgba(31, 27, 44, 0.6);
+      }
+
+      .result-log {
+        margin-top: 2rem;
+        padding: 1.25rem;
+        border-radius: 16px;
+        background: #0e0d21;
+        color: #e0deff;
+        overflow: auto;
+        max-height: 320px;
+        font-size: 0.85rem;
+      }
+
+      .page-footer {
+        margin-top: 2rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 900px) {
+        .engine-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .app-shell section {
+          padding: 1.75rem;
+        }
+
+        body {
+          padding: 1.5rem 1rem 3rem;
+        }
+      }
+    </style>
+    <script defer src="credit-check.js"></script>
+  </head>
+  <body class="min-h-screen overflow-x-hidden bg-[var(--bg)]">
+    <div id="layout">
+      <div id="ah-overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"></div>
+
+      <aside id="ah-sidebar" data-collapsed="false" class="border-r border-slate-200 bg-white flex flex-col overflow-hidden">
+        <details class="group border-b border-slate-200 pb-2" id="ah-brand-switcher">
+          <summary class="brand-toggle">
+            <div class="brand-marker">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney Logo" class="w-7 h-7 object-contain" />
+            </div>
+            <div class="min-w-0">
+              <div class="font-bold text-[15px] text-slate-900 label">AlgoMoney</div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-slate-400 ml-auto transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="brand-menu">
+            <div class="brand-menu-header">Switch</div>
+            <a href="/demo/dashboard.html" class="brand-option">
+              <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive Markets Logo" />
+              <div class="min-w-0 font-semibold text-slate-900 label algomoney-word">AlgoHive Markets</div>
+            </a>
+          </div>
+        </details>
+
+        <nav id="main-nav" class="p-2 text-[14px] flex-1 overflow-y-auto">
+          <p class="px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Overview</p>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/home.html" title="Home">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/home-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Home</span>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Accounts">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/pie-chart-09-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Accounts</span>
+          </a>
+
+          <!--
+          <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Pay</p>
+          <details class="group rounded-lg">
+            <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-send-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+              <span class="label flex-1 flex items-center justify-between">Make a Payment <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+            </summary>
+            <div class="sub ml-9 mt-1 flex flex-col gap-1">
+              <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#geo" title="GeoPay">
+                <span class="label">GeoPay</span>
+              </a>
+              <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#bill-split" title="Bill Split">
+                <span class="label">Bill Split</span>
+              </a>
+              <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/pay.html#eft" title="EFT">
+                <span class="label">EFT</span>
+              </a>
+            </div>
+          </details>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Receive a Payment">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/money-receive-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Receive a Payment</span>
+          </a>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+          </a>
+          -->
+
+          <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Credit</p>
+          <details class="group rounded-lg">
+            <summary class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900 cursor-pointer">
+              <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/invoice-01-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" />
+              <span class="label flex-1 flex items-center justify-between">Personal Credit <i class="fa-solid fa-chevron-down text-[11px] text-slate-500 transition-transform group-open:rotate-180"></i></span>
+            </summary>
+            <div class="sub ml-9 mt-1 flex flex-col gap-1">
+              <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800 nav-active" href="#" title="Unsecured Credit" aria-current="page">
+                <span class="label">Unsecured Credit</span>
+              </a>
+              <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="/money/instant-liquidity.html" title="Portfolio Credit">
+                <span class="label">Portfolio Credit</span>
+              </a>
+              <a class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-800" href="#" title="Instant Liquidity">
+                <span class="label">Instant Liquidity</span>
+              </a>
+            </div>
+          </details>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="/money/business/apply.html" title="For my business">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/corporate-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">For my business</span>
+          </a>
+
+          <p class="mt-4 px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-500 label">Documents</p>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 font-medium text-slate-900" href="#" title="Statements">
+            <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/icons/analysis-text-link-stroke-rounded.svg" alt="" class="w-4 h-4 shrink-0" /><span class="label">Statements</span>
+          </a>
+        </nav>
+
+        <div class="p-3 border-t border-slate-200 footer flex items-center justify-between gap-2">
+          <a id="ah-settings" class="btn btn-settings h-10 w-10 p-0 rounded-xl bg-slate-100 hover:bg-slate-200 border-0" href="/demo/settings.html" title="Settings">
+            <i class="fa-solid fa-gear"></i>
+          </a>
+        </div>
+      </aside>
+
+      <main class="relative flex-1 min-w-0 bg-[var(--bg)]">
+        <div class="max-w-7xl mx-auto px-3 md:px-5 pb-24 lg:pb-12 pt-6 lg:pt-8">
+          <div class="flex items-start md:items-center gap-3 flex-1 min-w-0 mb-4">
+            <button id="ah-mobile-menu-btn" aria-label="Open menu" class="md:hidden inline-flex items-center justify-center h-11 w-11 p-0 rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+
+          <div class="app-shell" style="position: relative; flex: 1; min-width: 0; padding: 0;">
+      <section class="intake-panel" id="intake-panel">
+        <div class="badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          Step 1 · Credit Assessment
+        </div>
+        <h1>Score Engine</h1>
+        <p class="intro">
+          Capture applicant information to run a comprehensive credit assessment and loan scoring analysis.
+        </p>
+        <div class="quick-form">
+          <div class="input-grid">
+            <div>
+              <label for="identity-number">South African ID Number</label>
+              <input
+                id="identity-number"
+                type="text"
+                inputmode="numeric"
+                maxlength="13"
+                placeholder="0201225666084"
+                autocomplete="off"
+                required
+              >
+              <p class="helper-text">13 digits, no spaces</p>
+            </div>
+            <div>
+              <label for="first-name">First Name</label>
+              <input id="first-name" type="text" placeholder="Mpumelelo" autocomplete="off" required>
+            </div>
+            <div>
+              <label for="last-name">Surname</label>
+              <input id="last-name" type="text" placeholder="Maswanganye" autocomplete="off" required>
+            </div>
+            <div>
+              <label for="gross-monthly-income">Gross Monthly Income</label>
+              <input id="gross-monthly-income" type="number" placeholder="25000" autocomplete="off" required min="0" step="0.01">
+              <p class="helper-text">Monthly income before deductions</p>
+            </div>
+            <div>
+              <label for="years-current-employer">Years at Current Employer</label>
+              <input id="years-current-employer" type="number" placeholder="3.5" autocomplete="off" required min="0" step="0.1">
+              <p class="helper-text">Enter 0 if unemployed or newly hired</p>
+            </div>
+            <div>
+              <label for="contract-type">Contract Type</label>
+              <select id="contract-type" required>
+                <option value="" disabled selected>Select contract type</option>
+                <option value="PERMANENT">Permanent</option>
+                <option value="PERMANENT_ON_PROBATION">Permanent on Probation</option>
+                <option value="FIXED_TERM_12_PLUS">Fixed Term · ≥ 12 months remaining</option>
+                <option value="FIXED_TERM_LT_12">Fixed Term · < 12 months remaining</option>
+                <option value="SELF_EMPLOYED_12_PLUS">Self Employed · ≥ 12 months history</option>
+                <option value="PART_TIME">Part Time</option>
+                <option value="UNEMPLOYED_OR_UNKNOWN">Unemployed / Unknown</option>
+              </select>
+              <p class="helper-text">Probation, fixed-term, and self-employed options adjust scoring</p>
+            </div>
+            <div>
+              <label for="algolend-new-borrower">Algolend Borrower Status</label>
+              <select id="algolend-new-borrower" required>
+                <option value="" disabled selected>Are they a new Algolend borrower?</option>
+                <option value="yes">Yes, brand-new borrower</option>
+                <option value="no">No, existing borrower</option>
+              </select>
+              <p class="helper-text">New borrowers score 100% provisionally; existing default to 50%</p>
+            </div>
+            <div>
+              <label for="employment-sector">Employer Category</label>
+              <select id="employment-sector" required>
+                <option value="" disabled selected>Select employer type</option>
+                <option value="GOVERNMENT">Government / State</option>
+                <option value="PRIVATE">Private / Listed</option>
+              </select>
+              <p class="helper-text">Government 100% · Listed 80% · Manual 50%</p>
+            </div>
+            <div class="full-width hidden" id="government-employer-section">
+              <label for="government-employer-name">Government / SOE Employer</label>
+              <input id="government-employer-name" type="text" placeholder="Department of Home Affairs" autocomplete="off">
+              <p class="helper-text">Enter the department, municipality, or SOE name for validation.</p>
+            </div>
+            <div class="full-width hidden" id="private-employer-section">
+              <label for="private-employer-name">Private Employer Search</label>
+              <input id="private-employer-name" type="text" placeholder="Start typing employer name" autocomplete="off" list="listed-employer-options">
+              <datalist id="listed-employer-options"></datalist>
+              <div class="search-feedback" id="private-employer-feedback">Type three or more characters to match against the JSE directory (80% when matched).</div>
+            </div>
+          </div>
+        </div>
+        <div class="intake-actions">
+          <button class="primary-btn" id="lock-inputs-btn" type="button">Lock Inputs</button>
+          <p class="hint">You can still edit them before launch if something changes.</p>
+          <p class="hint hidden" id="intake-error"></p>
+        </div>
+      </section>
+
+      <section class="engine-panel hidden" id="engine-panel">
+        <div class="engine-grid">
+          <div class="engine-console-card">
+            <div class="console-header">
+              <span>Engine Feed</span>
+              <span class="console-indicator"></span>
+            </div>
+            <div class="engine-loader-wrapper">
+              <button class="engine-loader" id="engine-loader" type="button" aria-label="Toggle engine feed details">
+                <div class="engine-loader-circle" id="engine-loader-circle">
+                <div class="engine-loader-content">
+                  <div class="engine-loader-percent" id="engine-loader-percent">0%</div>
+                </div>
+              </div>
+              <div class="engine-loader-label" id="engine-loader-label">Idle</div>
+              <div class="engine-loader-status" id="engine-loader-status"></div>
+            </button>
+            </div>
+            <div class="engine-console" id="engine-console">
+              <p class="console-line muted">Awaiting launch instructions...</p>
+            </div>
+          </div>
+          <div class="score-card">
+            <p class="badge soft">Step 2 · Launch</p>
+            <div class="score-ring">
+              <span class="score-value" id="score-value">--</span>
+              <small>/100</small>
+            </div>
+            <p class="score-subtitle">Loan Engine Score</p>
+            <p class="status-line" id="status">Inputs pending</p>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;">
+              <button class="primary-btn" id="run-credit-check-btn" type="button">Start Engine</button>
+              <button class="primary-btn hidden" id="proceed-step-two-btn" type="button" onclick="window.location.href='loanamount.html'">Proceed to Step Two</button>
+              <button class="ghost-btn" id="edit-inputs-btn" type="button">Edit Inputs</button>
+              <button class="link-btn" id="view-details-btn" type="button">View details</button>
+            </div>
+            <p class="hint hidden">Mock mode: <span id="mock-mode">unknown</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-sections hidden" id="detail-sections">
+        <div class="details-grid">
+          <article class="engine-details-card hidden" id="loan-engine-card">
+            <header>
+              <h2>Loan Engine Breakdown</h2>
+              <p class="helper-text" id="loan-engine-helper">
+                Focused view of normalized inputs captured this run.
+              </p>
+            </header>
+            <div class="engine-row total">
+              <span>Total contribution</span>
+              <strong id="loan-engine-total">0%</strong>
+            </div>
+            <button type="button" class="breakdown-toggle" id="breakdown-toggle-btn">Show breakdown</button>
+            <div class="breakdown-list collapsed" id="loan-engine-list"></div>
+          </article>
+
+          <article class="breakdown-card hidden" id="credit-score-breakdown">
+            <h2>Experian Contribution (25%)</h2>
+            <p class="helper-text" id="credit-score-explanation">
+              Run a credit check to reveal the normalization math.
+            </p>
+            <p class="formula-line" id="credit-score-formula"></p>
+            <p class="formula-line" id="credit-score-normalized"></p>
+            <p class="formula-line" id="credit-score-weighted"></p>
+          </article>
+
+          <article class="reasons-card hidden" id="score-reasons-card">
+            <h2>Score Reasons</h2>
+            <p class="helper-text">
+              A concise list of items with the highest negative influence on the score.
+            </p>
+            <ul class="reason-list" id="score-reasons-list"></ul>
+          </article>
+
+          <article class="exposure-card hidden" id="credit-exposure-card">
+            <h2>Credit Exposure</h2>
+            <p class="helper-text" id="credit-exposure-helper">
+              Revolving vs. instalment exposure sourced directly from Experian.
+            </p>
+            <div class="exposure-grid">
+              <div class="exposure-metric">
+                <label>Revolving Utilization</label>
+                <strong id="exposure-utilization">--</strong>
+              </div>
+              <div class="exposure-metric">
+                <label>Revolving Balance</label>
+                <strong id="exposure-revolving-balance">--</strong>
+              </div>
+              <div class="exposure-metric">
+                <label>Revolving Limit</label>
+                <strong id="exposure-revolving-limit">--</strong>
+              </div>
+              <div class="exposure-metric">
+                <label>Total Balance</label>
+                <strong id="exposure-total-balance">--</strong>
+              </div>
+              <div class="exposure-metric">
+                <label>Total Limit</label>
+                <strong id="exposure-total-limit">--</strong>
+              </div>
+              <div class="exposure-metric">
+                <label>Open Accounts</label>
+                <strong id="exposure-open-accounts">--</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="employment-card hidden" id="employment-card">
+            <h2>Employment Details</h2>
+            <p class="helper-text">
+              Employer Name · Occupation · Employer Type · Salary Freq. · Reference · Employee No. · Active Date
+            </p>
+            <div class="table-scroll">
+              <table class="accounts-table">
+                <thead>
+                  <tr>
+                    <th>Employer Name</th>
+                    <th>Occupation</th>
+                    <th>Employer Type</th>
+                    <th>Salary Freq.</th>
+                    <th>Payslip Ref.</th>
+                    <th>Employee No.</th>
+                    <th>Active Date</th>
+                  </tr>
+                </thead>
+                <tbody id="employment-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <div class="download-card hidden" id="retdata-download-card">
+          <h2>Experian Assets</h2>
+          <p class="helper-text">
+            Download the ZIP retdata returned by Experian (PDF + XML) straight from this run.
+          </p>
+          <button class="primary-btn" id="download-retdata-btn" disabled>Download retdata ZIP</button>
+        </div>
+
+        <footer class="page-footer">
+          Score Engine · Mock mode toggle via ENV. Built for the one-button credit check flow.
+        </footer>
+      </section>
+            </div>
+          </div>
+        </main>
+      </div>
+
+    <script>
+      (() => {
+        const sidebar = document.getElementById('ah-sidebar');
+        const overlay = document.getElementById('ah-overlay');
+        const mobileBtn = document.getElementById('ah-mobile-menu-btn');
+
+        const openSidebar = () => {
+          sidebar?.classList.add('is-open');
+          overlay?.classList.remove('hidden');
+        };
+
+        const closeSidebar = () => {
+          sidebar?.classList.remove('is-open');
+          overlay?.classList.add('hidden');
+        };
+
+        mobileBtn?.addEventListener('click', openSidebar);
+        overlay?.addEventListener('click', closeSidebar);
+      })();
+
+      // Auth guard (mirrors home.html): require Supabase session and redirect to auth if missing
+      (async () => {
+        const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
+        const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: {
+            fetch: (url, options = {}) => fetch(url, { mode: 'cors', cache: 'no-store', ...options })
+          }
+        });
+
+        const redirectToAuth = () => {
+          const next = encodeURIComponent(location.pathname + location.search + location.hash);
+          location.replace(`/auth.html?tab=in&redirect=${next}`);
+        };
+
+        try {
+          if (!supabaseClient) {
+            console.warn('Supabase unavailable; redirecting to auth');
+            redirectToAuth();
+            return;
+          }
+          const { data: { session }, error } = await supabaseClient.auth.getSession();
+          if (error) console.warn('Error fetching session', error.message);
+          if (!session) {
+            redirectToAuth();
+          }
+        } catch (err) {
+          console.warn('Unable to enforce session guard', err);
+          redirectToAuth();
+        }
+      })();
+    </script>
+  </body>
+</html>

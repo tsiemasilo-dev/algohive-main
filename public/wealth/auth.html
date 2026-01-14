@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up • AlgoHive</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script nonce="ALGOHIVE">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: 'hsl(var(--primary))',
+            muted: 'hsl(var(--muted))',
+            'muted-foreground': 'hsl(var(--muted-foreground))',
+          },
+        }
+      }
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 100 30% 10%;
+      --muted: 90 20% 96%;
+      --muted-foreground: 90 15% 45%;
+      --primary: 90 40% 35%;
+      --border: 90 20% 85%;
+      --input: hsl(90 20% 96%);
+    }
+
+    .dark {
+      --background: 90 15% 8%;
+      --foreground: 90 20% 95%;
+      --muted: 90 10% 15%;
+      --muted-foreground: 90 10% 60%;
+      --primary: 85 35% 60%;
+      --border: 90 15% 20%;
+      --input: hsl(90 10% 15%);
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      min-height: 100vh;
+      height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-on-load {
+      opacity: 0;
+      animation: fadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.3s;  }
+    .delay-3 { animation-delay: 0.45s; }
+    .delay-4 { animation-delay: 0.6s;  }
+    .delay-5 { animation-delay: 0.75s; }
+
+    /* Enhanced glass effect */
+    .glass {
+      background: linear-gradient(135deg, rgba(107,142,35,0.12) 0%, rgba(143,188,143,0.28) 50%, rgba(107,142,35,0.12) 100%);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.25),
+        inset 0 -1px 1px rgba(0,0,0,0.08),
+        0 8px 32px rgba(0,0,0,0.12);
+      border: 1px solid rgba(143,188,143,0.35);
+      border-radius: 9999px;
+      transition: all 0.4s cubic-bezier(0.25,1,0.5,1);
+    }
+
+    .glass:hover,
+    .glass:focus-within {
+      background: linear-gradient(135deg, rgba(107,142,35,0.18) 0%, rgba(143,188,143,0.38) 50%, rgba(107,142,35,0.18) 100%);
+      box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.35),
+        inset 0 -1px 2px rgba(0,0,0,0.1),
+        0 12px 40px rgba(0,0,0,0.18);
+      transform: translateY(-1px);
+    }
+
+    .dark .glass {
+      background: linear-gradient(135deg, rgba(107,142,35,0.22) 0%, rgba(143,188,143,0.42) 50%, rgba(107,142,35,0.22) 100%);
+      border: 1px solid rgba(143,188,143,0.28);
+      box-shadow:
+        inset 0 1px 1px rgba(0,0,0,0.5),
+        inset 0 -1px 1px rgba(0,0,0,0.6),
+        0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .dark .glass:hover,
+    .dark .glass:focus-within {
+      background: linear-gradient(135deg, rgba(107,142,35,0.28) 0%, rgba(143,188,143,0.50) 50%, rgba(107,142,35,0.28) 100%);
+      box-shadow:
+        inset 0 1px 2px rgba(0,0,0,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.7),
+        0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Autofill fix – keep our styling */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+      -webkit-text-fill-color: hsl(var(--foreground)) !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .glass-input {
+      display: flex;
+      align-items: center;
+      padding: 5px 6px;
+      transition: all 0.4s cubic-bezier(0.25,1,0.5,1);
+    }
+
+    .glass-input input {
+      background: transparent;
+      border: none;
+      outline: none;
+      flex: 1;
+      color: inherit;
+      font-size: 1.05rem;
+      padding: 0.9rem 1.25rem;
+    }
+
+    .glass-input input::placeholder {
+      color: hsla(var(--foreground), 0.48);
+    }
+
+    .glass-btn {
+      background: linear-gradient(135deg, rgba(107,142,35,0.18), rgba(143,188,143,0.38), rgba(107,142,35,0.18));
+      backdrop-filter: blur(12px);
+      border-radius: 9999px;
+      padding: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .glass-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 24px rgba(107,142,35,0.3);
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    #modal {
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+  </style>
+</head>
+<body class="relative flex min-h-screen flex-col">
+
+  <!-- Olive-green blobs -->
+  <div class="blob-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <style>
+    /* Olive-green themed floating blobs */
+    .blob-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.45;
+      animation: float 28s infinite ease-in-out;
+    }
+
+    .blob-1 {
+      width: 520px;
+      height: 420px;
+      background: #6b8e23;
+      top: -10%;
+      left: -15%;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 640px;
+      height: 560px;
+      background: #8fbc8f;
+      bottom: -15%;
+      right: -20%;
+      animation-delay: 9s;
+    }
+
+    .blob-3 {
+      width: 460px;
+      height: 380px;
+      background: #9acd32;
+      top: 40%;
+      left: 50%;
+      animation-delay: 16s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(60px, -80px) rotate(20deg); }
+    }
+  </style>
+
+  <!-- Top-left logo -->
+  <div class="relative z-20 flex items-center gap-3 px-6 pt-6 animate-on-load delay-1">
+    <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="h-10 w-auto drop-shadow-md"/>
+    <h1 class="text-xl font-bold tracking-tight">AlgoHive</h1>
+  </div>
+
+  <!-- Main content -->
+  <div class="flex flex-1 items-center justify-center px-6 pt-32 pb-16 relative z-10">
+    <div class="w-full max-w-md space-y-12">
+
+      <div class="text-center space-y-5">
+        <h2 class="text-5xl sm:text-6xl font-light tracking-tight animate-on-load delay-2">
+          Get started
+        </h2>
+        <p class="text-lg text-muted-foreground animate-on-load delay-3">
+          Create your AlgoHive account
+        </p>
+      </div>
+
+      <form id="signup-form" class="space-y-10">
+
+        <div id="step-email" class="step active space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <svg class="w-6 h-6 ml-5 text-foreground/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <input type="email" id="email" placeholder="Your email" required autocomplete="email" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-password" class="glass-btn mr-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <p class="text-sm text-muted-foreground animate-on-load delay-5">
+            Already have an account?
+            <a href="/auth" class="font-semibold text-foreground underline-offset-4 hover:underline">Login</a>
+          </p>
+        </div>
+
+        <div id="step-password" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <svg class="w-6 h-6 ml-5 text-foreground/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <input type="password" id="password" placeholder="Password" required minlength="6" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-confirm" class="glass-btn mr-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <button type="button" id="back-to-email" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
+            ← Back
+          </button>
+        </div>
+
+        <div id="step-confirm" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <svg class="w-6 h-6 ml-5 text-foreground/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <input type="password" id="confirm" placeholder="Confirm password" required class="flex-1 bg-transparent outline-none"/>
+            <button type="submit" class="glass-btn mr-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+          <button type="button" id="back-to-password" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
+            ← Back
+          </button>
+        </div>
+
+      </form>
+
+      <div class="text-center text-xs text-muted-foreground space-y-2 pt-6 animate-on-load delay-5">
+        <p>By continuing, you agree to our
+          <a href="#" class="underline hover:text-foreground transition">Terms of Service</a> and
+          <a href="#" class="underline hover:text-foreground transition">Privacy Policy</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="relative z-10 px-6 pb-12">
+    <div class="text-center text-xs text-muted-foreground/80 max-w-5xl mx-auto leading-relaxed animate-on-load delay-5">
+      AlgoHive (Pty) Ltd is an authorised Financial Services Provider (FSP 55118) regulated by the Financial Sector Conduct Authority and a registered Credit Provider (NCRCP22892) under the National Credit Act. All investment activity carries risk, including the possible loss of capital and liquidity constraints. Any information provided here is educational in nature, does not constitute personalised financial advice, and should not be relied on as a recommendation to buy or sell securities. Please consider whether investing is appropriate for your circumstances and consult an independent adviser where necessary.
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/65 backdrop-blur-md hidden flex items-center justify-center z-50">
+    <div class="bg-card/95 border border-border/30 rounded-2xl p-10 w-full max-w-sm text-center relative shadow-2xl">
+      <button id="close-modal" class="absolute top-5 right-5 text-muted-foreground hover:text-foreground transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <div id="modal-content" class="py-6"></div>
+    </div>
+  </div>
+
+  <script nonce="ALGOHIVE">
+    let currentStep = 'email';
+    const form = document.getElementById('signup-form');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modal-content');
+
+    const steps = {
+      email: document.getElementById('step-email'),
+      password: document.getElementById('step-password'),
+      confirm: document.getElementById('step-confirm')
+    };
+
+    function showStep(stepName) {
+      currentStep = stepName;
+      Object.values(steps).forEach(s => s.classList.remove('active'));
+      steps[stepName].classList.add('active');
+    }
+
+    document.getElementById('to-password').onclick = () => {
+      const email = document.getElementById('email').value.trim();
+      if (email && email.includes('@') && email.includes('.')) showStep('password');
+    };
+
+    document.getElementById('to-confirm').onclick = () => {
+      const pw = document.getElementById('password').value;
+      if (pw.length >= 6) showStep('confirm');
+    };
+
+    document.getElementById('back-to-email').onclick = () => showStep('email');
+    document.getElementById('back-to-password').onclick = () => showStep('password');
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const pw = document.getElementById('password').value;
+      const confirmPw = document.getElementById('confirm').value;
+
+      if (pw !== confirmPw) {
+        showModal('error', "Passwords don't match");
+        return false;
+      }
+
+      showModal('loading');
+
+      const messages = ["Creating your account...", "Setting things up...", "Almost there..."];
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < messages.length) {
+          modalContent.innerHTML = `
+            <div class="flex flex-col items-center gap-8 py-12">
+              <div class="w-14 h-14 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-lg font-medium">${messages[i]}</p>
+            </div>
+          `;
+          i++;
+        } else {
+          clearInterval(interval);
+          showSuccess();
+        }
+      }, 1400);
+
+      return false;
+    };
+
+    function showModal(type, message = '') {
+      modal.classList.remove('hidden');
+      if (type === 'error') {
+        modalContent.innerHTML = `
+          <div class="flex flex-col items-center gap-8 py-12">
+            <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <p class="text-xl font-medium">${message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function showSuccess() {
+      modalContent.innerHTML = `
+        <div class="flex flex-col items-center gap-8 py-14">
+          <div class="text-7xl animate-bounce">🎉</div>
+          <h3 class="text-2xl font-bold tracking-tight">Welcome to AlgoHive!</h3>
+        </div>
+      `;
+      confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 } });
+    }
+
+    document.getElementById('close-modal').onclick = () => modal.classList.add('hidden');
+  </script>
+</body>
+</html>

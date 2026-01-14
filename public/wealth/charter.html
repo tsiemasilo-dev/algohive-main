@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global Opportunities Fund | Charter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --olive: 160, 200, 110;
+            --bg0: #07080a;
+            --bg1: #0a0c0a;
+            --bg2: #0c0f0b;
+        }
+
+        html,
+        body {
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        .horizon-bg {
+            background:
+                radial-gradient(900px 520px at 18% 92%, rgba(120, 170, 90, .20), transparent 60%),
+                radial-gradient(700px 460px at 86% 88%, rgba(160, 200, 110, .18), transparent 60%),
+                radial-gradient(900px 520px at 68% 8%, rgba(90, 140, 70, .14), transparent 60%),
+                radial-gradient(600px 360px at 16% 12%, rgba(110, 160, 80, .14), transparent 60%),
+                linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 55%, var(--bg2) 100%);
+            position: relative;
+        }
+
+        .horizon-bg:before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(1200px 700px at 50% 40%, rgba(255, 255, 255, .06), transparent 60%),
+                radial-gradient(1200px 800px at 50% 120%, rgba(var(--olive), .10), transparent 55%);
+            opacity: .9;
+        }
+
+        .horizon-bg:after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+            opacity: .06;
+        }
+
+        .glass-soft {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .10);
+            box-shadow:
+                0 18px 60px rgba(0, 0, 0, .50),
+                inset 0 1px 0 rgba(255, 255, 255, .06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .corner-marks:before,
+        .corner-marks:after {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 22px;
+            pointer-events: none;
+            background:
+                linear-gradient(#fff, #fff) left top/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) left top/1px 10px no-repeat,
+                linear-gradient(#fff, #fff) right top/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) right top/1px 10px no-repeat,
+                linear-gradient(#fff, #fff) left bottom/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) left bottom/1px 10px no-repeat,
+                linear-gradient(#fff, #fff) right bottom/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) right bottom/1px 10px no-repeat;
+            opacity: .10;
+        }
+
+        .title-track {
+            letter-spacing: .42em;
+        }
+
+        .title-accent {
+            background: linear-gradient(90deg, rgba(255, 255, 255, .98), rgba(var(--olive), .98));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        header img {
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, .50));
+        }
+
+        .badge {
+            border: 1px solid rgba(255, 255, 255, .10);
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            padding: .95rem 1rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .10);
+            transition: transform .25s ease, background .25s ease, border-color .25s ease, box-shadow .25s ease;
+            color: rgba(255, 255, 255, .92);
+            font-size: .9rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+        }
+
+        .link-btn:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, .09);
+            border-color: rgba(var(--olive), .28);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .20);
+        }
+
+        .link-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .muted {
+            color: rgba(255, 255, 255, .62);
+        }
+
+        .muted2 {
+            color: rgba(255, 255, 255, .46);
+        }
+
+        .section-title {
+            color: rgba(255, 255, 255, .86);
+        }
+
+        .charter-list {
+            list-style: disc;
+            padding-left: 1.25rem;
+        }
+
+        .charter-list li::marker {
+            color: rgba(var(--olive), .8);
+        }
+
+        .charter-line {
+            white-space: pre-line;
+        }
+
+        .focus-ring:focus-visible {
+            outline: 2px solid rgba(var(--olive), .35);
+            outline-offset: 3px;
+            border-radius: 18px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen horizon-bg text-white">
+    <div class="mx-auto max-w-6xl px-6 py-10 relative">
+        <header class="text-center flex flex-col items-center">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive"
+                class="h-10 mb-3 opacity-90" />
+
+            <div class="text-sm title-track text-white/80">
+                GLOBAL OPPORTUNITIES <span class="title-accent font-semibold">FUND</span>
+            </div>
+
+            <div class="mt-4 badge rounded-full px-4 py-2 text-[11px] tracking-[.18em] text-white/65">
+                GOVERNING CHARTER
+            </div>
+        </header>
+
+        <main class="mt-10 flex justify-center">
+            <section class="glass-soft rounded-[26px] p-6 sm:p-8 relative overflow-hidden w-full max-w-4xl">
+                <div class="corner-marks absolute inset-0 rounded-[26px]"></div>
+
+                <div class="relative space-y-6 text-sm leading-relaxed muted">
+                    <div class="flex justify-end">
+                        <a href="invite.html" class="link-btn focus-ring"
+                            style="width:auto; padding:.55rem .85rem; border-radius:14px;">Back</a>
+                    </div>
+                    <div class="text-white text-lg sm:text-xl font-semibold">
+                        ALGOHIVE GLOBAL OPPORTUNITIES FUND GOVERNING CHARTER
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 1 — DEFINITIONS AND
+                            INTERPRETATION</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">1.1 Definitions</div>
+                            <div class="charter-line">
+In this Charter, unless the context otherwise requires, the following terms shall have the meanings assigned to them below:
+                            </div>
+                            <ul class="charter-list space-y-1">
+                                <li>“AlgoHive” means AlgoHive (Pty) Ltd, registration number [2024/644796/07], the
+                                    General Partner of the Fund.</li>
+                                <li><strong class="text-white/90">“AlgoHive Global Opportunities Fund” or “the Fund”
+                                        means the investment partnership governed by this Charter, established under
+                                        South African law as an en commandite partnership.</strong></li>
+                                <li>“Charter” means this governing charter of the AlgoHive Global Opportunities Fund, as
+                                    amended from time to time.</li>
+                                <li>“General Partner” means AlgoHive, acting in its capacity as manager and
+                                    administrator of the Fund.</li>
+                                <li>“Limited Partner” means any person or entity admitted to the Fund in accordance
+                                    with this Charter, other than the General Partner, including AlgoHive to the extent
+                                    it contributes capital as a limited partner.</li>
+                                <li>“Partnership” means the AlgoHive Global Opportunities Fund as constituted by the
+                                    partnership agreement between the General Partner and Limited Partners.</li>
+                                <li>“Partnership Agreement” means the formal agreement setting out the respective
+                                    rights and obligations of the General Partner and the Limited Partners in
+                                    accordance with this Charter.</li>
+                                <li>“Contributor” means any person or entity subscribing for units or partnership
+                                    interests in the Fund.</li>
+                                <li>“Capital Contribution” means the amount invested by a Limited Partner into the
+                                    Fund.</li>
+                                <li>“Units” means the measure of a Limited Partner’s proportionate ownership interest
+                                    in the Fund.</li>
+                                <li>“Net Asset Value (NAV)” means the fair market value of the Fund’s assets less its
+                                    liabilities, as determined in accordance with this Charter.</li>
+                                <li>“Management Fee” means the 2% per annum fee payable to the General Partner for
+                                    managing the Fund.</li>
+                                <li>“Performance Fee” means the 20% of net profits allocated to the General Partner.</li>
+                                <li>“Mirror-Investment Revenue Share” means the 80% of investment profits allocated to
+                                    the Fund from its listed strategy on the AlgoHive platform.</li>
+                                <li>“Financial Year” means the 12-month period ending 31 March of each year.</li>
+                                <li>“Minimum Investment” means either a once-off contribution of R10,000 or a recurring
+                                    monthly contribution of R1,000.</li>
+                                <li>“South African Rand (R)” means the lawful currency of the Republic of South Africa.
+                                </li>
+                            </ul>
+                            <div class="section-title font-semibold mt-4">1.2 Interpretation</div>
+                            <ul class="charter-list space-y-1">
+                                <li>Words importing the singular include the plural and vice versa.</li>
+                                <li>References to persons include natural and juristic persons.</li>
+                                <li>Headings are for convenience only and do not affect the interpretation of this
+                                    Charter.</li>
+                                <li>If any conflict arises between this Charter and the Partnership Agreement, the
+                                    Partnership Agreement shall prevail to the extent of the inconsistency.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 2 — PURPOSE AND INVESTMENT
+                            OBJECTIVES</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">2.1 Purpose of the Fund</div>
+                            <p>The AlgoHive Global Opportunities Fund is established to pool and manage the capital of
+                                its Limited Partners with the aim of delivering long-term, risk-adjusted returns
+                                through investments in high-quality businesses with sustainable competitive advantages,
+                                commonly referred to as “economic moats.” The Fund will apply a disciplined blend of
+                                fundamental and quantitative analysis to identify opportunities, consistent with the
+                                principles described in this Charter and the Partnership Agreement.</p>
+                            <div class="section-title font-semibold">2.2 Investment Objective</div>
+                            <p>The primary investment objective of the Fund is to achieve capital appreciation for
+                                Limited Partners through exposure to:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>listed equities of companies with durable business models and strong market
+                                    positions;</li>
+                                <li>other financial instruments consistent with the Fund’s risk appetite and permitted
+                                    by this Charter; and</li>
+                                <li>where appropriate, cash or near-cash instruments for liquidity or risk management
+                                    purposes.</li>
+                            </ul>
+                            <div class="section-title font-semibold">2.3 Strategy</div>
+                            <p>The Fund will pursue a moat-based equity strategy, supported by quantitative screening
+                                techniques and fundamental research to:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>identify companies with structural competitive advantages;</li>
+                                <li>assess pricing power, barriers to entry, and brand strength;</li>
+                                <li>analyse consistent free cash flow generation; and</li>
+                                <li>monitor valuation metrics to preserve a margin of safety.</li>
+                            </ul>
+                            <div class="section-title font-semibold">2.4 Fund Management</div>
+                            <p>The Fund shall be actively managed by the General Partner (AlgoHive), which will make
+                                investment decisions in accordance with the mandate of this Charter, exercising
+                                discretion to adjust the portfolio to respond to changing market conditions and
+                                opportunities, while respecting the principles of diversification and risk controls set
+                                out herein.</p>
+                            <div class="section-title font-semibold">2.5 Investment Guidelines and Restrictions</div>
+                            <p>The Fund will observe the following investment restrictions:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>it shall not invest in unlisted securities except where approved by the General
+                                    Partner and consistent with the Fund’s objectives;</li>
+                                <li>it may use derivatives for risk management or portfolio hedging, but not for
+                                    speculative leverage;</li>
+                                <li>it will maintain sufficient diversification across sectors and geographies to limit
+                                    concentration risk, as reasonably determined by the General Partner;</li>
+                                <li>it will comply with applicable laws and regulations in South Africa and any other
+                                    jurisdictions where it may operate.</li>
+                            </ul>
+                            <div class="section-title font-semibold">2.6 Alignment with AlgoHive</div>
+                            <p>The AlgoHive Moat Fund may be listed as a strategy on the AlgoHive investment platform.
+                                The Fund will retain 80% of profits generated from such a listing, while AlgoHive will
+                                earn 20% of those profits for listing and distribution of the strategy on its platform.
+                                Additionally, AlgoHive will receive transaction fees associated with third-party use of
+                                the strategy as described in Section 1.</p>
+                            <div class="section-title font-semibold">2.7 Contribution by the General Partner</div>
+                            <p>AlgoHive, in its capacity as General Partner, may contribute its own capital to the Fund
+                                and will participate in profit allocation as a Limited Partner to the extent of such
+                                contributions, subject to the same terms and conditions applicable to all Limited
+                                Partners, except where expressly set out otherwise in this Charter.</p>
+                            <div class="section-title font-semibold">2.8 Commitment to Best Practices</div>
+                            <p>The Fund shall be operated in line with industry best practices for risk management,
+                                transparency, and governance, including periodic independent audit of its financial
+                                statements, investor reporting on a quarterly basis, and strict adherence to
+                                anti-money laundering (AML) and know-your-customer (KYC) compliance processes.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 3 — STRUCTURE AND LEGAL STATUS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">3.1 Legal Form</div>
+                            <p>The AlgoHive Global Opportunities Fund is constituted as an en commandite partnership
+                                under the laws of the Republic of South Africa. The General Partner shall be AlgoHive
+                                (Pty) Ltd, registration number [2024/644796/07], with its principal place of business at
+                                [3 Gwen lane, Sandown, Sandton, Gauteng, South Africa].</p>
+                            <div class="section-title font-semibold">3.2 General Partner</div>
+                            <p>AlgoHive, in its capacity as General Partner, shall:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>have the full authority and discretion to manage, administer, and represent the Fund
+                                    in all matters;</li>
+                                <li>act as agent and fiduciary for the Fund in its dealings with third parties;</li>
+                                <li>be empowered to open and operate bank accounts in the name of the Fund, including
+                                    ring-fenced accounts titled “AlgoHive Global Opportunities Fund Partnership
+                                    Account” under AlgoHive’s banking arrangements, which shall be segregated from
+                                    AlgoHive’s own operating accounts;</li>
+                                <li>act at all times in good faith and in the best interests of the Fund and its Limited
+                                    Partners.</li>
+                            </ul>
+                            <div class="section-title font-semibold">3.3 Limited Partners</div>
+                            <p>Limited Partners shall:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>be admitted in accordance with the Partnership Agreement;</li>
+                                <li>have no authority to bind the Fund or the General Partner;</li>
+                                <li>bear no liability beyond their committed Capital Contribution except as required
+                                    under applicable law;</li>
+                                <li>share proportionately in the profits and losses of the Fund according to their
+                                    respective Units, as recorded in the Fund’s register of interests.</li>
+                            </ul>
+                            <div class="section-title font-semibold">3.4 AlgoHive as Limited Partner</div>
+                            <p>AlgoHive may, in addition to its role as General Partner, contribute capital as a Limited
+                                Partner and shall be entitled to share in the profits of the Fund in the same manner as
+                                other Limited Partners in respect of its contributed capital, subject to any express
+                                exclusions of liability applicable to its General Partner role.</p>
+                            <div class="section-title font-semibold">3.5 Fund Bank Accounts</div>
+                            <p>All monies contributed to the Fund shall be deposited in bank accounts designated for the
+                                AlgoHive Global Opportunities Fund Partnership, separate from the general bank accounts
+                                of AlgoHive. The General Partner shall ensure that proper books and records are
+                                maintained in respect of the Fund’s accounts, investments, receipts, and distributions.
+                            </p>
+                            <div class="section-title font-semibold">3.6 Rights of Limited Partners</div>
+                            <p>Each Limited Partner shall have the following rights:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>to receive statements of account and other reporting in accordance with this
+                                    Charter;</li>
+                                <li>to request information concerning their investment subject to reasonable notice and
+                                    confidentiality safeguards;</li>
+                                <li>to participate proportionately in profits, losses, and distributions;</li>
+                                <li>to withdraw capital subject to the withdrawal provisions in Section 8;</li>
+                                <li>to inspect, at reasonable times and on reasonable notice, the Fund’s records
+                                    relating to their investment.</li>
+                            </ul>
+                            <div class="section-title font-semibold">3.7 Term</div>
+                            <p>The Fund shall have an initial term of [for example: 10 years, unless dissolved earlier],
+                                with rolling extensions at the General Partner’s discretion, unless otherwise
+                                terminated or liquidated under the terms of this Charter.</p>
+                            <div class="section-title font-semibold">3.8 Regulatory Compliance</div>
+                            <p>The Fund and its General Partner shall comply with all applicable regulatory
+                                requirements, including, but not limited to, any licensing, reporting, tax,
+                                anti-money laundering, and investor protection obligations under South African law and
+                                any other jurisdiction where the Fund operates.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 4 — FUND CONTRIBUTIONS AND UNITS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">4.1 Capital Contributions</div>
+                            <p>(a) Each Limited Partner shall contribute capital to the Fund in accordance with the
+                                minimum investment terms set out in this Charter, being a once-off contribution of not
+                                less than R10,000 or recurring monthly contributions of at least R1,000.</p>
+                            <p>(b) The General Partner may, at its sole discretion, accept contributions exceeding
+                                these minimums, or waive the minimum contribution requirements in appropriate
+                                circumstances.</p>
+                            <p>(c) Unless otherwise agreed by the General Partner, contributions shall be made in cash.
+                            </p>
+                            <div class="section-title font-semibold">4.2 Units of Participation</div>
+                            <p>(a) Each Limited Partner’s interest in the Fund shall be represented by Units, which will
+                                determine their proportional rights to the Fund’s profits, losses, and distributions.
+                            </p>
+                            <p>(b) Units shall be allocated to each Limited Partner upon acceptance of their
+                                contribution, based on the prevailing Net Asset Value per Unit on the date of
+                                contribution.</p>
+                            <p>(c) The General Partner shall maintain a register of Units, tracking each Limited
+                                Partner’s contributions, unit allocations, and any subsequent adjustments from
+                                withdrawals or additional subscriptions.</p>
+                            <div class="section-title font-semibold">4.3 AlgoHive’s Contributions</div>
+                            <p>(a) AlgoHive, as General Partner, may also make capital contributions to the Fund in its
+                                capacity as a Limited Partner. Such contributions shall be allocated Units on the same
+                                basis as other Limited Partners, subject to any separate management rights set out under
+                                this Charter.</p>
+                            <div class="section-title font-semibold">4.4 Additional Fundraising</div>
+                            <p>(a) The General Partner is authorised to raise additional capital for the Fund at its sole
+                                discretion, including from new Limited Partners, without requiring the consent or prior
+                                notification of existing Limited Partners, provided such fundraising complies with
+                                applicable law, regulatory guidelines, and the Partnership Agreement.</p>
+                            <p>(b) Any new Limited Partner admitted will be subject to the same proportionate treatment
+                                of returns, risks, and obligations as existing Limited Partners, in accordance with
+                                this Charter.</p>
+                            <div class="section-title font-semibold">4.5 Default in Contributions</div>
+                            <p>(a) If a Limited Partner fails to meet a committed contribution, the General Partner may,
+                                at its discretion and without prejudice to other remedies:</p>
+                            <p>(i) grant an extension to remedy the default;</p>
+                            <p>(ii) apply reasonable penalties, including forfeiture of returns on the unpaid portion;
+                            </p>
+                            <p>(iii) adjust or cancel that Limited Partner’s Units proportionately; or</p>
+                            <p>(iv) take any other lawful step to protect the interests of the Fund and other Limited
+                                Partners.</p>
+                            <div class="section-title font-semibold">4.6 Use of Capital Contributions</div>
+                            <p>Capital contributions shall be used exclusively to implement the Fund’s investment
+                                strategy and cover its permitted costs, including but not limited to management fees,
+                                performance fees, transaction costs, compliance, audit and legal fees, and other
+                                reasonable expenses incurred in operating the Fund in accordance with best practice.
+                            </p>
+                            <div class="section-title font-semibold">4.7 Evidence of Contribution</div>
+                            <p>Each Limited Partner shall receive confirmation of their contribution, showing the Units
+                                issued, contribution amount, and the date of admission to the Fund.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 5 — MANAGEMENT AND GOVERNANCE</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">5.1 Management Authority</div>
+                            <p>(a) The General Partner shall have full discretion and authority to manage and administer
+                                the Fund, including making all investment and operational decisions necessary to
+                                achieve the objectives set out in this Charter.</p>
+                            <p>(b) The General Partner may delegate functions to agents, advisers, or other service
+                                providers as it deems appropriate, provided that overall responsibility and fiduciary
+                                oversight remain with the General Partner.</p>
+                            <p>(c) The General Partner shall act at all times in good faith and in a manner consistent
+                                with the best interests of the Fund and its Limited Partners.</p>
+                            <div class="section-title font-semibold">5.2 Decision-Making Powers</div>
+                            <p>(a) Except where explicitly stated otherwise in this Charter or required by law, the
+                                General Partner shall have absolute authority over the Fund’s activities, including:
+                            </p>
+                            <p>(i) investment selection and execution;</p>
+                            <p>(ii) cash management and bank account operation;</p>
+                            <p>(iii) acceptance of new Limited Partners and fundraising decisions;</p>
+                            <p>(iv) contracting with brokers, custodians, administrators, or other third parties;</p>
+                            <p>(v) setting operational policies to safeguard Fund assets.</p>
+                            <p>(b) Limited Partners shall have no role in the day-to-day or investment decision-making
+                                of the Fund and may not bind the Fund or the General Partner in any manner.</p>
+                            <div class="section-title font-semibold">5.3 Fees and Compensation</div>
+                            <p>(a) The Fund shall pay the General Partner a management fee of 2% per annum of the Fund’s
+                                Net Asset Value, calculated and accrued monthly.</p>
+                            <p>(b) The Fund shall pay the General Partner a performance fee of 20% of the net profits
+                                earned by the Fund, calculated annually and paid within 30 days of the Fund’s financial
+                                year-end.</p>
+                            <p>(c) Where the Fund’s strategy is listed on the AlgoHive platform and mirrored by third
+                                parties, AlgoHive shall receive 20% of any mirror-investment profits, with the Fund
+                                retaining 80% of those mirror-investment profits.</p>
+                            <p>(d) The General Partner is further entitled to transaction fees generated through the
+                                AlgoHive platform associated with the Fund’s listed strategy.</p>
+                            <div class="section-title font-semibold">5.4 Conflicts of Interest</div>
+                            <p>(a) The General Partner shall disclose to Limited Partners any material conflicts of
+                                interest which, in its reasonable opinion, may significantly and adversely affect the
+                                Fund.</p>
+                            <p>(b) The General Partner may manage other funds, vehicles, or accounts with strategies that
+                                are similar to or overlap with the Fund, provided it acts in good faith to allocate
+                                opportunities fairly and in a manner consistent with applicable law.</p>
+                            <p>(c) Limited Partners acknowledge and accept the possibility of such conflicts and agree
+                                that the General Partner’s duty of good faith and fair dealing shall be sufficient
+                                protection in these circumstances.</p>
+                            <div class="section-title font-semibold">5.5 Reporting and Oversight</div>
+                            <p>(a) The General Partner shall provide Limited Partners with quarterly performance
+                                statements, including valuations, fees charged, and portfolio holdings summaries,
+                                subject to reasonable confidentiality limitations.</p>
+                            <p>(b) The Fund’s annual financial statements shall be independently reviewed or audited by
+                                a qualified external auditor, whose appointment shall be at the General Partner’s
+                                discretion.</p>
+                            <p>(c) The General Partner shall maintain adequate systems, controls, and policies to
+                                comply with anti-money laundering (AML), counter-terrorist financing (CTF), and
+                                know-your-client (KYC) requirements as applicable under South African regulations.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 6 — INVESTMENT POLICIES</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">6.1 Eligible Investments</div>
+                            <p>The Fund shall invest primarily in listed equities of companies demonstrating
+                                sustainable competitive advantages, commonly described as “economic moats.” The Fund
+                                may also, at the General Partner’s discretion, invest in:</p>
+                            <p>(a) exchange-traded funds (ETFs) or other collective investment schemes with a similar
+                                moat-based or market exposure strategy;</p>
+                            <p>(b) listed debt instruments or preference shares where these support the overall
+                                investment objective;</p>
+                            <p>(c) cash or near-cash instruments for liquidity, risk management, or tactical
+                                allocation;</p>
+                            <p>(d) derivatives for hedging or efficient portfolio management, but not for speculative
+                                leverage; and</p>
+                            <p>(e) any other security or instrument permitted by applicable laws and consistent with
+                                this Charter.</p>
+                            <p>(f) mirror investment strategies on AlgoHive platform that resemble its investment
+                                philosophy.</p>
+                            <div class="section-title font-semibold">6.2 Investment Guidelines</div>
+                            <p>(a) The General Partner shall manage the Fund in accordance with prudent investment
+                                principles, balancing risk and reward to achieve the stated objectives.</p>
+                            <p>(b) The Fund shall maintain sufficient diversification by sector, issuer, and geography
+                                to avoid excessive concentration risk.</p>
+                            <p>(c) The Fund may not invest more than 25% of its assets in a single issuer, except for
+                                cash or government securities, without the General Partner’s explicit documented risk
+                                assessment.</p>
+                            <p>(d) The Fund may not invest more than 10% of its assets in unlisted securities without
+                                the approval of the General Partner and proper disclosure to Limited Partners.</p>
+                            <div class="section-title font-semibold">6.3 Use of Derivatives</div>
+                            <p>(a) Derivatives may be used solely for the purpose of hedging or efficient portfolio
+                                management.</p>
+                            <p>(b) The Fund shall not use derivatives to establish speculative leveraged positions
+                                exceeding the Fund’s total committed capital.</p>
+                            <p>(c) Counterparty exposures in derivative transactions shall be monitored to ensure
+                                prudent risk management in accordance with the Fund’s risk policy.</p>
+                            <div class="section-title font-semibold">6.4 Borrowing and Leverage</div>
+                            <p>(a) The Fund may borrow on a short-term basis for liquidity management or to meet
+                                redemption obligations, subject to a maximum leverage ratio of 20% of its Net Asset
+                                Value at any time.</p>
+                            <p>(b) Longer-term leverage is permitted only where specifically approved by the General
+                                Partner, and subject to written risk assessments and compliance with applicable laws.
+                            </p>
+                            <div class="section-title font-semibold">6.5 Risk Controls</div>
+                            <p>(a) The General Partner shall establish and maintain risk monitoring procedures,
+                                including stress testing and scenario analysis, to protect the Fund’s assets.</p>
+                            <p>(b) The Fund shall comply with all applicable risk management requirements under South
+                                African law and any other relevant jurisdiction.</p>
+                            <p>(c) The General Partner shall document and periodically review investment risk policies
+                                to ensure they remain fit for purpose.</p>
+                            <div class="section-title font-semibold">6.6 Responsible Investment</div>
+                            <p>The Fund supports responsible investment practices. The General Partner shall consider
+                                material environmental, social, and governance (ESG) factors as appropriate in its
+                                investment analysis, provided these do not compromise the Fund’s primary objective of
+                                delivering superior risk-adjusted returns.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 7 — FUND ACCOUNTING, VALUATION, AND
+                            REPORTING</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">7.1 Accounting Principles</div>
+                            <p>The Fund’s accounts shall be maintained in accordance with generally accepted accounting
+                                principles (GAAP) applicable in South Africa, consistently applied/IFRS, whichever Is
+                                chosen and deemed appropriate. All financial transactions, including capital
+                                contributions, investment purchases and sales, income, expenses, fees, and
+                                distributions, shall be accurately recorded and supported by appropriate
+                                documentation.</p>
+                            <div class="section-title font-semibold">7.2 Valuation of Assets</div>
+                            <p>(a) The Net Asset Value (NAV) of the Fund shall be calculated at least monthly, using
+                                fair market values for all assets held by the Fund.</p>
+                            <p>(b) Listed securities shall be valued at the closing price on the relevant stock
+                                exchange as of the valuation date.</p>
+                            <p>(c) Unlisted securities shall be valued at fair value as determined by the General
+                                Partner using recognized valuation methodologies, including discounted cash flow,
+                                comparable transactions, or third-party appraisals where appropriate.</p>
+                            <p>(d) Cash and cash equivalents shall be valued at face value.</p>
+                            <p>(e) Any material valuation adjustments shall be documented and disclosed to Limited
+                                Partners in periodic reports.</p>
+                            <div class="section-title font-semibold">7.3 Unit Pricing and Allocations</div>
+                            <p>(a) The NAV per Unit shall be calculated by dividing the Fund’s NAV by the total number
+                                of Units outstanding at the valuation date.</p>
+                            <p>(b) Contributions and withdrawals shall be processed at the NAV per Unit on the relevant
+                                effective date.</p>
+                            <p>(c) Profits, losses, fees, and distributions shall be allocated among Limited Partners
+                                in proportion to their Units.</p>
+                            <div class="section-title font-semibold">7.4 Financial Reporting to Limited Partners</div>
+                            <p>(a) The General Partner shall provide Limited Partners with quarterly statements
+                                including:</p>
+                            <ul class="charter-list space-y-1">
+                                <li>the Fund’s NAV and NAV per Unit;</li>
+                                <li>portfolio holdings summary;</li>
+                                <li>fees charged and expenses incurred;</li>
+                                <li>any material events or disclosures.</li>
+                            </ul>
+                            <p>(b) Annual audited or reviewed financial statements shall be provided within 120 days
+                                after the financial year-end, prepared by an independent auditor appointed by the
+                                General Partner.</p>
+                            <div class="section-title font-semibold">7.5 Record Keeping</div>
+                            <p>The General Partner shall maintain accurate and complete records of all Fund activities,
+                                including investor registers, accounting records, correspondence, contracts, and
+                                compliance documentation, for a minimum period of seven (7) years.</p>
+                            <div class="section-title font-semibold">7.6 Access to Information</div>
+                            <p>Limited Partners may, upon reasonable notice and during normal business hours, inspect
+                                the Fund’s records relating to their investment, subject to confidentiality agreements
+                                to protect the Fund’s proprietary information and other Limited Partners’ privacy.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 8 — WITHDRAWALS, REDEMPTIONS, AND
+                            TRANSFERS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">8.1 Withdrawals by Limited Partners</div>
+                            <p>(a) Limited Partners may request withdrawals of their invested capital on a quarterly
+                                basis, subject to providing at least 30 calendar days’ prior written notice to the
+                                General Partner.</p>
+                            <p>(b) The General Partner may, at its discretion, accept withdrawal requests on shorter
+                                notice in exceptional cases.</p>
+                            <p>(c) Withdrawal payments shall be made at the NAV per Unit calculated as of the end of
+                                the relevant quarter.</p>
+                            <p>(d) The General Partner may limit or suspend withdrawals if it reasonably determines
+                                that satisfying such requests would materially harm the Fund’s liquidity, portfolio
+                                balance, or other Limited Partners.</p>
+                            <div class="section-title font-semibold">8.2 Withdrawal Limits and Gatekeeping</div>
+                            <p>(a) The General Partner may impose a withdrawal cap (“gate”) on any redemption period,
+                                limiting total withdrawals to 20% of the Fund’s NAV per quarter, to protect the Fund’s
+                                orderly management.</p>
+                            <p>(b) If total withdrawal requests exceed this gate, withdrawals shall be processed on a
+                                pro-rata basis, and deferred amounts will automatically roll forward to the next
+                                available redemption window.</p>
+                            <div class="section-title font-semibold">8.3 Suspension of Withdrawals</div>
+                            <p>The General Partner may suspend withdrawals temporarily under the following
+                                circumstances:</p>
+                            <p>(a) if there is a material disruption in the markets affecting valuation of the Fund’s
+                                assets;</p>
+                            <p>(b) where there is a legal or regulatory restriction preventing transactions;</p>
+                            <p>(c) in the event of natural disaster, war, or other force majeure;</p>
+                            <p>(d) if such suspension is in the reasonable opinion of the General Partner necessary to
+                                protect the interests of the Fund and its Limited Partners.</p>
+                            <div class="section-title font-semibold">8.4 Transfers of Units</div>
+                            <p>(a) Limited Partners may not transfer, assign, pledge, or otherwise dispose of their
+                                Units without the prior written consent of the General Partner, which may be withheld
+                                at its discretion.</p>
+                            <p>(b) The General Partner shall have the right of first refusal to purchase any Units
+                                proposed for transfer on the same terms as offered to any third party.</p>
+                            <p>(c) Any permitted transferee must meet all applicable legal, regulatory, and AML/KYC
+                                requirements before being recorded as a Limited Partner.</p>
+                            <div class="section-title font-semibold">8.5 Compulsory Withdrawals</div>
+                            <p>The General Partner may compulsorily withdraw all or part of a Limited Partner’s
+                                interest if:</p>
+                            <p>(a) required by law or regulation;</p>
+                            <p>(b) necessary to protect the Fund’s regulatory or tax status;</p>
+                            <p>(c) the Limited Partner has breached this Charter or the Partnership Agreement;</p>
+                            <p>(d) the Limited Partner’s continued participation would, in the reasonable opinion of
+                                the General Partner, prejudice the Fund or its other Limited Partners.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 9 — DISTRIBUTIONS AND ALLOCATIONS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">9.1 Allocation of Profits and Losses</div>
+                            <p>(a) Profits and losses of the Fund shall be allocated to Limited Partners in proportion
+                                to their Units as recorded in the Fund’s register, after deduction of management fees,
+                                performance fees, expenses, and any reserves the General Partner deems necessary.</p>
+                            <p>(b) AlgoHive, as General Partner, shall share in allocations in respect of any capital it
+                                has contributed to the Fund as a Limited Partner, on the same terms as other Limited
+                                Partners.</p>
+                            <div class="section-title font-semibold">9.2 Distribution Policy</div>
+                            <p>(a) Distributions of available cash profits, if any, shall generally be made annually,
+                                unless the General Partner determines it is in the best interests of the Fund to retain
+                                profits for reinvestment.</p>
+                            <p>(b) Distributions shall be made only after the Fund has satisfied its liabilities,
+                                reserves, and reasonable working capital needs.</p>
+                            <p>(c) All distributions shall be made in proportion to each Limited Partner’s Units.</p>
+                            <div class="section-title font-semibold">9.3 Reinvestment of Profits</div>
+                            <p>Limited Partners may elect in writing to automatically reinvest their distributions into
+                                the Fund, subject to acceptance by the General Partner and subject to prevailing NAV
+                                per Unit as at the reinvestment date.</p>
+                            <div class="section-title font-semibold">9.4 Priority of Payments</div>
+                            <p>Distributable amounts shall be paid in the following order of priority:</p>
+                            <p>(a) payment of any due Fund liabilities;</p>
+                            <p>(b) reserves for expenses and contingencies as determined by the General Partner;</p>
+                            <p>(c) management fees and performance fees due to the General Partner;</p>
+                            <p>(d) distribution to Limited Partners in proportion to their Units.</p>
+                            <div class="section-title font-semibold">9.5 Withholding Taxes</div>
+                            <p>If required by law, the General Partner shall withhold and remit any applicable taxes
+                                from distributions and provide supporting tax documentation to Limited Partners as
+                                reasonably required.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 10 — CONFLICTS OF INTEREST AND
+                            RELATED-PARTY TRANSACTIONS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">10.1 General Standard</div>
+                            <p>The General Partner shall manage the Fund honestly, fairly, and in good faith, and in a
+                                manner that prioritises the interests of the Fund and its Limited Partners above its
+                                own interests, except to the extent disclosed and permitted under this Charter.</p>
+                            <div class="section-title font-semibold">10.2 Conflicts of Interest</div>
+                            <p>(a) The General Partner may act as manager or advisor to other funds, partnerships, or
+                                investment accounts with similar strategies. Limited Partners acknowledge and accept
+                                the possibility of such parallel activities, provided the General Partner uses
+                                reasonable care to allocate investment opportunities fairly.</p>
+                            <p>(b) The General Partner must disclose to Limited Partners any material conflict of
+                                interest that, in its reasonable opinion, could significantly and adversely affect the
+                                Fund.</p>
+                            <p>(c) Where conflicts arise, the General Partner shall adopt conflict resolution policies
+                                consistent with industry best practice and regulatory requirements.</p>
+                            <div class="section-title font-semibold">10.3 Related-Party Transactions</div>
+                            <p>(a) The Fund may enter into transactions with the General Partner or its affiliates,
+                                provided that such transactions are on terms no less favourable to the Fund than those
+                                available from unrelated third parties on an arm’s-length basis.</p>
+                            <p>(b) Any related-party transaction involving amounts exceeding 5% of the Fund’s NAV must
+                                be documented with a written rationale and disclosed to Limited Partners in the next
+                                quarterly report.</p>
+                            <p>(c) The Fund shall keep records of all related-party transactions for inspection by
+                                Limited Partners on reasonable notice.</p>
+                            <div class="section-title font-semibold">10.4 Dealings with AlgoHive Platform</div>
+                            <p>(a) Limited Partners acknowledge that the Fund’s investment strategy may be listed on the
+                                AlgoHive platform and mirrored by third-party clients. The Fund will retain 80% of
+                                profits from any mirror-investment profits, while AlgoHive will receive 20% of such
+                                profits, as described in Section 5.</p>
+                            <p>(b) Any listing, promotion, or transaction through the AlgoHive platform shall be
+                                considered a permitted related-party arrangement under this Charter.</p>
+                            <div class="section-title font-semibold">10.5 Disclosures</div>
+                            <p>(a) The General Partner shall maintain a register of all material conflicts of interest
+                                and make this available to Limited Partners on request, subject to reasonable
+                                confidentiality protections.</p>
+                            <p>(b) The General Partner shall review conflict-of-interest policies at least annually to
+                                ensure ongoing compliance with legal and ethical standards.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 11 — REGULATORY AND COMPLIANCE
+                            MATTERS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">11.1 Regulatory Framework</div>
+                            <p>The Fund shall operate under all applicable laws and regulations of the Republic of
+                                South Africa, including the Financial Advisory and Intermediary Services Act (FAIS),
+                                the Collective Investment Schemes Control Act (CISCA) to the extent applicable, and any
+                                other relevant legislation, as amended from time to time.</p>
+                            <div class="section-title font-semibold">11.2 FSCA Licensing</div>
+                            <p>(a) The General Partner shall ensure that any required licences or approvals from the
+                                Financial Sector Conduct Authority (FSCA) are obtained and maintained, including any
+                                required Category II discretionary mandates.</p>
+                            <p>(b) The Fund shall comply with all relevant codes of conduct, fit-and-proper
+                                requirements, and client protection rules prescribed by the FSCA.</p>
+                            <div class="section-title font-semibold">11.3 Anti-Money Laundering and KYC</div>
+                            <p>(a) The Fund shall implement and maintain robust anti-money laundering (AML),
+                                counter-terrorist financing (CTF), and know-your-customer (KYC) policies, in accordance
+                                with the Financial Intelligence Centre Act (FICA) and any other relevant legislation.
+                            </p>
+                            <p>(b) Limited Partners shall provide the necessary identification documents and other
+                                information to comply with these obligations before being admitted to the Fund.</p>
+                            <div class="section-title font-semibold">11.4 Tax Compliance</div>
+                            <p>(a) The General Partner shall ensure the Fund complies with all tax laws, including
+                                registration for any relevant tax numbers and preparation of tax returns.</p>
+                            <p>(b) The Fund shall comply with international tax transparency initiatives, including the
+                                Common Reporting Standard (CRS) and the Foreign Account Tax Compliance Act (FATCA),
+                                where applicable.</p>
+                            <p>(c) Limited Partners may be required to provide tax residency declarations and other
+                                relevant tax information to allow the Fund to meet its reporting obligations.</p>
+                            <div class="section-title font-semibold">11.5 Cross-Border Requirements</div>
+                            <p>(a) The Fund may accept investments from foreign Limited Partners, provided such
+                                acceptance does not breach any South African or international law, including exchange
+                                control regulations.</p>
+                            <p>(b) The General Partner shall ensure that any cross-border marketing, promotion, or
+                                acceptance of funds complies with the requirements of the South African Reserve Bank
+                                (SARB) and other relevant authorities.</p>
+                            <div class="section-title font-semibold">11.6 Dispute Resolution</div>
+                            <p>(a) The Fund shall include a dispute resolution mechanism in its Partnership Agreement,
+                                providing for mediation or arbitration under the Arbitration Foundation of Southern
+                                Africa rules as the preferred forum for resolving disputes.</p>
+                            <p>(b) Nothing in this Charter prevents either party from approaching a court with
+                                jurisdiction if required by law.</p>
+                            <div class="section-title font-semibold">11.7 Reporting to Regulators</div>
+                            <p>The General Partner shall prepare and submit all required reports to the FSCA, SARS, the
+                                FIC, or other competent regulators, in the form and frequency required by applicable
+                                legislation and best practice standards.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 12 — TERMINATION AND DISSOLUTION</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">12.1 Term of the Fund</div>
+                            <p>(a) The Fund shall have an initial term of ten (10) years from its formation date, unless
+                                terminated earlier in accordance with this Charter.</p>
+                            <p>(b) The General Partner may extend the term of the Fund in successive one-year periods
+                                after the initial term, unless a majority (by value) of Limited Partners object in
+                                writing within 60 days of notice of extension.</p>
+                            <div class="section-title font-semibold">12.2 Early Termination Events</div>
+                            <p>The Fund may be terminated before expiry of its term upon:</p>
+                            <p>(a) a written decision of the General Partner, provided reasonable notice is given to
+                                Limited Partners;</p>
+                            <p>(b) unanimous consent of all Limited Partners;</p>
+                            <p>(c) a material breach of applicable law, regulation, or fiduciary duty making
+                                continuation unlawful or impossible, as certified by competent legal opinion;</p>
+                            <p>(d) an order by a competent court or regulator to wind up the Fund.</p>
+                            <div class="section-title font-semibold">12.3 Dissolution Procedure</div>
+                            <p>(a) Upon termination of the Fund, the General Partner shall proceed with an orderly
+                                liquidation of the Fund’s assets, having regard to maximising fair value for Limited
+                                Partners.</p>
+                            <p>(b) Fund liabilities shall be settled first from the available assets, followed by
+                                repayment of Limited Partner contributions, and finally distribution of any remaining
+                                profits in accordance with their proportionate Units.</p>
+                            <p>(c) The General Partner shall provide a final liquidation report to all Limited Partners
+                                within 90 days of completing the dissolution.</p>
+                            <div class="section-title font-semibold">12.4 Preservation of Records</div>
+                            <p>The General Partner shall retain all books, records, and financial statements of the Fund
+                                for at least seven (7) years after dissolution, in accordance with applicable law.</p>
+                            <div class="section-title font-semibold">12.5 Limitation of Claims</div>
+                            <p>Except for fraud, willful misconduct, or gross negligence, no Limited Partner may pursue
+                                claims against the General Partner after one (1) year following the final liquidation
+                                report.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-title text-base font-semibold">SECTION 13 — MISCELLANEOUS PROVISIONS</div>
+                        <div class="mt-3 space-y-3">
+                            <div class="section-title font-semibold">13.1 Governing Law</div>
+                            <p>This Charter shall be governed by and interpreted in accordance with the laws of the
+                                Republic of South Africa.</p>
+                            <div class="section-title font-semibold">13.2 Notices</div>
+                            <p>(a) Any notice, demand, or other formal communication required under this Charter shall
+                                be made in writing and delivered by hand, courier, registered mail, or electronic mail
+                                to the addresses recorded for the Limited Partners in the Fund’s register, or to such
+                                other address as may be notified in writing.</p>
+                            <p>(b) Notices shall be deemed received:</p>
+                            <p>(i) if delivered by hand or courier, on the date of delivery;</p>
+                            <p>(ii) if sent by registered mail, seven (7) days after posting;</p>
+                            <p>(iii) if sent by email, on confirmation of successful transmission.</p>
+                            <div class="section-title font-semibold">13.3 Amendments</div>
+                            <p>(a) This Charter may be amended by the General Partner, provided any material amendment
+                                that adversely affects the rights of Limited Partners requires approval from Limited
+                                Partners holding at least a majority (by value) of Units.</p>
+                            <p>(b) Non-material or regulatory amendments may be made unilaterally by the General Partner
+                                to maintain compliance with laws or best practices.</p>
+                            <div class="section-title font-semibold">13.4 Severability</div>
+                            <p>If any provision of this Charter is found to be invalid or unenforceable, that provision
+                                shall be interpreted to best reflect the parties’ original intent, and the remaining
+                                provisions shall remain in full force and effect.</p>
+                            <div class="section-title font-semibold">13.5 Entire Agreement</div>
+                            <p>This Charter, together with the Partnership Agreement and any other Fund governance
+                                documents, constitutes the entire understanding between the parties and supersedes all
+                                prior oral or written agreements in respect of the subject matter.</p>
+                            <div class="section-title font-semibold">13.6 Counterparts and Execution</div>
+                            <p>This Charter may be signed in counterparts, including electronically, and all
+                                counterparts together shall constitute one binding agreement.</p>
+                        </div>
+                    </div>
+
+                    <div class="text-xs muted2">
+                        AlgoHive (Pty) Ltd is an authorised Financial Services Provider (FSP 55118) regulated by the
+                        Financial Sector Conduct Authority and a registered Credit Provider (NCRCP22892) under the
+                        National Credit Act.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>

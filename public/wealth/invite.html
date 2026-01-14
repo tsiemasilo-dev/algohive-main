@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global Opportunities Fund | Invite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --olive: 160, 200, 110;
+            --bg0: #07080a;
+            --bg1: #0a0c0a;
+            --bg2: #0c0f0b;
+        }
+
+        html,
+        body {
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        .horizon-bg {
+            background:
+                radial-gradient(900px 520px at 18% 92%, rgba(120, 170, 90, .20), transparent 60%),
+                radial-gradient(700px 460px at 86% 88%, rgba(160, 200, 110, .18), transparent 60%),
+                radial-gradient(900px 520px at 68% 8%, rgba(90, 140, 70, .14), transparent 60%),
+                radial-gradient(600px 360px at 16% 12%, rgba(110, 160, 80, .14), transparent 60%),
+                linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 55%, var(--bg2) 100%);
+            position: relative;
+        }
+
+        .horizon-bg:before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(1200px 700px at 50% 40%, rgba(255, 255, 255, .06), transparent 60%),
+                radial-gradient(1200px 800px at 50% 120%, rgba(var(--olive), .10), transparent 55%);
+            opacity: .9;
+        }
+
+        .horizon-bg:after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+            opacity: .06;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .10);
+            box-shadow:
+                0 18px 60px rgba(0, 0, 0, .55),
+                inset 0 1px 0 rgba(255, 255, 255, .08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .glass-soft {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .10);
+            box-shadow:
+                0 18px 60px rgba(0, 0, 0, .50),
+                inset 0 1px 0 rgba(255, 255, 255, .06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .corner-marks:before,
+        .corner-marks:after {
+            content: "";
+            position: absolute;
+            inset: 10px;
+            border-radius: 22px;
+            pointer-events: none;
+            background:
+                linear-gradient(#fff, #fff) left top/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) left top/1px 10px no-repeat,
+                linear-gradient(#fff, #fff) right top/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) right top/1px 10px no-repeat,
+                linear-gradient(#fff, #fff) left bottom/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) left bottom/1px 10px no-repeat,
+                linear-gradient(#fff, #fff) right bottom/10px 1px no-repeat,
+                linear-gradient(#fff, #fff) right bottom/1px 10px no-repeat;
+            opacity: .10;
+        }
+
+        .title-track {
+            letter-spacing: .42em;
+        }
+
+        .title-accent {
+            background: linear-gradient(90deg, rgba(255, 255, 255, .98), rgba(var(--olive), .98));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        header img {
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, .50));
+        }
+
+        .badge {
+            border: 1px solid rgba(255, 255, 255, .10);
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .muted {
+            color: rgba(255, 255, 255, .62);
+        }
+
+        .muted2 {
+            color: rgba(255, 255, 255, .46);
+        }
+
+        .subtle-border {
+            border: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .pill {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .10);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition: border-color .25s ease, background .25s ease, transform .25s ease;
+        }
+
+        .pill:hover {
+            border-color: rgba(var(--olive), .18);
+            background: rgba(255, 255, 255, .075);
+            transform: translateY(-2px);
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .55rem;
+            width: 100%;
+            padding: .95rem 1rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .10);
+            transition: transform .25s ease, background .25s ease, border-color .25s ease, box-shadow .25s ease;
+            color: rgba(255, 255, 255, .92);
+            font-size: .9rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+        }
+
+        .link-btn:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, .09);
+            border-color: rgba(var(--olive), .28);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .20);
+        }
+
+        .link-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            opacity: .9;
+        }
+
+        .btn-white {
+            background: rgba(255, 255, 255, .92);
+            color: #0b0a0e;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+            transition: box-shadow .25s ease, transform .15s ease, background .25s ease, opacity .25s ease;
+        }
+
+        .btn-white:hover {
+            background: rgba(255, 255, 255, .98);
+            box-shadow:
+                0 18px 40px rgba(0, 0, 0, .45),
+                0 0 0 1px rgba(var(--olive), .40);
+        }
+
+        .btn-white:active {
+            transform: translateY(1px);
+        }
+
+        .btn-white:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        .field {
+            transition: border-color .25s ease, background .25s ease, transform .2s ease;
+        }
+
+        .field:focus-within {
+            border-color: rgba(var(--olive), .35);
+            background: rgba(255, 255, 255, .07);
+            transform: translateY(-1px);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, .28);
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: none;
+            background-color: transparent;
+        }
+
+        input:focus-visible {
+            outline: none;
+            box-shadow: none;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, .04) inset;
+            -webkit-text-fill-color: rgba(255, 255, 255, .9);
+            caret-color: rgba(255, 255, 255, .9);
+            transition: background-color 9999s ease-in-out 0s;
+        }
+
+        .focus-ring:focus-visible {
+            outline: 2px solid rgba(var(--olive), .35);
+            outline-offset: 3px;
+            border-radius: 18px;
+        }
+
+        /* Single flip card */
+        .flip-stage {
+            perspective: 1400px;
+        }
+
+        .flip {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform .75s cubic-bezier(.2, .8, .2, 1);
+            display: grid;
+            /* key */
+        }
+
+        .flip.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .face {
+            grid-area: 1 / 1;
+            /* key */
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .back {
+            transform: rotateY(180deg);
+        }
+
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .flip,
+            .pill,
+            .link-btn,
+            .btn-white,
+            .field {
+                transition: none !important;
+            }
+
+            .pill:hover,
+            .link-btn:hover,
+            .btn-white:hover {
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen horizon-bg text-white">
+    <div class="mx-auto max-w-6xl px-6 py-10 relative">
+        <header class="text-center flex flex-col items-center">
+            <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive"
+                class="h-10 mb-3 opacity-90" />
+
+            <div class="text-sm title-track text-white/80">
+                GLOBAL OPPORTUNITIES <span class="title-accent font-semibold">FUND</span>
+            </div>
+
+            <div class="mt-4 badge rounded-full px-4 py-2 text-[11px] tracking-[.18em] text-white/65">
+                INVITE ONLY
+            </div>
+        </header>
+
+        <main class="mt-10 flex justify-center">
+            <div class="flip-stage relative w-full max-w-3xl">
+                <div id="flipCard" class="flip">
+                        <!-- FRONT FACE -->
+                        <section class="face glass-soft rounded-[26px] p-5 sm:p-6 relative overflow-hidden">
+                            <div class="corner-marks absolute inset-0 rounded-[26px]"></div>
+
+                            <div class="relative">
+                                <div class="text-[11px] tracking-[.22em] text-white/55">HOW IT WORKS</div>
+
+                                <h2 class="mt-3 text-2xl sm:text-[26px] font-semibold leading-tight">
+                                    Simple by design.<br />Institutional by standard.
+                                </h2>
+
+                                <div class="mt-4 text-sm muted leading-relaxed max-w-md">
+                                    A private offshore vehicle with clear ownership records, reporting, and disciplined
+                                    execution.
+                                </div>
+
+                                <div class="mt-5 grid grid-cols-1 gap-3">
+                                    <div class="pill rounded-2xl p-4">
+                                        <div class="flex items-start gap-3">
+                                            <div
+                                                class="h-9 w-9 rounded-xl bg-white/5 subtle-border flex items-center justify-center">
+                                                <span class="text-sm font-semibold text-white/80">1</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold">Accept invite and onboard</div>
+                                                <div class="text-xs muted mt-1">Create your account, verify your
+                                                    identity, and complete the required documentation.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pill rounded-2xl p-4">
+                                        <div class="flex items-start gap-3">
+                                            <div
+                                                class="h-9 w-9 rounded-xl bg-white/5 subtle-border flex items-center justify-center">
+                                                <span class="text-sm font-semibold text-white/80">2</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold">Subscribe to the fund</div>
+                                                <div class="text-xs muted mt-1">Purchase shares in the Global
+                                                    Opportunities Fund. Access your shareholder certificate and the
+                                                    share register.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pill rounded-2xl p-4">
+                                        <div class="flex items-start gap-3">
+                                            <div
+                                                class="h-9 w-9 rounded-xl bg-white/5 subtle-border flex items-center justify-center">
+                                                <span class="text-sm font-semibold text-white/80">3</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-semibold">Monitor performance</div>
+                                                <div class="text-xs muted mt-1">Track holdings, receive statements, and
+                                                    review strategy factsheets.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <a class="link-btn focus-ring" href="charter.html">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                                        </svg>
+                                        Governing charter
+                                    </a>
+
+                                    <a class="link-btn focus-ring" href="#" target="_blank" rel="noreferrer">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path d="M14 3h7v7" />
+                                            <path d="M10 14L21 3" />
+                                            <path d="M21 14v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6" />
+                                        </svg>
+                                        Latest factsheet
+                                    </a>
+                                </div>
+
+                                <div class="mt-3 grid grid-cols-1">
+                                    <button id="continueBtn" type="button"
+                                        class="btn-white w-full rounded-2xl py-4 text-sm font-semibold tracking-[.12em] focus-ring">
+                                        CONTINUE
+                                    </button>
+                                </div>
+
+                                <div class="mt-5 text-xs muted2 leading-relaxed">
+                                    Documents shown here are for information purposes only. Final terms and disclosures
+                                    will be presented during onboarding. Thank you.
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- BACK FACE -->
+                        <section class="face back glass-soft rounded-[26px] p-6 sm:p-7 relative overflow-hidden">
+                            <div class="corner-marks absolute inset-0 rounded-[26px]"></div>
+
+                            <div class="relative">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-[11px] tracking-[.22em] text-white/55">INVITATION</div>
+                                    <button id="backBtn" type="button" class="link-btn focus-ring"
+                                        style="width:auto; padding:.55rem .85rem; border-radius:14px;">
+                                        Back
+                                    </button>
+                                </div>
+
+                                <div id="inviteIntro">
+                                    <h1 class="mt-4 text-3xl sm:text-[34px] font-semibold leading-tight">
+                                        Accept your invite<br />to Global Opportunities Fund.
+                                    </h1>
+
+                                    <p class="mt-4 text-sm muted leading-relaxed max-w-md">
+                                        You have been invited to join our private fund. Complete the details below to
+                                        accept your invitation. We will guide you through identity checks,
+                                        documentation, and your initial subscription.
+                                    </p>
+                                </div>
+
+                                <form id="inviteForm" class="mt-7 space-y-3" novalidate>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div class="field rounded-2xl bg-white/5 subtle-border px-4 py-3">
+                                            <label for="email" class="text-xs text-white/60">Email</label>
+                                            <input id="email" name="email" type="email" required autocomplete="email"
+                                                class="mt-1 w-full bg-transparent text-sm"
+                                                placeholder="you@email.com" />
+                                        </div>
+
+                                        <div class="field rounded-2xl bg-white/5 subtle-border px-4 py-3">
+                                            <label for="fullName" class="text-xs text-white/60">Full name</label>
+                                            <input id="fullName" name="fullName" type="text" required
+                                                autocomplete="name" class="mt-1 w-full bg-transparent text-sm"
+                                                placeholder="Your full name" />
+                                        </div>
+                                    </div>
+
+                                    <div class="field rounded-2xl bg-white/5 subtle-border px-4 py-3">
+                                        <label for="referrer" class="text-xs text-white/60">Who invited you?</label>
+                                        <input id="referrer" name="referrer" type="text" required
+                                            class="mt-1 w-full bg-transparent text-sm"
+                                            placeholder="Name or organisation" />
+                                    </div>
+
+                                    <button id="submitBtn" type="submit"
+                                        class="btn-white w-full rounded-2xl py-4 text-sm font-semibold tracking-[.12em] focus-ring">
+                                        ACCEPT INVITE
+                                    </button>
+
+                                    <p id="msg" class="text-xs text-white/55 min-h-[18px]"></p>
+                                </form>
+
+                                <div id="successState"
+                                    class="mt-6 hidden rounded-2xl bg-white/5 subtle-border px-6 py-8 text-center">
+                                    <div
+                                        class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+                                        <svg class="h-6 w-6 text-[rgba(var(--olive),.95)]" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M20 6L9 17l-5-5" />
+                                        </svg>
+                                    </div>
+                                    <div class="mt-4 text-xs tracking-[.2em] text-white/50">Amazing!</div>
+                                    <div class="mt-2 text-xl font-semibold text-white">Congratulations. You're in!</div>
+                                </div>
+
+                                <div id="whatsNext" class="mt-6 hidden text-center">
+                                    <div
+                                        class="flex items-center justify-center gap-3 text-[11px] uppercase tracking-[.2em] text-white/45">
+                                        <span class="h-px w-16 bg-white/10"></span>
+                                        What's next
+                                        <span class="h-px w-16 bg-white/10"></span>
+                                    </div>
+                                    <div
+                                        class="mt-5 flex flex-col items-center gap-3 text-sm text-white/80 sm:flex-row sm:justify-center sm:gap-6">
+                                        <div class="text-center sm:text-left">
+                                            <div class="text-xs text-white/50">Step 1:</div>
+                                            <div class="mt-1 font-semibold text-white">Create an Account</div>
+                                        </div>
+                                        <span class="text-white/40">&gt;</span>
+                                        <div class="text-center sm:text-left">
+                                            <div class="text-xs text-white/50">Step 2:</div>
+                                            <div class="mt-1 font-semibold text-white">Verify Your Identity</div>
+                                        </div>
+                                        <span class="text-white/40">&gt;</span>
+                                        <div class="text-center sm:text-left">
+                                            <div class="text-xs text-white/50">Step 3:</div>
+                                            <div class="mt-1 font-semibold text-white">Sign Documents</div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-5">
+                                        <a href="#" class="link-btn focus-ring"
+                                            style="width:auto; padding:.75rem 1.4rem; border-radius:14px;">Get
+                                            Started</a>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 text-xs muted2 leading-relaxed">
+                                    By continuing you confirm this is a private invitation and not a public offer. Thank
+                                    you.
+                                    <br />
+                                    
+                                    AlgoHive (Pty) Ltd is an authorised Financial Services Provider (FSP 55118)
+                                    regulated by the Financial Sector Conduct Authority and a registered Credit Provider
+                                    (NCRCP22892) under the National Credit Act. All investment activity carries risk,
+                                    including the possible loss of capital and liquidity constraints. Any information
+                                    provided here is educational in nature, does not constitute personalised financial
+                                    advice, and should not be relied on as a recommendation to buy or sell securities.
+                                    Please consider whether investing is appropriate for your circumstances and consult
+                                    an independent adviser where necessary.
+                                    <br />
+
+                                </div>
+                            </div>
+                        </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script nonce="ALGOHIVE">
+        function getQueryParam(key) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(key) || "";
+        }
+
+        const flipCard = document.getElementById("flipCard");
+        const continueBtn = document.getElementById("continueBtn");
+        const backBtn = document.getElementById("backBtn");
+
+        const emailEl = document.getElementById("email");
+        const fullNameEl = document.getElementById("fullName");
+        const referrerEl = document.getElementById("referrer");
+        const msg = document.getElementById("msg");
+        const form = document.getElementById("inviteForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const successState = document.getElementById("successState");
+        const whatsNext = document.getElementById("whatsNext");
+        const inviteIntro = document.getElementById("inviteIntro");
+
+        emailEl.value = getQueryParam("email");
+
+        function setStatus(text) {
+            msg.textContent = text || "";
+        }
+
+        function setStatusHtml(html) {
+            msg.innerHTML = html || "";
+        }
+
+        function setSuccessState() {
+            form.classList.add("hidden");
+            successState.classList.remove("hidden");
+            whatsNext.classList.remove("hidden");
+            inviteIntro.classList.add("hidden");
+        }
+
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            submitBtn.textContent = isLoading ? "PLEASE WAIT" : "ACCEPT INVITE";
+        }
+
+        function validate() {
+            const email = emailEl.value.trim();
+            const fullName = fullNameEl.value.trim();
+            const invitedBy = referrerEl.value.trim();
+
+            if (!email || !email.includes("@")) return "Please enter a valid email.";
+            if (fullName.length < 2) return "Please enter your full name.";
+            if (invitedBy.length < 2) return "Please tell us who invited you.";
+            return "";
+        }
+
+        function flipToBack() {
+            flipCard.classList.add("is-flipped");
+            setTimeout(() => emailEl.focus(), 350);
+        }
+
+        function flipToFront() {
+            flipCard.classList.remove("is-flipped");
+            setTimeout(() => continueBtn.focus(), 350);
+        }
+
+        continueBtn.addEventListener("click", () => {
+            flipToBack();
+        });
+
+        backBtn.addEventListener("click", () => {
+            flipToFront();
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const error = validate();
+            if (error) {
+                setStatus(error);
+                return;
+            }
+
+            setLoading(true);
+            setStatus("Validating your invitation please wait");
+
+            const payload = {
+                email: emailEl.value.trim(),
+                full_name: fullNameEl.value.trim(),
+                invited_by: referrerEl.value.trim()
+            };
+
+            try {
+                const response = await fetch("/api/invites/accept", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 409) {
+                    setStatusHtml('You have already accepted the invite. Please <a href="/wealth/auth.html" class="underline">create an account</a> to continue.');
+                    setLoading(false);
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    setStatus(errorData.error || "Sorry something went wrong. Please try again.");
+                    setLoading(false);
+                    return;
+                }
+
+                setStatus("");
+                setSuccessState();
+            } catch (err) {
+                console.error(err);
+                setStatus("Sorry something went wrong. Please try again.");
+                setLoading(false);
+            }
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") flipToFront();
+        });
+    </script>
+</body>
+
+</html>

@@ -94,6 +94,14 @@
     }
   </style>
   <script nonce="ALGOHIVE">
+    // CRITICAL: Capture recovery tokens IMMEDIATELY before any async code runs
+    // This MUST be a synchronous non-module script to run first
+    (function() {
+      window.__RECOVERY_HASH__ = window.location.hash;
+      window.__RECOVERY_SEARCH__ = window.location.search;
+      console.log('[Reset] Captured hash:', window.__RECOVERY_HASH__);
+      console.log('[Reset] Captured search:', window.__RECOVERY_SEARCH__);
+    })();
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
@@ -217,19 +225,42 @@
     const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
 
-    // IMPORTANT: Use detectSessionInUrl: false to prevent Supabase from auto-processing
-    // and redirecting. We'll handle the recovery tokens manually.
+    // Use tokens captured IMMEDIATELY by the synchronous script in <head>
+    const capturedHash = window.__RECOVERY_HASH__ || '';
+    const capturedSearch = window.__RECOVERY_SEARCH__ || '';
+    console.log('[Reset] Captured hash:', capturedHash);
+    console.log('[Reset] Captured search:', capturedSearch);
+
+    // Parse tokens from the captured URL parts
+    function parseTokensFromUrl() {
+      // Try hash first (Supabase v2 default)
+      let params = new URLSearchParams(capturedHash.replace(/^#/, ''));
+      let type = params.get('type');
+      let accessToken = params.get('access_token');
+      let refreshToken = params.get('refresh_token');
+
+      // Also try query params
+      if (!accessToken) {
+        params = new URLSearchParams(capturedSearch);
+        type = params.get('type');
+        accessToken = params.get('access_token');
+        refreshToken = params.get('refresh_token');
+      }
+
+      return { type, accessToken, refreshToken };
+    }
+
+    const tokens = parseTokensFromUrl();
+    console.log('[Reset] Parsed tokens - type:', tokens.type, 'hasAccess:', !!tokens.accessToken, 'hasRefresh:', !!tokens.refreshToken);
+
+    // Create Supabase client - detectSessionInUrl: false since we handle tokens manually
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { 
         persistSession: true, 
         autoRefreshToken: true, 
-        detectSessionInUrl: false  // Prevent auto-processing of URL tokens
+        detectSessionInUrl: false
       }
     });
-
-    // Capture tokens from URL IMMEDIATELY before anything else runs
-    const capturedHash = window.location.hash;
-    const capturedSearch = window.location.search;
 
     const preloader = document.getElementById("preloader");
     window.addEventListener("load", () => {
@@ -408,71 +439,70 @@
       // First check for existing session
       let { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        console.log("Found existing session");
+        console.log("[Reset] Found existing session");
         return session;
       }
 
-      // Try to extract tokens from CAPTURED URL hash (before any modifications)
-      const hash = new URLSearchParams(capturedHash.replace(/^#/, ""));
-      const type = hash.get("type");
-      const access_token = hash.get("access_token");
-      const refresh_token = hash.get("refresh_token");
-
-      console.log("Recovery attempt - type:", type, "has_access_token:", !!access_token, "has_refresh_token:", !!refresh_token);
-
-      if (type === "recovery" && access_token && refresh_token) {
-        const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
-        if (error) {
-          console.error("setSession error:", error);
-          return null;
-        }
-        console.log("Session set successfully from hash tokens");
-        return data.session;
-      }
-
-      // Also check CAPTURED URL query params (some Supabase versions use this)
-      const params = new URLSearchParams(capturedSearch);
-      const queryType = params.get("type");
-      const queryAccessToken = params.get("access_token");
-      const queryRefreshToken = params.get("refresh_token");
-
-      if (queryType === "recovery" && queryAccessToken && queryRefreshToken) {
+      // Use pre-parsed tokens
+      const { type, accessToken, refreshToken } = tokens;
+      
+      if (type === "recovery" && accessToken && refreshToken) {
+        console.log("[Reset] Setting session from recovery tokens...");
         const { data, error } = await supabase.auth.setSession({ 
-          access_token: queryAccessToken, 
-          refresh_token: queryRefreshToken 
+          access_token: accessToken, 
+          refresh_token: refreshToken 
         });
         if (error) {
-          console.error("setSession error:", error);
+          console.error("[Reset] setSession error:", error);
           return null;
         }
-        console.log("Session set successfully from query tokens");
+        console.log("[Reset] Session set successfully!");
         return data.session;
       }
 
-      console.log("No recovery tokens found in URL");
+      // Also handle magiclink/signup type if that's what we got
+      if (accessToken && refreshToken) {
+        console.log("[Reset] Setting session from tokens (type:", type, ")...");
+        const { data, error } = await supabase.auth.setSession({ 
+          access_token: accessToken, 
+          refresh_token: refreshToken 
+        });
+        if (error) {
+          console.error("[Reset] setSession error:", error);
+          return null;
+        }
+        console.log("[Reset] Session set successfully!");
+        return data.session;
+      }
+
+      console.log("[Reset] No recovery tokens found");
       return null;
     }
 
     // Listen for auth state changes
+    let sessionEstablished = false;
     supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event);
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        if (session) {
-          hideMsg();
-          form.classList.remove("hidden");
-        }
+      console.log("[Reset] Auth state changed:", event);
+      if ((event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") && session) {
+        sessionEstablished = true;
+        hideMsg();
+        form.classList.remove("hidden");
       }
     });
 
-    // Initialize
+    // Initialize - try to establish recovery session
+    console.log("[Reset] Initializing...");
     const session = await ensureRecoverySession();
+    
     if (session) {
-      // Clear the URL hash for cleaner appearance (but we already have the session)
+      console.log("[Reset] Session established, showing form");
+      // Clean URL but stay on page
       if (window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname);
       }
       form.classList.remove("hidden");
-    } else {
+    } else if (!sessionEstablished) {
+      console.log("[Reset] No session, showing error");
       showMsg("Recovery link invalid or expired. Please request a new password reset link.", "error");
       form.classList.add("hidden");
     }

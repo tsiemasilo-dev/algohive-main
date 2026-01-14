@@ -129,7 +129,20 @@
           <form id="reset-form" class="space-y-5 text-left sm:max-w-md">
             <div class="space-y-2">
               <label class="text-sm font-medium text-slate-700" for="new-password">New password</label>
-              <input id="new-password" name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[rgba(126,141,82,0.25)]" required />
+              <input id="new-password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[rgba(126,141,82,0.25)]" required />
+              <div id="password-strength" class="hidden mt-2">
+                <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div id="strength-bar" class="h-full transition-all duration-300" style="width: 0%; background: #ef4444;"></div>
+                </div>
+                <p id="strength-text" class="text-xs mt-1 text-slate-500">Password strength: <span id="strength-label">Weak</span></p>
+              </div>
+              <ul id="password-requirements" class="mt-2 text-xs text-slate-500 space-y-1">
+                <li id="req-length" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>At least 8 characters</li>
+                <li id="req-upper" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One uppercase letter (A-Z)</li>
+                <li id="req-lower" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One lowercase letter (a-z)</li>
+                <li id="req-number" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One number (0-9)</li>
+                <li id="req-special" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One special character (!@#$%^&*)</li>
+              </ul>
             </div>
             <div class="space-y-2">
               <label class="text-sm font-medium text-slate-700" for="confirm-password">Confirm password</label>
@@ -273,6 +286,77 @@
       btn.textContent = on ? "Updating…" : "Update password";
     }
 
+    // Password validation
+    const passwordStrengthDiv = document.getElementById("password-strength");
+    const strengthBar = document.getElementById("strength-bar");
+    const strengthLabel = document.getElementById("strength-label");
+    const reqLength = document.getElementById("req-length");
+    const reqUpper = document.getElementById("req-upper");
+    const reqLower = document.getElementById("req-lower");
+    const reqNumber = document.getElementById("req-number");
+    const reqSpecial = document.getElementById("req-special");
+
+    function isPasswordValid(password) {
+      return password.length >= 8 &&
+        /[A-Z]/.test(password) &&
+        /[a-z]/.test(password) &&
+        /[0-9]/.test(password) &&
+        /[!@#$%^&*()\-_=+{}\[\]|;:,.<>?\/]/.test(password);
+    }
+
+    function updatePasswordStrength(password) {
+      if (!password) {
+        passwordStrengthDiv.classList.add("hidden");
+        return;
+      }
+      passwordStrengthDiv.classList.remove("hidden");
+
+      const checks = {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        lower: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*()\-_=+{}\[\]|;:,.<>?\/]/.test(password)
+      };
+
+      // Update requirement indicators
+      const updateReq = (el, valid) => {
+        const icon = el.querySelector("span");
+        if (valid) {
+          el.classList.add("text-[var(--olive)]");
+          el.classList.remove("text-slate-500");
+          icon.style.background = "var(--olive)";
+          icon.style.borderColor = "var(--olive)";
+          icon.innerHTML = "✓";
+          icon.style.color = "white";
+        } else {
+          el.classList.remove("text-[var(--olive)]");
+          el.classList.add("text-slate-500");
+          icon.style.background = "";
+          icon.style.borderColor = "";
+          icon.innerHTML = "";
+        }
+      };
+
+      updateReq(reqLength, checks.length);
+      updateReq(reqUpper, checks.upper);
+      updateReq(reqLower, checks.lower);
+      updateReq(reqNumber, checks.number);
+      updateReq(reqSpecial, checks.special);
+
+      // Calculate strength
+      const passed = Object.values(checks).filter(Boolean).length;
+      let strength = "Weak", color = "#ef4444", width = "25%";
+      if (passed >= 5) { strength = "Very Strong"; color = "#10b981"; width = "100%"; }
+      else if (passed >= 4) { strength = "Strong"; color = "#22c55e"; width = "75%"; }
+      else if (passed >= 3) { strength = "Medium"; color = "#f59e0b"; width = "50%"; }
+
+      strengthBar.style.width = width;
+      strengthBar.style.background = color;
+      strengthLabel.textContent = strength;
+      strengthLabel.style.color = color;
+    }
+
     function updateConfirmHint() {
       const pass = passwordInput.value.trim();
       const confirm = confirmInput.value.trim();
@@ -284,11 +368,13 @@
     function updateButtonState() {
       const passwordsMatch = updateConfirmHint();
       const hasValues = passwordInput.value.trim().length > 0 && confirmInput.value.trim().length > 0;
-      const canSubmit = passwordsMatch && hasValues && agree.checked;
+      const passwordValid = isPasswordValid(passwordInput.value.trim());
+      const canSubmit = passwordsMatch && hasValues && agree.checked && passwordValid;
       btn.disabled = !canSubmit;
     }
 
     passwordInput.addEventListener("input", () => {
+      updatePasswordStrength(passwordInput.value);
       updateButtonState();
       hideMsg();
     });
@@ -302,9 +388,11 @@
     });
 
     async function ensureRecoverySession() {
+      // First check for existing session
       let { data: { session } } = await supabase.auth.getSession();
       if (session) return session;
 
+      // Try to extract tokens from URL hash (Supabase format)
       const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
       const type = hash.get("type");
       const access_token = hash.get("access_token");
@@ -313,17 +401,46 @@
       if (type === "recovery" && access_token && refresh_token) {
         const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
         if (error) {
-          console.error(error);
+          console.error("setSession error:", error);
           return null;
         }
         return data.session;
       }
+
+      // Also check URL query params (some Supabase versions use this)
+      const params = new URLSearchParams(location.search);
+      const queryType = params.get("type");
+      const queryAccessToken = params.get("access_token");
+      const queryRefreshToken = params.get("refresh_token");
+
+      if (queryType === "recovery" && queryAccessToken && queryRefreshToken) {
+        const { data, error } = await supabase.auth.setSession({ 
+          access_token: queryAccessToken, 
+          refresh_token: queryRefreshToken 
+        });
+        if (error) {
+          console.error("setSession error:", error);
+          return null;
+        }
+        return data.session;
+      }
+
       return null;
     }
 
+    // Listen for auth state changes (in case Supabase auto-detects the recovery)
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        if (session) {
+          hideMsg();
+          form.classList.remove("hidden");
+        }
+      }
+    });
+
     const session = await ensureRecoverySession();
     if (!session) {
-      showMsg("Recovery link invalid or expired. Click the email link again.", "error");
+      showMsg("Recovery link invalid or expired. Please request a new password reset link.", "error");
       form.classList.add("hidden");
     }
 
@@ -336,6 +453,10 @@
       if (pass !== confirm) {
         updateButtonState();
         showMsg("Passwords must match before we can update them.", "error");
+        return;
+      }
+      if (!isPasswordValid(pass)) {
+        showMsg("Please ensure your password meets all the security requirements.", "error");
         return;
       }
       if (!agree.checked) {

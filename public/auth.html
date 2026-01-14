@@ -1028,23 +1028,8 @@
                             fForm.email.value = userEmail;
                             fWrap.classList.remove('hidden');
                             
-                            showMsg(`${prefix}-msg`, "Your password doesn't meet our updated security requirements. Sending reset link...", "error");
-                            
-                            // Auto-trigger password reset with proper error handling
-                            try {
-                                const { error: resetError } = await supabase.auth.resetPasswordForEmail(userEmail, { 
-                                    redirectTo: window.location.origin + "/reset" 
-                                });
-                                
-                                if (resetError) {
-                                    showMsg(`${prefix}-msg`, "Could not send reset email. Please click 'Send reset link' to try again.", "error");
-                                } else {
-                                    showMsg(`${prefix}-msg`, "Password reset link sent to your email. Please check your inbox and create a stronger password.", "success");
-                                }
-                            } catch (resetErr) {
-                                console.error("Reset error:", resetErr);
-                                showMsg(`${prefix}-msg`, "Could not send reset email automatically. Please click 'Send reset link' to try again.", "error");
-                            }
+                            // Show message prompting user to click the send button - don't auto-send
+                            showMsg(`${prefix}-msg`, "Your password doesn't meet our updated security requirements. Please click 'Send reset link' below to receive an email with instructions to create a stronger password.", "error");
                         } else {
                             showMsg(`${prefix}-msg`, "Your password doesn't meet our security requirements. Please use 'Forgot password?' to reset it.", "error");
                         }
@@ -1142,7 +1127,7 @@
                     sBtn.disabled = true; sBtn.textContent = "Sending...";
                     
                     try {
-                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: "https://thealgohive.com/reset" });
+                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: window.location.origin + "/reset.html" });
                         if(error) throw error;
                         showMsg(`${prefix}-msg`, "Reset link sent (if account exists).", "success");
                         fWrap.classList.add('hidden');

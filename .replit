@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Credit Check Server"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Credit Check Server"
+name = "Start application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd \"the button\" && npm start"
+args = "node server.js"
 waitForPort = 5000
 
 [workflows.workflow.metadata]

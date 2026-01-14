@@ -372,6 +372,50 @@
                   </form>
                 </div>
 
+                <div id="hive-upgrade-wrap" class="mt-8 hidden w-full max-w-md rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+                  <div class="flex items-start gap-3 mb-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                      <h2 class="text-sm font-semibold text-slate-700">Password update required</h2>
+                      <p class="text-xs text-slate-500 mt-0.5">Your password doesn't meet our current security requirements. Please create a new password to continue.</p>
+                    </div>
+                  </div>
+                  <form id="hive-upgrade-form" class="space-y-4">
+                    <div class="space-y-1">
+                      <label class="text-xs font-medium text-slate-600">Current password</label>
+                      <input id="hive-upgrade-current" name="current_password" type="password" placeholder="Enter your current password" autocomplete="current-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                    </div>
+                    <div class="space-y-1">
+                      <label class="text-xs font-medium text-slate-600">New password</label>
+                      <input id="hive-upgrade-password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <div class="password-strength-container">
+                        <div class="password-strength-bar">
+                          <div class="password-strength-fill" id="hive-upgrade-strength-fill"></div>
+                        </div>
+                        <div class="password-strength-text" id="hive-upgrade-strength-text"></div>
+                      </div>
+                      <div class="password-requirements">
+                        <p>Password must have:</p>
+                        <ul>
+                          <li id="hive-upgrade-req-length"><span class="check-icon"></span>8+ characters</li>
+                          <li id="hive-upgrade-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                          <li id="hive-upgrade-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                          <li id="hive-upgrade-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                          <li id="hive-upgrade-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="space-y-1">
+                      <label class="text-xs font-medium text-slate-600">Confirm new password</label>
+                      <input id="hive-upgrade-confirm" name="confirm_password" type="password" placeholder="Re-enter your new password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <p id="hive-upgrade-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+                    </div>
+                    <button id="hive-upgrade-btn" type="submit" class="btn-shine w-full rounded-2xl bg-hive px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition bg-hive-hover disabled:cursor-not-allowed disabled:opacity-60" disabled>Update password</button>
+                  </form>
+                </div>
+
                 <section id="hive-panel-up" class="hidden space-y-6">
                   <form id="hive-signup-form" class="space-y-5 text-left sm:max-w-md">
                     <div class="space-y-2">
@@ -505,6 +549,50 @@
                     <p id="money-reset-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
                   </div>
                   <button id="money-reset-btn" type="submit" class="btn-shine w-full rounded-2xl bg-money-grad px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" disabled>Update password</button>
+                </form>
+              </div>
+
+              <div id="money-upgrade-wrap" class="mt-8 hidden w-full max-w-md rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+                <div class="flex items-start gap-3 mb-4">
+                  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                  </div>
+                  <div>
+                    <h2 class="text-sm font-semibold text-slate-700">Password update required</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Your password doesn't meet our current security requirements. Please create a new password to continue.</p>
+                  </div>
+                </div>
+                <form id="money-upgrade-form" class="space-y-4">
+                  <div class="space-y-1">
+                    <label class="text-xs font-medium text-slate-600">Current password</label>
+                    <input id="money-upgrade-current" name="current_password" type="password" placeholder="Enter your current password" autocomplete="current-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-xs font-medium text-slate-600">New password</label>
+                    <input id="money-upgrade-password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <div class="password-strength-container">
+                      <div class="password-strength-bar">
+                        <div class="password-strength-fill" id="money-upgrade-strength-fill"></div>
+                      </div>
+                      <div class="password-strength-text" id="money-upgrade-strength-text"></div>
+                    </div>
+                    <div class="password-requirements">
+                      <p>Password must have:</p>
+                      <ul>
+                        <li id="money-upgrade-req-length"><span class="check-icon"></span>8+ characters</li>
+                        <li id="money-upgrade-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                        <li id="money-upgrade-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                        <li id="money-upgrade-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                        <li id="money-upgrade-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-xs font-medium text-slate-600">Confirm new password</label>
+                    <input id="money-upgrade-confirm" name="confirm_password" type="password" placeholder="Re-enter your new password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <p id="money-upgrade-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+                  </div>
+                  <button id="money-upgrade-btn" type="submit" class="btn-shine w-full rounded-2xl bg-money-grad px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" disabled>Update password</button>
                 </form>
               </div>
 
@@ -1189,21 +1277,25 @@
                             sessionStorage.clear();
                         }
                         
-                        // Show the forgot password panel and trigger reset email
-                        const fWrap = document.getElementById(`${prefix}-forgot-wrap`);
-                        const fForm = document.getElementById(`${prefix}-forgot-form`);
+                        // Show the password upgrade panel (simpler than email reset)
+                        const uWrap = document.getElementById(`${prefix}-upgrade-wrap`);
                         const userEmail = loginForm.email.value.trim();
                         
-                        if (fWrap && fForm) {
-                            // Hide login panel, show forgot password panel
-                            document.getElementById(`${prefix}-panel-in`).classList.add('hidden');
-                            fForm.email.value = userEmail;
-                            fWrap.classList.remove('hidden');
+                        if (uWrap) {
+                            // Store email for upgrade form submission
+                            uWrap.dataset.email = userEmail;
                             
-                            // Show message prompting user to click the send button - don't auto-send
-                            showMsg(`${prefix}-msg`, "Your password doesn't meet our updated security requirements. Please click 'Send reset link' below to receive an email with instructions to create a stronger password.", "error");
-                        } else {
-                            showMsg(`${prefix}-msg`, "Your password doesn't meet our security requirements. Please use 'Forgot password?' to reset it.", "error");
+                            // Hide login panel, show upgrade panel
+                            document.getElementById(`${prefix}-panel-in`).classList.add('hidden');
+                            uWrap.classList.remove('hidden');
+                            
+                            // Clear any previous input
+                            const currentInput = document.getElementById(`${prefix}-upgrade-current`);
+                            const newInput = document.getElementById(`${prefix}-upgrade-password`);
+                            const confirmInput = document.getElementById(`${prefix}-upgrade-confirm`);
+                            if (currentInput) currentInput.value = '';
+                            if (newInput) newInput.value = '';
+                            if (confirmInput) confirmInput.value = '';
                         }
                         
                         btn.disabled = false; btn.textContent = ogText;
@@ -1436,6 +1528,122 @@
                     showMsg(`${prefix}-msg`, err.message || "Failed to update password.", "error");
                     rBtn.disabled = false;
                     rBtn.textContent = "Update password";
+                }
+            };
+        }
+
+        // Password Upgrade Form Logic (for users with outdated passwords)
+        const uWrap = document.getElementById(`${prefix}-upgrade-wrap`);
+        const uForm = document.getElementById(`${prefix}-upgrade-form`);
+        const uCurrent = document.getElementById(`${prefix}-upgrade-current`);
+        const uPassword = document.getElementById(`${prefix}-upgrade-password`);
+        const uConfirm = document.getElementById(`${prefix}-upgrade-confirm`);
+        const uBtn = document.getElementById(`${prefix}-upgrade-btn`);
+        const uConfirmHint = document.getElementById(`${prefix}-upgrade-confirm-hint`);
+        const uStrengthFill = document.getElementById(`${prefix}-upgrade-strength-fill`);
+        const uStrengthText = document.getElementById(`${prefix}-upgrade-strength-text`);
+
+        if (uForm && uCurrent && uPassword && uConfirm && uBtn) {
+            function checkUpgradePasswordRequirements(password) {
+                const checks = {
+                    length: password.length >= 8,
+                    upper: /[A-Z]/.test(password),
+                    lower: /[a-z]/.test(password),
+                    number: /[0-9]/.test(password),
+                    special: /[!@#$%^&*()\-_=+{}\[\]|;:,.<>?\/]/.test(password)
+                };
+
+                // Update requirement indicators
+                ['length', 'upper', 'lower', 'number', 'special'].forEach(req => {
+                    const el = document.getElementById(`${prefix}-upgrade-req-${req}`);
+                    if (el) el.classList.toggle('valid', checks[req]);
+                });
+
+                // Calculate strength
+                const passed = Object.values(checks).filter(Boolean).length;
+                let strength = 'weak';
+                if (passed >= 5) strength = 'very-strong';
+                else if (passed >= 4) strength = 'strong';
+                else if (passed >= 3) strength = 'medium';
+
+                if (uStrengthFill) {
+                    uStrengthFill.className = 'password-strength-fill ' + strength;
+                }
+                if (uStrengthText) {
+                    uStrengthText.className = 'password-strength-text ' + strength;
+                    const labels = { weak: 'Weak', medium: 'Medium', strong: 'Strong', 'very-strong': 'Very Strong' };
+                    uStrengthText.textContent = labels[strength];
+                }
+
+                return Object.values(checks).every(Boolean);
+            }
+
+            function updateUpgradeButtonState() {
+                const current = uCurrent.value.trim();
+                const pass = uPassword.value.trim();
+                const confirm = uConfirm.value.trim();
+                const passwordsMatch = pass === confirm;
+                const passwordValid = checkUpgradePasswordRequirements(pass);
+                
+                if (uConfirmHint) {
+                    uConfirmHint.classList.toggle('hidden', passwordsMatch || confirm.length === 0);
+                }
+                
+                uBtn.disabled = !(current.length > 0 && passwordsMatch && passwordValid && pass.length > 0 && confirm.length > 0);
+            }
+
+            uCurrent.addEventListener('input', updateUpgradeButtonState);
+            uPassword.addEventListener('input', updateUpgradeButtonState);
+            uConfirm.addEventListener('input', updateUpgradeButtonState);
+
+            uForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const current = uCurrent.value.trim();
+                const pass = uPassword.value.trim();
+                const confirm = uConfirm.value.trim();
+                const email = uWrap.dataset.email;
+                
+                if (pass !== confirm) {
+                    showMsg(`${prefix}-msg`, "Passwords must match.", "error");
+                    return;
+                }
+                if (!checkUpgradePasswordRequirements(pass)) {
+                    showMsg(`${prefix}-msg`, "Please ensure your password meets all requirements.", "error");
+                    return;
+                }
+
+                uBtn.disabled = true;
+                uBtn.textContent = "Updating...";
+
+                try {
+                    // First, verify current password by signing in
+                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: current
+                    });
+                    
+                    if (signInError) {
+                        throw new Error("Current password is incorrect.");
+                    }
+
+                    // Now update the password
+                    const { error: updateError } = await supabase.auth.updateUser({ 
+                        password: pass,
+                        data: { password_version: 2 }
+                    });
+                    
+                    if (updateError) throw updateError;
+                    
+                    showMsg(`${prefix}-msg`, "Password updated successfully! Redirecting...", "success");
+                    uWrap.classList.add('hidden');
+                    
+                    // Redirect to appropriate page
+                    const accType = fixedAccountType || localStorage.getItem("ah_account_type") || "live";
+                    await routePostAuth(redirectUrl, accType);
+                } catch (err) {
+                    showMsg(`${prefix}-msg`, err.message || "Failed to update password.", "error");
+                    uBtn.disabled = false;
+                    uBtn.textContent = "Update password";
                 }
             };
         }

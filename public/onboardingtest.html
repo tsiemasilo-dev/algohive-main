@@ -1222,7 +1222,7 @@
                     sBtn.disabled = true; sBtn.textContent = "Sending...";
                     
                     try {
-                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: window.location.origin + "/reset.html" });
+                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: "https://thealgohive.com/reset" });
                         if(error) throw error;
                         showMsg(`${prefix}-msg`, "Reset link sent (if account exists).", "success");
                         fWrap.classList.add('hidden');

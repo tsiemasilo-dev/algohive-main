@@ -94,14 +94,6 @@
     }
   </style>
   <script nonce="ALGOHIVE">
-    // CRITICAL: Capture recovery tokens IMMEDIATELY before any async code runs
-    // This MUST be a synchronous non-module script to run first
-    (function() {
-      window.__RECOVERY_HASH__ = window.location.hash;
-      window.__RECOVERY_SEARCH__ = window.location.search;
-      console.log('[Reset] Captured hash:', window.__RECOVERY_HASH__);
-      console.log('[Reset] Captured search:', window.__RECOVERY_SEARCH__);
-    })();
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
@@ -137,20 +129,7 @@
           <form id="reset-form" class="space-y-5 text-left sm:max-w-md">
             <div class="space-y-2">
               <label class="text-sm font-medium text-slate-700" for="new-password">New password</label>
-              <input id="new-password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[rgba(126,141,82,0.25)]" required />
-              <div id="password-strength" class="hidden mt-2">
-                <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div id="strength-bar" class="h-full transition-all duration-300" style="width: 0%; background: #ef4444;"></div>
-                </div>
-                <p id="strength-text" class="text-xs mt-1 text-slate-500">Password strength: <span id="strength-label">Weak</span></p>
-              </div>
-              <ul id="password-requirements" class="mt-2 text-xs text-slate-500 space-y-1">
-                <li id="req-length" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>At least 8 characters</li>
-                <li id="req-upper" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One uppercase letter (A-Z)</li>
-                <li id="req-lower" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One lowercase letter (a-z)</li>
-                <li id="req-number" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One number (0-9)</li>
-                <li id="req-special" class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[8px]"></span>One special character (!@#$%^&*)</li>
-              </ul>
+              <input id="new-password" name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-[var(--olive)] focus:outline-none focus:ring-2 focus:ring-[rgba(126,141,82,0.25)]" required />
             </div>
             <div class="space-y-2">
               <label class="text-sm font-medium text-slate-700" for="confirm-password">Confirm password</label>
@@ -220,47 +199,7 @@
   </div>
 
   <script type="module" nonce="ALGOHIVE">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
-
-    // Use tokens captured IMMEDIATELY by the synchronous script in <head>
-    const capturedHash = window.__RECOVERY_HASH__ || '';
-    const capturedSearch = window.__RECOVERY_SEARCH__ || '';
-    console.log('[Reset] Captured hash:', capturedHash);
-    console.log('[Reset] Captured search:', capturedSearch);
-
-    // Parse tokens from the captured URL parts
-    function parseTokensFromUrl() {
-      // Try hash first (Supabase v2 default)
-      let params = new URLSearchParams(capturedHash.replace(/^#/, ''));
-      let type = params.get('type');
-      let accessToken = params.get('access_token');
-      let refreshToken = params.get('refresh_token');
-
-      // Also try query params
-      if (!accessToken) {
-        params = new URLSearchParams(capturedSearch);
-        type = params.get('type');
-        accessToken = params.get('access_token');
-        refreshToken = params.get('refresh_token');
-      }
-
-      return { type, accessToken, refreshToken };
-    }
-
-    const tokens = parseTokensFromUrl();
-    console.log('[Reset] Parsed tokens - type:', tokens.type, 'hasAccess:', !!tokens.accessToken, 'hasRefresh:', !!tokens.refreshToken);
-
-    // Create Supabase client - detectSessionInUrl: false since we handle tokens manually
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { 
-        persistSession: true, 
-        autoRefreshToken: true, 
-        detectSessionInUrl: false
-      }
-    });
+    import { supabase } from "/js/supabase.js";
 
     const preloader = document.getElementById("preloader");
     window.addEventListener("load", () => {
@@ -334,77 +273,6 @@
       btn.textContent = on ? "Updating…" : "Update password";
     }
 
-    // Password validation
-    const passwordStrengthDiv = document.getElementById("password-strength");
-    const strengthBar = document.getElementById("strength-bar");
-    const strengthLabel = document.getElementById("strength-label");
-    const reqLength = document.getElementById("req-length");
-    const reqUpper = document.getElementById("req-upper");
-    const reqLower = document.getElementById("req-lower");
-    const reqNumber = document.getElementById("req-number");
-    const reqSpecial = document.getElementById("req-special");
-
-    function isPasswordValid(password) {
-      return password.length >= 8 &&
-        /[A-Z]/.test(password) &&
-        /[a-z]/.test(password) &&
-        /[0-9]/.test(password) &&
-        /[!@#$%^&*()\-_=+{}\[\]|;:,.<>?\/]/.test(password);
-    }
-
-    function updatePasswordStrength(password) {
-      if (!password) {
-        passwordStrengthDiv.classList.add("hidden");
-        return;
-      }
-      passwordStrengthDiv.classList.remove("hidden");
-
-      const checks = {
-        length: password.length >= 8,
-        upper: /[A-Z]/.test(password),
-        lower: /[a-z]/.test(password),
-        number: /[0-9]/.test(password),
-        special: /[!@#$%^&*()\-_=+{}\[\]|;:,.<>?\/]/.test(password)
-      };
-
-      // Update requirement indicators
-      const updateReq = (el, valid) => {
-        const icon = el.querySelector("span");
-        if (valid) {
-          el.classList.add("text-[var(--olive)]");
-          el.classList.remove("text-slate-500");
-          icon.style.background = "var(--olive)";
-          icon.style.borderColor = "var(--olive)";
-          icon.innerHTML = "✓";
-          icon.style.color = "white";
-        } else {
-          el.classList.remove("text-[var(--olive)]");
-          el.classList.add("text-slate-500");
-          icon.style.background = "";
-          icon.style.borderColor = "";
-          icon.innerHTML = "";
-        }
-      };
-
-      updateReq(reqLength, checks.length);
-      updateReq(reqUpper, checks.upper);
-      updateReq(reqLower, checks.lower);
-      updateReq(reqNumber, checks.number);
-      updateReq(reqSpecial, checks.special);
-
-      // Calculate strength
-      const passed = Object.values(checks).filter(Boolean).length;
-      let strength = "Weak", color = "#ef4444", width = "25%";
-      if (passed >= 5) { strength = "Very Strong"; color = "#10b981"; width = "100%"; }
-      else if (passed >= 4) { strength = "Strong"; color = "#22c55e"; width = "75%"; }
-      else if (passed >= 3) { strength = "Medium"; color = "#f59e0b"; width = "50%"; }
-
-      strengthBar.style.width = width;
-      strengthBar.style.background = color;
-      strengthLabel.textContent = strength;
-      strengthLabel.style.color = color;
-    }
-
     function updateConfirmHint() {
       const pass = passwordInput.value.trim();
       const confirm = confirmInput.value.trim();
@@ -416,13 +284,11 @@
     function updateButtonState() {
       const passwordsMatch = updateConfirmHint();
       const hasValues = passwordInput.value.trim().length > 0 && confirmInput.value.trim().length > 0;
-      const passwordValid = isPasswordValid(passwordInput.value.trim());
-      const canSubmit = passwordsMatch && hasValues && agree.checked && passwordValid;
+      const canSubmit = passwordsMatch && hasValues && agree.checked;
       btn.disabled = !canSubmit;
     }
 
     passwordInput.addEventListener("input", () => {
-      updatePasswordStrength(passwordInput.value);
       updateButtonState();
       hideMsg();
     });
@@ -436,74 +302,28 @@
     });
 
     async function ensureRecoverySession() {
-      // First check for existing session
       let { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        console.log("[Reset] Found existing session");
-        return session;
-      }
+      if (session) return session;
 
-      // Use pre-parsed tokens
-      const { type, accessToken, refreshToken } = tokens;
-      
-      if (type === "recovery" && accessToken && refreshToken) {
-        console.log("[Reset] Setting session from recovery tokens...");
-        const { data, error } = await supabase.auth.setSession({ 
-          access_token: accessToken, 
-          refresh_token: refreshToken 
-        });
+      const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const type = hash.get("type");
+      const access_token = hash.get("access_token");
+      const refresh_token = hash.get("refresh_token");
+
+      if (type === "recovery" && access_token && refresh_token) {
+        const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
         if (error) {
-          console.error("[Reset] setSession error:", error);
+          console.error(error);
           return null;
         }
-        console.log("[Reset] Session set successfully!");
         return data.session;
       }
-
-      // Also handle magiclink/signup type if that's what we got
-      if (accessToken && refreshToken) {
-        console.log("[Reset] Setting session from tokens (type:", type, ")...");
-        const { data, error } = await supabase.auth.setSession({ 
-          access_token: accessToken, 
-          refresh_token: refreshToken 
-        });
-        if (error) {
-          console.error("[Reset] setSession error:", error);
-          return null;
-        }
-        console.log("[Reset] Session set successfully!");
-        return data.session;
-      }
-
-      console.log("[Reset] No recovery tokens found");
       return null;
     }
 
-    // Listen for auth state changes
-    let sessionEstablished = false;
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[Reset] Auth state changed:", event);
-      if ((event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") && session) {
-        sessionEstablished = true;
-        hideMsg();
-        form.classList.remove("hidden");
-      }
-    });
-
-    // Initialize - try to establish recovery session
-    console.log("[Reset] Initializing...");
     const session = await ensureRecoverySession();
-    
-    if (session) {
-      console.log("[Reset] Session established, showing form");
-      // Clean URL but stay on page
-      if (window.history.replaceState) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-      form.classList.remove("hidden");
-    } else if (!sessionEstablished) {
-      console.log("[Reset] No session, showing error");
-      showMsg("Recovery link invalid or expired. Please request a new password reset link.", "error");
+    if (!session) {
+      showMsg("Recovery link invalid or expired. Click the email link again.", "error");
       form.classList.add("hidden");
     }
 
@@ -516,10 +336,6 @@
       if (pass !== confirm) {
         updateButtonState();
         showMsg("Passwords must match before we can update them.", "error");
-        return;
-      }
-      if (!isPasswordValid(pass)) {
-        showMsg("Please ensure your password meets all the security requirements.", "error");
         return;
       }
       if (!agree.checked) {

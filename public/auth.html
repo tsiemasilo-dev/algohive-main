@@ -499,6 +499,60 @@
       </div>
     </main>
 
+    <!-- Password Update Modal (for weak passwords on login) - Non-dismissable -->
+    <div id="password-update-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div class="relative mx-4 w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
+        <div class="mb-6 text-center">
+          <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+            <svg class="h-7 w-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <h2 class="text-xl font-bold text-slate-900">Update Your Password</h2>
+          <p class="mt-2 text-sm text-slate-600">Your current password doesn't meet our updated security requirements. Please create a stronger password to continue.</p>
+        </div>
+        
+        <form id="password-update-form" class="space-y-4">
+          
+          <div>
+            <label class="text-sm font-medium text-slate-700">New Password</label>
+            <input id="pwd-new" name="new_password" type="password" placeholder="Enter your new password" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20" required />
+            <div class="password-strength-container" id="update-password-strength">
+              <div class="password-strength-bar">
+                <div class="password-strength-fill" id="update-strength-fill"></div>
+              </div>
+              <div class="password-strength-text" id="update-strength-text"></div>
+            </div>
+            <div class="password-requirements mt-2" id="update-password-requirements">
+              <p class="text-xs font-medium text-slate-500">Password must have:</p>
+              <ul class="mt-1 grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-slate-500">
+                <li id="update-req-length"><span class="check-icon"></span>8+ characters</li>
+                <li id="update-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                <li id="update-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                <li id="update-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                <li id="update-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div>
+            <label class="text-sm font-medium text-slate-700">Confirm New Password</label>
+            <input id="pwd-confirm" name="confirm_password" type="password" placeholder="Re-enter your new password" class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20" required />
+            <p id="pwd-confirm-hint" class="mt-1 hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+          </div>
+          
+          <div id="pwd-update-msg" class="hidden rounded-xl p-3 text-sm"></div>
+          
+          <div class="flex gap-3">
+            <button id="pwd-cancel-btn" type="button" class="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+              Cancel & Sign Out
+            </button>
+            <button id="pwd-update-btn" type="submit" class="btn-shine flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" disabled>
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <aside id="visual-panel" class="auth-right relative hidden w-full bg-[#f7f9ff] px-6 py-14 shadow-inner lg:flex lg:flex-1 lg:items-stretch lg:rounded-none lg:px-20 lg:py-20" data-mode="hive">
       
       <div id="scene-hive" class="scene-container scene-visible absolute inset-0 orb-gradient flex items-center justify-center">
@@ -998,58 +1052,24 @@
                     const { user, error } = await signIn(loginForm.email.value.trim(), passwordValue);
                     if (error) throw error;
                     
-                    // Check if password is weak - sign out and redirect to password reset
+                    // Check if password is weak - show password update modal
                     if (!isPasswordValid(passwordValue)) {
-                        btn.disabled = true; btn.textContent = "Updating security...";
-                        
-                        // Sign out immediately and wait for completion
-                        try {
-                            await supabase.auth.signOut();
-                        } catch (signOutErr) {
-                            console.error("Sign out error:", signOutErr);
-                        }
-                        
-                        // Verify session is cleared
-                        const { data: { session: currentSession } } = await supabase.auth.getSession();
-                        if (currentSession) {
-                            // Force clear if still present
-                            localStorage.removeItem('sb-aazofjsssobejhkyyiqv-auth-token');
-                            sessionStorage.clear();
-                        }
-                        
-                        // Show the forgot password panel and trigger reset email
-                        const fWrap = document.getElementById(`${prefix}-forgot-wrap`);
-                        const fForm = document.getElementById(`${prefix}-forgot-form`);
-                        const userEmail = loginForm.email.value.trim();
-                        
-                        if (fWrap && fForm) {
-                            // Hide login panel, show forgot password panel
-                            document.getElementById(`${prefix}-panel-in`).classList.add('hidden');
-                            fForm.email.value = userEmail;
-                            fWrap.classList.remove('hidden');
-                            
-                            showMsg(`${prefix}-msg`, "Your password doesn't meet our updated security requirements. Sending reset link...", "error");
-                            
-                            // Auto-trigger password reset with proper error handling
-                            try {
-                                const { error: resetError } = await supabase.auth.resetPasswordForEmail(userEmail, { 
-                                    redirectTo: window.location.origin + "/reset" 
-                                });
-                                
-                                if (resetError) {
-                                    showMsg(`${prefix}-msg`, "Could not send reset email. Please click 'Send reset link' to try again.", "error");
-                                } else {
-                                    showMsg(`${prefix}-msg`, "Password reset link sent to your email. Please check your inbox and create a stronger password.", "success");
-                                }
-                            } catch (resetErr) {
-                                console.error("Reset error:", resetErr);
-                                showMsg(`${prefix}-msg`, "Could not send reset email automatically. Please click 'Send reset link' to try again.", "error");
-                            }
-                        } else {
-                            showMsg(`${prefix}-msg`, "Your password doesn't meet our security requirements. Please use 'Forgot password?' to reset it.", "error");
-                        }
-                        
                         btn.disabled = false; btn.textContent = ogText;
+                        
+                        // Store context for the modal (no password stored for security)
+                        window._pendingPasswordUpdate = {
+                            email: loginForm.email.value.trim(),
+                            prefix: prefix,
+                            fixedAccountType: fixedAccountType,
+                            redirectUrl: redirectUrl
+                        };
+                        
+                        // Show the password update modal
+                        const modal = document.getElementById('password-update-modal');
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                        }
                         return;
                     }
                     
@@ -1163,6 +1183,130 @@
     // Money Video Speed
     const v = document.getElementById("money-bg-video");
     if(v) v.playbackRate = 1;
+
+    // --- PASSWORD UPDATE MODAL LOGIC ---
+    (function setupPasswordUpdateModal() {
+        const modal = document.getElementById('password-update-modal');
+        const form = document.getElementById('password-update-form');
+        const newInput = document.getElementById('pwd-new');
+        const confirmInput = document.getElementById('pwd-confirm');
+        const confirmHint = document.getElementById('pwd-confirm-hint');
+        const submitBtn = document.getElementById('pwd-update-btn');
+        const cancelBtn = document.getElementById('pwd-cancel-btn');
+        const msgEl = document.getElementById('pwd-update-msg');
+        
+        if (!modal || !form) return;
+        
+        // Cancel button - signs out and closes modal
+        cancelBtn?.addEventListener('click', async () => {
+            cancelBtn.disabled = true;
+            cancelBtn.textContent = 'Signing out...';
+            try {
+                await supabase.auth.signOut();
+            } catch (e) {
+                console.warn('Sign out error:', e);
+            }
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            form.reset();
+            msgEl.classList.add('hidden');
+            submitBtn.disabled = true;
+            cancelBtn.disabled = false;
+            cancelBtn.textContent = 'Cancel & Sign Out';
+            window._pendingPasswordUpdate = null;
+            location.reload();
+        });
+        
+        // Validation - no current password needed since user is already authenticated
+        const validateForm = () => {
+            const newVal = newInput.value;
+            const confirmVal = confirmInput.value;
+            
+            // Update password strength UI
+            updatePasswordUI('update', newVal);
+            
+            // Check match
+            const match = newVal === confirmVal;
+            if (confirmVal && !match) {
+                confirmHint.classList.remove('hidden');
+                confirmInput.setCustomValidity('Mismatch');
+            } else {
+                confirmHint.classList.add('hidden');
+                confirmInput.setCustomValidity('');
+            }
+            
+            // Enable submit only if all valid
+            const passwordValid = isPasswordValid(newVal);
+            submitBtn.disabled = !newVal || !confirmVal || !match || !passwordValid;
+        };
+        
+        newInput?.addEventListener('input', validateForm);
+        confirmInput?.addEventListener('input', validateForm);
+        
+        // Show message helper
+        const showModalMsg = (msg, type = 'error') => {
+            msgEl.textContent = msg;
+            msgEl.classList.remove('hidden', 'bg-green-50', 'text-green-700', 'bg-red-50', 'text-red-700');
+            if (type === 'success') {
+                msgEl.classList.add('bg-green-50', 'text-green-700');
+            } else {
+                msgEl.classList.add('bg-red-50', 'text-red-700');
+            }
+        };
+        
+        // Form submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const context = window._pendingPasswordUpdate;
+            if (!context) {
+                showModalMsg('Session expired. Please log in again.');
+                return;
+            }
+            
+            const newPassword = newInput.value;
+            const confirmPassword = confirmInput.value;
+            
+            if (newPassword !== confirmPassword) {
+                showModalMsg('New passwords do not match.');
+                return;
+            }
+            
+            if (!isPasswordValid(newPassword)) {
+                showModalMsg('New password does not meet requirements.');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            cancelBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+            
+            try {
+                // Update password using Supabase
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+                
+                if (error) throw error;
+                
+                // Refresh session to get fresh tokens
+                await supabase.auth.refreshSession();
+                
+                showModalMsg('Password updated successfully! Redirecting...', 'success');
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    const accType = context.fixedAccountType || localStorage.getItem("ah_account_type") || "live";
+                    routePostAuth(context.redirectUrl, accType);
+                }, 1500);
+                
+            } catch (err) {
+                console.error('Password update error:', err);
+                showModalMsg(err.message || 'Failed to update password. Please try again.');
+                submitBtn.disabled = false;
+                cancelBtn.disabled = false;
+                submitBtn.textContent = 'Update Password';
+            }
+        });
+    })();
 
   </script>
 </body>

@@ -337,6 +337,39 @@
                       <button type="button" id="hive-forgot-cancel" class="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:border-slate-300">Cancel</button>
                     </div>
                   </form>
+                  <p id="hive-forgot-countdown" class="hidden mt-3 text-center text-sm text-slate-600"></p>
+                </div>
+
+                <div id="hive-reset-wrap" class="mt-8 hidden w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                  <h2 class="mb-3 text-sm font-semibold text-slate-700">Create new password</h2>
+                  <form id="hive-reset-form" class="space-y-4">
+                    <div class="space-y-1">
+                      <label class="text-xs font-medium text-slate-600">New password</label>
+                      <input id="hive-reset-password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <div class="password-strength-container" id="hive-reset-password-strength">
+                        <div class="password-strength-bar">
+                          <div class="password-strength-fill" id="hive-reset-strength-fill"></div>
+                        </div>
+                        <div class="password-strength-text" id="hive-reset-strength-text"></div>
+                      </div>
+                      <div class="password-requirements" id="hive-reset-password-requirements">
+                        <p>Password must have:</p>
+                        <ul>
+                          <li id="hive-reset-req-length"><span class="check-icon"></span>8+ characters</li>
+                          <li id="hive-reset-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                          <li id="hive-reset-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                          <li id="hive-reset-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                          <li id="hive-reset-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="space-y-1">
+                      <label class="text-xs font-medium text-slate-600">Confirm password</label>
+                      <input id="hive-reset-confirm" name="confirm_password" type="password" placeholder="Re-enter your password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <p id="hive-reset-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+                    </div>
+                    <button id="hive-reset-btn" type="submit" class="btn-shine w-full rounded-2xl bg-hive px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition bg-hive-hover disabled:cursor-not-allowed disabled:opacity-60" disabled>Update password</button>
+                  </form>
                 </div>
 
                 <section id="hive-panel-up" class="hidden space-y-6">
@@ -440,7 +473,40 @@
                      <button type="button" id="money-forgot-cancel" class="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:border-slate-300">Cancel</button>
                    </div>
                  </form>
+                 <p id="money-forgot-countdown" class="hidden mt-3 text-center text-sm text-slate-600"></p>
                </div>
+
+              <div id="money-reset-wrap" class="mt-8 hidden w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                <h2 class="mb-3 text-sm font-semibold text-slate-700">Create new password</h2>
+                <form id="money-reset-form" class="space-y-4">
+                  <div class="space-y-1">
+                    <label class="text-xs font-medium text-slate-600">New password</label>
+                    <input id="money-reset-password" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <div class="password-strength-container" id="money-reset-password-strength">
+                      <div class="password-strength-bar">
+                        <div class="password-strength-fill" id="money-reset-strength-fill"></div>
+                      </div>
+                      <div class="password-strength-text" id="money-reset-strength-text"></div>
+                    </div>
+                    <div class="password-requirements" id="money-reset-password-requirements">
+                      <p>Password must have:</p>
+                      <ul>
+                        <li id="money-reset-req-length"><span class="check-icon"></span>8+ characters</li>
+                        <li id="money-reset-req-upper"><span class="check-icon"></span>Uppercase (A-Z)</li>
+                        <li id="money-reset-req-lower"><span class="check-icon"></span>Lowercase (a-z)</li>
+                        <li id="money-reset-req-number"><span class="check-icon"></span>Number (0-9)</li>
+                        <li id="money-reset-req-special"><span class="check-icon"></span>Special (!@#$...)</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-xs font-medium text-slate-600">Confirm password</label>
+                    <input id="money-reset-confirm" name="confirm_password" type="password" placeholder="Re-enter your password" autocomplete="new-password" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <p id="money-reset-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+                  </div>
+                  <button id="money-reset-btn" type="submit" class="btn-shine w-full rounded-2xl bg-money-grad px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60" disabled>Update password</button>
+                </form>
+              </div>
 
               <section id="money-panel-up" class="hidden space-y-6">
                 <form id="money-signup-form" class="space-y-5 text-left sm:max-w-md">
@@ -580,6 +646,112 @@
 
     const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const TRADING_LOGOS_KEY = "ah_trading_universe_logos";
+
+    // Check for password recovery tokens in URL
+    async function checkForRecoveryTokens() {
+        // Check URL hash (Supabase format: #type=recovery&access_token=...&refresh_token=...)
+        const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+        const hashType = hash.get("type");
+        const hashAccessToken = hash.get("access_token");
+        const hashRefreshToken = hash.get("refresh_token");
+
+        // Check URL query params (alternative format)
+        const params = new URLSearchParams(location.search);
+        const queryType = params.get("type");
+        const queryAccessToken = params.get("access_token");
+        const queryRefreshToken = params.get("refresh_token");
+
+        const type = hashType || queryType;
+        const accessToken = hashAccessToken || queryAccessToken;
+        const refreshToken = hashRefreshToken || queryRefreshToken;
+
+        if (type === "recovery" && accessToken && refreshToken) {
+            try {
+                const { data, error } = await supabase.auth.setSession({ 
+                    access_token: accessToken, 
+                    refresh_token: refreshToken 
+                });
+                if (error) {
+                    console.error("Recovery session error:", error);
+                    return false;
+                }
+                return !!data.session;
+            } catch (err) {
+                console.error("Recovery token error:", err);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // Show password reset form for a given prefix (hive or money)
+    function showResetForm(prefix) {
+        // Hide all other panels
+        const panelIn = document.getElementById(`${prefix}-panel-in`);
+        const panelUp = document.getElementById(`${prefix}-panel-up`);
+        const headingIn = document.getElementById(`${prefix}-heading-in`);
+        const headingUp = document.getElementById(`${prefix}-heading-up`);
+        const forgotWrap = document.getElementById(`${prefix}-forgot-wrap`);
+        const resetWrap = document.getElementById(`${prefix}-reset-wrap`);
+        const msg = document.getElementById(`${prefix}-msg`);
+
+        if (panelIn) panelIn.classList.add('hidden');
+        if (panelUp) panelUp.classList.add('hidden');
+        if (headingIn) headingIn.classList.remove('hidden');
+        if (headingUp) headingUp.classList.add('hidden');
+        if (forgotWrap) forgotWrap.classList.add('hidden');
+        if (resetWrap) resetWrap.classList.remove('hidden');
+
+        // Update heading text
+        if (headingIn) {
+            const h1 = headingIn.querySelector('h1');
+            if (h1) h1.textContent = 'Reset your password';
+            const subtitle = headingIn.querySelector('p:last-of-type');
+            if (subtitle) subtitle.classList.add('hidden');
+        }
+    }
+
+    // Determine app context from URL or default
+    function getAppContext() {
+        const params = new URLSearchParams(location.search);
+        const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+        const appParam = params.get("app") || hash.get("app");
+        if (appParam === "money") return "money";
+        
+        // Check current app switcher state
+        const appSwitcher = document.getElementById('appSwitcher');
+        return appSwitcher?.dataset?.state || 'hive';
+    }
+
+    // Initialize recovery check on page load
+    (async function initRecoveryCheck() {
+        const appContext = getAppContext();
+        const isRecovery = await checkForRecoveryTokens();
+        if (isRecovery) {
+            // Clear the URL hash/params for cleaner URL
+            history.replaceState(null, '', location.pathname);
+            
+            // Switch to the correct app theme if needed
+            if (appContext === 'money') {
+                window.goToSlide?.(1);
+            }
+            
+            showResetForm(appContext);
+        }
+    })();
+
+    // Listen for auth state changes (PASSWORD_RECOVERY event)
+    if (supabase) {
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === "PASSWORD_RECOVERY" && session) {
+                const appContext = getAppContext();
+                if (appContext === 'money') {
+                    window.goToSlide?.(1);
+                }
+                showResetForm(appContext);
+            }
+        });
+    }
 
     const normalizeLogos = (rows) => {
       const seen = new Set();
@@ -1112,25 +1284,61 @@
                 fWrap.classList.remove('hidden');
             };
 
-            if(fCancel) {
-                 fCancel.onclick = () => {
-                    fWrap.classList.add('hidden');
-                    document.getElementById(`${prefix}-panel-in`).classList.remove('hidden');
-                 }
-            }
-
             if(fForm) {
+                const fCountdown = document.getElementById(`${prefix}-forgot-countdown`);
+                let countdownInterval = null;
+                
+                // Cancel button clears interval and restores UI
+                if(fCancel) {
+                    fCancel.onclick = () => {
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                        }
+                        if (fCountdown) fCountdown.classList.add('hidden');
+                        fForm.classList.remove('hidden');
+                        fWrap.classList.add('hidden');
+                        document.getElementById(`${prefix}-panel-in`).classList.remove('hidden');
+                    }
+                }
+                
                 fForm.onsubmit = async (e) => {
                     e.preventDefault();
                     const sBtn = fForm.querySelector("button[type=submit]");
                     const org = sBtn.textContent;
                     sBtn.disabled = true; sBtn.textContent = "Sending...";
                     
+                    // Include app context in redirect URL for proper theme handling
+                    const appContext = prefix === 'money' ? '?app=money' : '';
+                    
                     try {
-                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: window.location.origin + "/reset.html" });
+                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: window.location.origin + "/auth.html" + appContext });
                         if(error) throw error;
                         showMsg(`${prefix}-msg`, "Reset link sent (if account exists).", "success");
-                        fWrap.classList.add('hidden');
+                        
+                        // Start countdown
+                        fForm.classList.add('hidden');
+                        if (fCountdown) {
+                            fCountdown.classList.remove('hidden');
+                            let seconds = 5;
+                            fCountdown.textContent = `Returning to login in ${seconds}...`;
+                            countdownInterval = setInterval(() => {
+                                seconds--;
+                                if (seconds > 0) {
+                                    fCountdown.textContent = `Returning to login in ${seconds}...`;
+                                } else {
+                                    clearInterval(countdownInterval);
+                                    countdownInterval = null;
+                                    fCountdown.classList.add('hidden');
+                                    fForm.classList.remove('hidden');
+                                    fWrap.classList.add('hidden');
+                                    document.getElementById(`${prefix}-panel-in`).classList.remove('hidden');
+                                }
+                            }, 1000);
+                        } else {
+                            fWrap.classList.add('hidden');
+                            document.getElementById(`${prefix}-panel-in`).classList.remove('hidden');
+                        }
                     } catch(err) {
                         showMsg(`${prefix}-msg`, err.message);
                     } finally {
@@ -1138,6 +1346,98 @@
                     }
                 };
             }
+        }
+
+        // Password Reset Form Logic
+        const rWrap = document.getElementById(`${prefix}-reset-wrap`);
+        const rForm = document.getElementById(`${prefix}-reset-form`);
+        const rPassword = document.getElementById(`${prefix}-reset-password`);
+        const rConfirm = document.getElementById(`${prefix}-reset-confirm`);
+        const rBtn = document.getElementById(`${prefix}-reset-btn`);
+        const rConfirmHint = document.getElementById(`${prefix}-reset-confirm-hint`);
+        const rStrengthFill = document.getElementById(`${prefix}-reset-strength-fill`);
+        const rStrengthText = document.getElementById(`${prefix}-reset-strength-text`);
+
+        if (rForm && rPassword && rConfirm && rBtn) {
+            function checkPasswordRequirements(password) {
+                const checks = {
+                    length: password.length >= 8,
+                    upper: /[A-Z]/.test(password),
+                    lower: /[a-z]/.test(password),
+                    number: /[0-9]/.test(password),
+                    special: /[!@#$%^&*()\-_=+{}\[\]|;:,.<>?\/]/.test(password)
+                };
+
+                // Update requirement indicators
+                ['length', 'upper', 'lower', 'number', 'special'].forEach(req => {
+                    const el = document.getElementById(`${prefix}-reset-req-${req}`);
+                    if (el) el.classList.toggle('valid', checks[req]);
+                });
+
+                // Calculate strength
+                const passed = Object.values(checks).filter(Boolean).length;
+                let strength = 'weak';
+                if (passed >= 5) strength = 'very-strong';
+                else if (passed >= 4) strength = 'strong';
+                else if (passed >= 3) strength = 'medium';
+
+                if (rStrengthFill) {
+                    rStrengthFill.className = 'password-strength-fill ' + strength;
+                }
+                if (rStrengthText) {
+                    rStrengthText.className = 'password-strength-text ' + strength;
+                    const labels = { weak: 'Weak', medium: 'Medium', strong: 'Strong', 'very-strong': 'Very Strong' };
+                    rStrengthText.textContent = labels[strength];
+                }
+
+                return Object.values(checks).every(Boolean);
+            }
+
+            function updateResetButtonState() {
+                const pass = rPassword.value.trim();
+                const confirm = rConfirm.value.trim();
+                const passwordsMatch = pass === confirm;
+                const passwordValid = checkPasswordRequirements(pass);
+                
+                if (rConfirmHint) {
+                    rConfirmHint.classList.toggle('hidden', passwordsMatch || confirm.length === 0);
+                }
+                
+                rBtn.disabled = !(passwordsMatch && passwordValid && pass.length > 0 && confirm.length > 0);
+            }
+
+            rPassword.addEventListener('input', updateResetButtonState);
+            rConfirm.addEventListener('input', updateResetButtonState);
+
+            rForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const pass = rPassword.value.trim();
+                const confirm = rConfirm.value.trim();
+                
+                if (pass !== confirm) {
+                    showMsg(`${prefix}-msg`, "Passwords must match.", "error");
+                    return;
+                }
+                if (!checkPasswordRequirements(pass)) {
+                    showMsg(`${prefix}-msg`, "Please ensure your password meets all requirements.", "error");
+                    return;
+                }
+
+                rBtn.disabled = true;
+                rBtn.textContent = "Updating...";
+
+                try {
+                    const { error } = await supabase.auth.updateUser({ password: pass });
+                    if (error) throw error;
+                    showMsg(`${prefix}-msg`, "Password updated successfully! Redirecting...", "success");
+                    rWrap.classList.add('hidden');
+                    await routePostAuth(redirectUrl, accType);
+                } catch (err) {
+                    showMsg(`${prefix}-msg`, err.message || "Failed to update password.", "error");
+                    rBtn.disabled = false;
+                    rBtn.textContent = "Update password";
+                }
+            };
         }
     }
 

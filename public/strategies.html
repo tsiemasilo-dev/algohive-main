@@ -1161,7 +1161,7 @@
   import { supabase } from "/js/supabase.js";
 
   // --- tiny helpers ---
-  const makeInitialsAvatar = (initials = 'U') => `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><rect width='100%' height='100%' rx='36' ry='36' fill='%230f172a'/><text x='50%' y='54%' text-anchor='middle' dominant-baseline='middle' fill='white' font-size='22' font-family='Inter, sans-serif' font-weight='600'>${encodeURIComponent(initials)}</text></svg>`;
+  const makeInitialsAvatar = (initials = 'U') => `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><rect width='100%' height='100%' rx='36' ry='36' fill='%230f172a'/><text x='50%' y='54%' text-anchor='middle' dominant-baseline='middle' fill='white' font-size='22' font-family='Inter, sans-serif' font-weight='600'>${initials}</text></svg>`;
   const BLANK_AVATAR = makeInitialsAvatar('U');
   const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? "—"; };
   const setSrc  = (id, v) => { const el = document.getElementById(id); if (el) el.src = v || BLANK_AVATAR; };
@@ -1306,8 +1306,10 @@
     const fallback = (user.email || "User").split("@")[0];
     setText("hdr-name", (fn || ln) ? `${fn} ${ln}`.trim() : fallback);
 
-    // avatar (cache-bust public URL or generate initials)
-    const initials = ((fn?.[0] || '') + (ln?.[0] || '')).toUpperCase() || fallback.charAt(0).toUpperCase() || 'U';
+    // avatar (cache-bust public URL or generate initials) - always 2 letters
+    const f = (fn?.[0] || '').toUpperCase();
+    const l = (ln?.[0] || '').toUpperCase();
+    const initials = f && l ? f + l : f ? f + f : fallback.substring(0, 2).toUpperCase() || 'U';
     const avatarUrl = row?.avatar_url ? `${row.avatar_url}${row.avatar_url.includes("?") ? "&" : "?"}v=${Date.now()}` : makeInitialsAvatar(initials);
     setSrc("hdr-avatar", avatarUrl);
 

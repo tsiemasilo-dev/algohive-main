@@ -235,8 +235,8 @@
             <label class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm text-base font-semibold">
               <span class="text-slate-500 text-sm">View:</span>
               <select id="region-select" class="bg-transparent focus:outline-none font-semibold text-slate-900">
-                <option value="US">🇺🇸 USD</option>
-                <option value="ZA" disabled>🇿🇦 ZAR Stocks — Coming Soon</option>
+                <option value="US">🇺🇸 US Stocks</option>
+                <option value="ZA" disabled>🇿🇦 South African Stocks — Coming Soon</option>
               </select>
             </label>
           </div>
@@ -427,7 +427,8 @@
       return true;
     };
 
-    const BLANK_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><rect width='100%' height='100%' fill='%23f1f5f9'/><text x='50%' y='54%' text-anchor='middle' fill='%2394a3b8' font-size='22' font-family='Inter, sans-serif'>AH</text></svg>";
+    const makeInitialsAvatar = (initials = 'U') => `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'><rect width='100%' height='100%' rx='36' ry='36' fill='%230f172a'/><text x='50%' y='54%' text-anchor='middle' dominant-baseline='middle' fill='white' font-size='22' font-family='Inter, sans-serif' font-weight='600'>${encodeURIComponent(initials)}</text></svg>`;
+    const BLANK_AVATAR = makeInitialsAvatar('U');
 
     const setText = (id, value) => {
       const el = typeof id === 'string' ? document.getElementById(id) : id;
@@ -907,12 +908,14 @@
         const fn = (profile?.first_name || '').trim();
         const ln = (profile?.last_name || '').trim();
         const fallback = (user.email || 'User').split('@')[0];
-        setText(hdrName, (fn || ln) ? `${fn} ${ln}`.trim() : fallback);
+        const displayName = (fn || ln) ? `${fn} ${ln}`.trim() : fallback;
+        setText(hdrName, displayName);
         setText(pmEmail, user.email || '—');
 
+        const initials = ((fn?.[0] || '') + (ln?.[0] || '')).toUpperCase() || displayName.charAt(0).toUpperCase();
         const avatarUrl = profile?.avatar_url
           ? `${profile.avatar_url}${profile.avatar_url.includes('?') ? '&' : '?'}v=${Date.now()}`
-          : BLANK_AVATAR;
+          : makeInitialsAvatar(initials);
         setSrc(hdrAvatar, avatarUrl);
 
         profileBtn?.addEventListener('click', (e) => {

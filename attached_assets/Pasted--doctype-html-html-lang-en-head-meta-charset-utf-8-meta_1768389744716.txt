@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AlgoMoney — Sign in</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root {
+      /* --- HIVE THEME (Trading) --- */
+      --olive: #7c3aed;
+      --olive-700: #4c1d95;
+      --ink: #0B1215;
+      
+      /* --- MONEY THEME (Banking) --- */
+      --money-primary: #7c3aed; /* violet-600 */
+      --money-dark: #4c1d95;    /* violet-900 */
+      --money-bg: #050510;      /* Dark BG for visual side */
+      
+      --money-grad-start: #3c1a70;
+      --money-grad-mid: #6426b0;
+      --money-grad-end: #8a3eda;
+    }
+    
+    body { 
+      background: #f6f7f6; 
+      overflow-x: hidden; 
+      font-family: 'Inter', sans-serif; 
+      transition: background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* --- ANIMATIONS --- */
+    .btn-shine { position: relative; overflow: hidden; transition: transform .25s ease, box-shadow .25s ease; }
+    .btn-shine::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.7) 50%, transparent 100%); transform: translateX(-120%); transition: transform .8s ease; }
+    .btn-shine:hover::before { transform: translateX(120%); }
+    .btn-shine:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -16px rgba(11,18,21,0.4); }
+    .btn-shine:disabled { box-shadow: none; transform: none; }
+    
+    .auth-left { animation: heroSlideUp .7s ease-out .25s both; overflow: hidden; }
+    .auth-right { animation: heroScaleIn .9s cubic-bezier(.2,.8,.2,1) .35s both; transition: background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+    
+    .auth-right[data-mode="hive"] { background-color: #f7f9ff; }
+    .auth-right[data-mode="money"] { background-color: var(--money-bg); }
+    
+    @keyframes heroScaleIn { 0% { transform: scale(1.06); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes heroSlideUp { 0% { transform: translateY(16px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    .swap-anim { animation: heroSlideUp .5s ease both; }
+
+    /* --- ACCOUNT PILLS (Shared Structure) --- */
+    .account-pill { display: inline-flex; align-items: center; gap: 0.75rem; border-radius: 9999px; border: 1px solid #e5e7eb; background: #fff; padding: 0.55rem 0.95rem; font-weight: 600; font-size: 0.9rem; color: #0b1215; box-shadow: 0 10px 30px -22px rgba(11, 18, 21, 0.35); transition: all .2s ease; cursor: pointer; }
+    .account-pill__dot { height: 10px; width: 10px; border-radius: 9999px; background: #d1d5db; box-shadow: 0 0 0 6px rgba(0,0,0,0.05); transition: all .2s ease; }
+    
+    /* Hive Specific Pill Colors */
+    .theme-hive .account-pill--active { border-color: rgba(124,58,237,0.7); background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(124,58,237,0.05)); color: var(--money-dark); }
+    .theme-hive .account-pill--active .account-pill__dot { background: var(--money-primary); box-shadow: 0 0 0 8px rgba(124,58,237,0.18); }
+    .theme-hive .account-pill:hover { border-color: rgba(124,58,237,0.55); transform: translateY(-1px); }
+
+    /* Money Specific Pill Colors */
+    .theme-money .account-pill--active { border-color: rgba(124, 58, 237, 0.7); background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0.05)); color: var(--money-dark); }
+    .theme-money .account-pill--active .account-pill__dot { background: var(--money-primary); box-shadow: 0 0 0 8px rgba(124, 58, 237, 0.18); }
+    .theme-money .account-pill:hover { border-color: rgba(124, 58, 237, 0.55); transform: translateY(-1px); }
+
+    /* --- SLIDER MECHANISM --- */
+    #auth-track {
+      display: flex;
+      width: 200%; /* 2 slides */
+      height: 100%;
+      will-change: transform;
+      transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .auth-slide {
+      width: 50%;
+      height: 100%;
+      flex-shrink: 0;
+      padding: 0 1rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- APP SWITCHER --- */
+    .segmented-control { position: relative; display: flex; background: #f1f5f9; padding: 4px; border-radius: 99px; width: fit-content; user-select: none; border: 1px solid #e2e8f0; }
+    .segmented-bg { position: absolute; top: 4px; left: 4px; bottom: 4px; width: calc(50% - 4px); background: white; border-radius: 99px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); z-index: 0; }
+    .segmented-btn { position: relative; z-index: 1; padding: 6px 24px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: color 0.2s ease; text-align: center; min-width: 80px; }
+    
+    .segmented-control[data-state="hive"] .segmented-bg { transform: translateX(0); }
+    .segmented-control[data-state="hive"] .btn-hive { color: var(--ink); }
+    .segmented-control[data-state="hive"] .btn-money { color: #94a3b8; }
+
+    .segmented-control[data-state="money"] .segmented-bg { transform: translateX(100%); }
+    .segmented-control[data-state="money"] .btn-hive { color: #94a3b8; }
+    .segmented-control[data-state="money"] .btn-money { color: var(--money-primary); }
+
+    /* --- BRANDING VISIBILITY --- */
+    .brand-hive { display: flex; opacity: 1; transition: opacity 0.3s ease; }
+    .brand-money { display: none; opacity: 0; transition: opacity 0.3s ease; }
+    
+    body[data-app="money"] .brand-hive { display: none; opacity: 0; }
+    body[data-app="money"] .brand-money { display: flex; opacity: 1; }
+
+    /* --- TEXT COLORS --- */
+    .text-hive { color: var(--olive); }
+    .text-hive-hover:hover { color: var(--olive-700); }
+    .focus-hive:focus { border-color: var(--olive); --tw-ring-color: rgba(124,58,237,0.25); }
+    .bg-hive { background-color: var(--olive); }
+    .bg-hive-hover:hover { background-color: var(--olive-700); }
+
+    .text-money { color: var(--money-primary); }
+    .text-money-hover:hover { color: var(--money-dark); }
+    .focus-money:focus { border-color: var(--money-primary); --tw-ring-color: rgba(124, 58, 237, 0.25); }
+    .bg-money { background-color: var(--money-primary); }
+    .bg-money-hover:hover { background-color: var(--money-dark); }
+    .bg-money-grad { background: linear-gradient(150deg, var(--money-grad-start) 0%, var(--money-grad-mid) 42%, var(--money-grad-end) 100%); }
+
+    /* --- RIGHT PANEL VISUALS --- */
+    .orb-gradient { background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.75), rgba(255,255,255,0) 60%), radial-gradient(circle at 80% 20%, rgba(124,58,237,0.18), rgba(255,255,255,0) 55%), radial-gradient(circle at 50% 80%, rgba(124,58,237,0.12), rgba(255,255,255,0) 55%); }
+
+    .scene-container { 
+        position: absolute; 
+        inset: 0; 
+        transition: opacity 0.8s ease, visibility 0.8s ease; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+    }
+    
+   
+    .scene-hidden { 
+        opacity: 0 !important; 
+        visibility: hidden !important;
+        pointer-events: none; 
+        z-index: 0;
+    }
+    .scene-visible { 
+        opacity: 1 !important; 
+        visibility: visible !important;
+        pointer-events: auto; 
+        z-index: 20;
+    }
+
+  </style>
+  <script nonce="ALGOHIVE">
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+</head>
+
+<body class="min-h-screen antialiased text-slate-900" data-app="hive">
+  <div class="flex min-h-screen flex-col bg-transparent lg:flex-row lg:items-stretch">
+    
+    <main class="auth-left relative mx-auto w-full max-w-2xl bg-white px-6 py-12 shadow-sm sm:px-10 sm:py-14 lg:flex lg:min-h-screen lg:max-w-lg lg:flex-col lg:justify-between lg:px-0 lg:py-20 lg:shadow">
+      
+      <div class="flex items-center justify-between px-6 sm:px-10 lg:px-16 mb-6">
+          <div>
+              <div class="brand-hive items-center gap-2">
+                <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney" class="h-8 w-8 object-contain" />
+                <span class="text-lg font-bold tracking-tight text-slate-900">AlgoMoney</span>
+              </div>
+              <div class="brand-money items-center gap-2">
+                <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney" class="h-8 w-8 object-contain" />
+                <span class="text-lg font-bold tracking-tight text-slate-900">AlgoMoney</span>
+              </div>
+          </div>
+
+          <div class="segmented-control" id="appSwitcher" data-state="hive">
+              <div class="segmented-bg"></div>
+              <div class="segmented-btn btn-hive" id="btn-hive-trigger">Personal</div>
+              <div class="segmented-btn btn-money" id="btn-money-trigger">Business</div>
+          </div>
+      </div>
+
+      <div id="auth-track">
+        
+        <div class="auth-slide theme-hive px-6 sm:px-10 lg:px-16" id="slide-hive">
+              <div class="flex-1 mt-4">
+                <header class="mb-9 space-y-3">
+                  <div id="hive-heading-in" class="space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-hive">Welcome back</p>
+                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[34px]">Sign in to AlgoMoney</h1>
+                    <p class="text-sm text-slate-500">Need to register? <button id="hive-switch-to-signup" type="button" class="font-semibold text-hive text-hive-hover">Sign up.</button></p>
+                  </div>
+                  <div id="hive-heading-up" class="hidden space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-hive">Join AlgoMoney</p>
+                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[34px]">Create your account</h1>
+                    <p class="text-sm text-slate-500">Already have an account? <button id="hive-switch-to-signin" type="button" class="font-semibold text-hive text-hive-hover">Log in.</button></p>
+                  </div>
+                </header>
+
+                <div id="hive-msg" class="hidden mb-5 max-w-md rounded-lg border px-3 py-2 text-sm text-left"></div>
+
+                <section id="hive-panel-in" class="space-y-8">
+                  <form id="hive-login-form" class="space-y-5 text-left sm:max-w-md">
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium text-slate-700">Email or username</label>
+                      <input name="email" type="email" placeholder="you@algomoney.com" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex items-center justify-between text-sm">
+                        <label class="font-medium text-slate-700">Password</label>
+                        <button type="button" id="hive-forgot-btn" class="font-medium text-hive text-hive-hover">Forgot password?</button>
+                      </div>
+                      <input name="password" type="password" placeholder="••••••••" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                    </div>
+                    <button type="submit" class="btn-shine w-full rounded-2xl bg-hive px-4 py-3 text-sm font-semibold text-white shadow-sm transition bg-hive-hover">Log in</button>
+                  </form>
+                </section>
+
+                <div id="hive-forgot-wrap" class="mt-8 hidden w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                  <h2 class="mb-3 text-sm font-semibold text-slate-700">Reset password</h2>
+                  <form id="hive-forgot-form" class="space-y-3">
+                    <div class="space-y-1">
+                      <label class="text-xs font-medium text-slate-600">Email</label>
+                      <input name="email" type="email" placeholder="you@example.com" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                    </div>
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                      <button type="submit" class="btn-shine flex-1 rounded-2xl bg-hive px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition bg-hive-hover">Send reset link</button>
+                      <button type="button" id="hive-forgot-cancel" class="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:border-slate-300">Cancel</button>
+                    </div>
+                  </form>
+                </div>
+
+                <section id="hive-panel-up" class="hidden space-y-6">
+                  <form id="hive-signup-form" class="space-y-5 text-left sm:max-w-md">
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium text-slate-700">Email</label>
+                      <input id="hive-signup-email" name="email" type="email" placeholder="you@algomoney.com" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                    </div>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium text-slate-700">Password</label>
+                      <input id="hive-signup-password" name="password" type="password" placeholder="At least 6 characters" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                    </div>
+                    <div class="space-y-2">
+                      <label class="text-sm font-medium text-slate-700">Confirm password</label>
+                      <input id="hive-signup-confirm" name="confirm_password" type="password" placeholder="Re-enter your password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-hive" required />
+                      <p id="hive-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+                    </div>
+                    <label class="flex items-start gap-3 rounded-2xl bg-slate-50/90 p-4 text-xs text-slate-600">
+                      <input id="hive-agree" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-hive focus:ring-2 focus-hive" />
+                      <span>
+                        I agree to the
+                        <a href="/terms.html" class="font-semibold text-hive text-hive-hover">Terms &amp; Conditions</a>,
+                        <a href="/privacy.html" class="font-semibold text-hive text-hive-hover">Privacy Policy</a>,
+                        <a href="/risk.html" class="font-semibold text-hive text-hive-hover">Risk Disclosure</a>, and
+                        <a href="/investment-disclaimer.html" class="font-semibold text-hive text-hive-hover">Investment Disclaimer</a>.
+                      </span>
+                    </label>
+                    <button id="hive-signup-btn" type="submit" class="btn-shine w-full rounded-2xl bg-hive px-4 py-3 text-sm font-semibold text-white shadow-sm transition bg-hive-hover disabled:cursor-not-allowed disabled:opacity-60" disabled>
+                      Start with a demo account
+                    </button>
+                    <p class="text-[11px] leading-relaxed text-slate-500">We’ll email a confirmation link to activate your account.</p>
+                  </form>
+                </section>
+              </div>
+              <footer class="mt-14 border-t border-slate-100 pt-6 text-left text-[11px] leading-5 text-slate-500">
+              AlgoMoney is a devision of AlgoHive (Pty) Ltd. AlgoHive (Pty) Ltd is an authorised Financial Services Provider (<b>FSP 55118</b>) regulated by the Financial Sector Conduct Authority and a registered Credit Provider (<b>NCRCP22892</b>) under the National Credit Act.
+              </footer>
+        </div>
+
+        <div class="auth-slide theme-money px-6 sm:px-10 lg:px-16" id="slide-money">
+            <div class="flex-1 mt-4">
+              <header class="mb-9 space-y-3">
+                <div id="money-heading-in" class="space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-money">Welcome back to business</p>
+                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[34px]">Sign in to AlgoMoney</h1>
+                    <p class="text-sm text-slate-500">Need to register? <button id="money-switch-to-signup" type="button" class="font-semibold text-money text-money-hover">Sign up.</button></p>
+                </div>
+                <div id="money-heading-up" class="hidden space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-money">Join AlgoMoney</p>
+                    <h1 class="text-3xl font-semibold text-slate-900 sm:text-[34px]">Create your account</h1>
+                    <p class="text-sm text-slate-500">Already have an account? <button id="money-switch-to-signin" type="button" class="font-semibold text-money text-money-hover">Log in.</button></p>
+                </div>
+              </header>
+
+              <div id="money-msg" class="hidden mb-5 max-w-md rounded-lg border px-3 py-2 text-sm text-left"></div>
+
+              <section id="money-panel-in" class="space-y-8">
+                <form id="money-login-form" class="space-y-5 text-left sm:max-w-md">
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-slate-700">Email or username</label>
+                    <input name="email" type="email" placeholder="you@algomoney.com" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                  </div>
+                  <div class="space-y-2">
+                     <div class="flex items-center justify-between text-sm">
+                        <label class="font-medium text-slate-700">Password</label>
+                        <button type="button" id="money-forgot-btn" class="font-medium text-money text-money-hover">Forgot password?</button>
+                      </div>
+                    <input name="password" type="password" placeholder="••••••••" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                  </div>
+                  <button type="submit" class="btn-shine w-full rounded-2xl bg-money-grad px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                     Log in
+                  </button>
+                </form>
+              </section>
+
+              <div id="money-forgot-wrap" class="mt-8 hidden w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                 <h2 class="mb-3 text-sm font-semibold text-slate-700">Reset password</h2>
+                 <form id="money-forgot-form" class="space-y-3">
+                   <div class="space-y-1">
+                     <label class="text-xs font-medium text-slate-600">Email</label>
+                     <input name="email" type="email" placeholder="you@example.com" class="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                   </div>
+                   <div class="flex flex-col gap-2 sm:flex-row">
+                     <button type="submit" class="btn-shine flex-1 rounded-2xl bg-money-grad px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">Send reset link</button>
+                     <button type="button" id="money-forgot-cancel" class="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:border-slate-300">Cancel</button>
+                   </div>
+                 </form>
+               </div>
+
+              <section id="money-panel-up" class="hidden space-y-6">
+                <form id="money-signup-form" class="space-y-5 text-left sm:max-w-md">
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-slate-700">Email</label>
+                    <input id="money-signup-email" name="email" type="email" placeholder="you@algomoney.com" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-slate-700">Password</label>
+                    <input id="money-signup-password" name="password" type="password" placeholder="Create a password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-sm font-medium text-slate-700">Confirm password</label>
+                    <input id="money-signup-confirm" name="confirm_password" type="password" placeholder="Re-enter your password" class="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus-money" required />
+                    <p id="money-confirm-hint" class="hidden text-xs font-medium text-rose-600">Passwords must match.</p>
+                  </div>
+                  <label class="flex items-start gap-3 rounded-2xl bg-slate-50/90 p-4 text-xs text-slate-600">
+                      <input id="money-agree" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-money focus:ring-2 focus-money" />
+                      <span>
+                        I agree to the
+                        <a href="/terms.html" class="font-semibold text-money text-money-hover">Terms &amp; Conditions</a>,
+                        <a href="/privacy.html" class="font-semibold text-money text-money-hover">Privacy Policy</a>,
+                        <a href="/risk.html" class="font-semibold text-money text-money-hover">Risk Disclosure</a>, and
+                        <a href="/investment-disclaimer.html" class="font-semibold text-money text-money-hover">Investment Disclaimer</a>.
+                      </span>
+                  </label>
+                  <button id="money-signup-btn" type="submit" class="btn-shine w-full rounded-2xl bg-money-grad px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed" disabled>
+                     Sign up for AlgoMoney
+                  </button>
+                  <p class="text-[11px] leading-relaxed text-slate-500">We’ll email a confirmation link to activate your account.</p>
+                </form>
+              </section>
+            </div>
+             
+             <footer class="mt-14 border-t border-slate-100 pt-6 text-left text-[11px] leading-5 text-slate-500">
+               AlgoMoney is a devision of AlgoHive (Pty) Ltd. AlgoHive (Pty) Ltd is an authorised Financial Services Provider (<b>FSP 55118</b>) regulated by the Financial Sector Conduct Authority and a registered Credit Provider (<b>NCRCP22892</b>) under the National Credit Act.
+             </footer>
+        </div>
+
+      </div>
+    </main>
+
+    <aside id="visual-panel" class="auth-right relative hidden w-full bg-[#f7f9ff] px-6 py-14 shadow-inner lg:flex lg:flex-1 lg:items-stretch lg:rounded-none lg:px-20 lg:py-20" data-mode="hive">
+      
+      <div id="scene-hive" class="scene-container scene-visible absolute inset-0 orb-gradient flex items-center justify-center overflow-hidden">
+        <div class="relative flex w-full max-w-[620px] aspect-square items-center justify-center">
+          <!-- Floating Currency Symbols -->
+          <div class="absolute inset-0">
+            <div class="money-float" style="top: 8%; left: 18%; animation-delay: 0s;">
+              <div class="text-8xl font-bold text-violet-600/35">$</div>
+            </div>
+            <div class="money-float" style="top: 22%; right: 12%; animation-delay: 1.5s;">
+              <div class="text-7xl font-bold text-violet-500/30">€</div>
+            </div>
+            <div class="money-float" style="bottom: 15%; left: 12%; animation-delay: 3s;">
+              <div class="text-9xl font-bold text-violet-600/25">£</div>
+            </div>
+            <div class="money-float" style="top: 58%; right: 18%; animation-delay: 2.5s;">
+              <div class="text-8xl font-bold text-violet-500/35">¥</div>
+            </div>
+            <div class="money-float" style="top: 35%; left: 8%; animation-delay: 4s;">
+              <div class="text-7xl font-bold text-violet-600/30">₹</div>
+            </div>
+            <div class="money-float" style="bottom: 30%; right: 8%; animation-delay: 1s;">
+              <div class="text-9xl font-bold text-violet-500/25">R</div>
+            </div>
+            <div class="money-float" style="top: 45%; right: 45%; animation-delay: 2s;">
+              <div class="text-6xl font-bold text-violet-600/20">₦</div>
+            </div>
+            <div class="money-float" style="bottom: 50%; left: 30%; animation-delay: 3.5s;">
+              <div class="text-8xl font-bold text-violet-500/25">₽</div>
+            </div>
+            <div class="money-float" style="top: 12%; left: 48%; animation-delay: 0.8s;">
+              <div class="text-7xl font-bold text-violet-600/30">¢</div>
+            </div>
+            <div class="money-float" style="bottom: 8%; right: 50%; animation-delay: 4.5s;">
+              <div class="text-9xl font-bold text-violet-500/20">₿</div>
+            </div>
+          </div>
+          
+          <!-- 3D Card Container -->
+          <div id="card3DContainer" class="relative z-10 w-full h-full flex items-center justify-center"></div>
+        </div>
+      </div>
+      
+      <style>
+        @keyframes moneyFloat {
+          0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+          25% { transform: translateY(-20px) rotate(5deg); opacity: 0.5; }
+          50% { transform: translateY(-40px) rotate(-5deg); opacity: 0.3; }
+          75% { transform: translateY(-20px) rotate(3deg); opacity: 0.5; }
+        }
+        .money-float {
+          position: absolute;
+          animation: moneyFloat 6s ease-in-out infinite;
+        }
+        #card3DContainer {
+          cursor: grab;
+        }
+        #card3DContainer:active {
+          cursor: grabbing;
+        }
+      </style>
+      
+      <!-- Import map to resolve bare 'three' specifier used by JSM helpers -->
+      <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js"
+          }
+        }
+      </script>
+      
+      <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js';
+        import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/geometries/RoundedBoxGeometry.js';
+        
+        function init3DCard() {
+          const container = document.getElementById('card3DContainer');
+          if (!container) return;
+          
+          // Scene setup
+          const scene = new THREE.Scene();
+          const camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+          camera.position.z = 5;
+          
+          const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+          const w = Math.max(container.offsetWidth || 400, 320);
+          const h = Math.max(container.offsetHeight || 320, 320);
+          renderer.setSize(w, h);
+          renderer.setPixelRatio(window.devicePixelRatio);
+          renderer.outputColorSpace = THREE.SRGBColorSpace;
+          container.appendChild(renderer.domElement);
+          
+          // Card dimensions (credit card ratio 85.6 x 53.98mm)
+          const cardWidth = 3.5;
+          const cardHeight = 2.2;
+          const cardDepth = 0.08;
+          // Rounded box for realistic card edges (with safe fallback)
+          let cardGeometry;
+          try {
+            cardGeometry = new RoundedBoxGeometry(cardWidth, cardHeight, cardDepth, 10, 0.22);
+          } catch (err) {
+            console.warn('RoundedBoxGeometry unavailable, using BoxGeometry fallback', err);
+            cardGeometry = new THREE.BoxGeometry(cardWidth, cardHeight, cardDepth, 1, 1, 1);
+          }
+          
+          // Create canvas texture for card front
+          const canvas = document.createElement('canvas');
+          canvas.width = 1024;
+          canvas.height = 640;
+          const ctx = canvas.getContext('2d');
+          
+          const W = canvas.width;
+          const H = canvas.height;
+          const gradient = ctx.createLinearGradient(0, 0, W, H);
+          gradient.addColorStop(0, '#8b5cf6');
+          gradient.addColorStop(0.5, '#7c3aed');
+          gradient.addColorStop(1, '#6d28d9');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, W, H);
+          
+          // Add holographic effect pattern
+          ctx.globalAlpha = 0.12;
+          for(let i = 0; i < 25; i++) {
+            ctx.strokeStyle = i % 2 === 0 ? '#ffffff' : '#a78bfa';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(i * 50, 0);
+            ctx.lineTo(W, H - i * 35);
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          
+          // Card chip
+          ctx.fillStyle = '#fbbf24';
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 12;
+          ctx.shadowOffsetX = 4;
+          ctx.shadowOffsetY = 4;
+          const margin = 90;
+          const chipX = margin, chipY = 200, chipW = 110, chipH = 82;
+          const chipRadius = 8;
+          ctx.beginPath();
+          ctx.moveTo(chipX + chipRadius, chipY);
+          ctx.lineTo(chipX + chipW - chipRadius, chipY);
+          ctx.arcTo(chipX + chipW, chipY, chipX + chipW, chipY + chipRadius, chipRadius);
+          ctx.lineTo(chipX + chipW, chipY + chipH - chipRadius);
+          ctx.arcTo(chipX + chipW, chipY + chipH, chipX + chipW - chipRadius, chipY + chipH, chipRadius);
+          ctx.lineTo(chipX + chipRadius, chipY + chipH);
+          ctx.arcTo(chipX, chipY + chipH, chipX, chipY + chipH - chipRadius, chipRadius);
+          ctx.lineTo(chipX, chipY + chipRadius);
+          ctx.arcTo(chipX, chipY, chipX + chipRadius, chipY, chipRadius);
+          ctx.fill();
+          ctx.strokeStyle = '#92400e';
+          ctx.lineWidth = 3;
+          for(let i = 1; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(chipX + (chipW/4)*i, chipY);
+            ctx.lineTo(chipX + (chipW/4)*i, chipY + chipH);
+            ctx.stroke();
+          }
+          for(let i = 1; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(chipX, chipY + (chipH/3)*i);
+            ctx.lineTo(chipX + chipW, chipY + (chipH/3)*i);
+            ctx.stroke();
+          }
+          ctx.shadowColor = 'transparent';
+          
+          // AlgoMoney Logo Circle
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.3)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
+          ctx.beginPath();
+          ctx.arc(margin, 120, 36, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+          ctx.shadowColor = 'transparent';
+          ctx.restore();
+          
+          // Logo text inside circle
+          ctx.fillStyle = '#7c3aed';
+          ctx.font = 'bold 34px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('AM', margin, 120);
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+          
+          // AlgoMoney text
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 54px Inter, sans-serif';
+          ctx.fillText('AlgoMoney', margin + 70, 128);
+          
+          // Card type badge
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.fillRect(W - 230, 70, 190, 54);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 30px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('PREMIUM', W - 135, 105);
+          ctx.textAlign = 'left';
+          
+          // Card number
+          ctx.font = 'bold 44px monospace';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('4532  8976  3421  7890', margin, H * 0.60);
+          
+          // Cardholder name
+          ctx.font = '22px Inter, sans-serif';
+          ctx.fillStyle = '#ddd6fe';
+          ctx.fillText('CARDHOLDER NAME', margin, H * 0.77);
+          ctx.font = 'bold 32px Inter, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('JOHN SMITH', margin, H * 0.83);
+          
+          // Valid thru
+          ctx.font = '20px Inter, sans-serif';
+          ctx.fillStyle = '#ddd6fe';
+          ctx.fillText('VALID THRU', W - 260, H * 0.77);
+          ctx.font = 'bold 32px monospace';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('08/29', W - 230, H * 0.83);
+          
+          // CVV Label (on front for design)
+          ctx.font = '18px Inter, sans-serif';
+          ctx.fillStyle = '#ddd6fe';
+          ctx.fillText('CVV', W - 110, H * 0.77);
+          ctx.font = 'bold 28px monospace';
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText('***', W - 80, H * 0.83);
+          
+          // Contactless icon
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 4;
+          for(let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.arc(W - 140, 190, 20 + i * 15, -Math.PI/4, Math.PI/4);
+            ctx.stroke();
+          }
+          
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.needsUpdate = true;
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+          texture.wrapS = THREE.ClampToEdgeWrapping;
+          texture.wrapT = THREE.ClampToEdgeWrapping;
+          
+          // Materials
+          const frontMaterial = new THREE.MeshPhysicalMaterial({
+            map: texture,
+            metalness: 0.25,
+            roughness: 0.12,
+            clearcoat: 0.8,
+            clearcoatRoughness: 0.15,
+            reflectivity: 0.7,
+            emissive: new THREE.Color(0x4c1d95),
+            emissiveIntensity: 0.35
+          });
+          
+          const backMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x3730a3,
+            metalness: 0.4,
+            roughness: 0.2,
+            clearcoat: 0.7,
+            emissive: new THREE.Color(0x1e1b4b),
+            emissiveIntensity: 0.2
+          });
+          
+          const edgeMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x7c3aed,
+            metalness: 0.8,
+            roughness: 0.2
+          });
+          
+          // BoxGeometry material order: [right, left, top, bottom, front, back]
+          const materials = [
+            edgeMaterial, // right
+            edgeMaterial, // left
+            edgeMaterial, // top
+            edgeMaterial, // bottom
+            frontMaterial, // front
+            backMaterial   // back
+          ];
+          
+          const card = new THREE.Mesh(cardGeometry, materials);
+          scene.add(card);
+          
+          // Lighting
+          const ambientLight = new THREE.AmbientLight(0xffffff, 1.8);
+          scene.add(ambientLight);
+          
+          const pointLight1 = new THREE.PointLight(0xffffff, 2.5, 100);
+          pointLight1.position.set(5, 5, 5);
+          scene.add(pointLight1);
+          
+          const pointLight2 = new THREE.PointLight(0xffffff, 2.0, 100);
+          pointLight2.position.set(-5, -3, 3);
+          scene.add(pointLight2);
+          
+          const pointLight3 = new THREE.PointLight(0xffffff, 1.8, 100);
+          pointLight3.position.set(0, 0, 8);
+          scene.add(pointLight3);
+          
+          const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+          directionalLight.position.set(0, 10, 6);
+          scene.add(directionalLight);
+          
+          // Mouse interaction
+          let mouseX = 0, mouseY = 0;
+          let targetRotationX = 0, targetRotationY = 0;
+          let isAutoRotating = true;
+          
+          container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            isAutoRotating = false;
+          });
+          
+          container.addEventListener('mouseleave', () => {
+            isAutoRotating = true;
+          });
+          
+          // Animation loop
+          let time = 0;
+          function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+            
+            if (isAutoRotating) {
+              targetRotationY = Math.sin(time * 0.5) * 0.3;
+              targetRotationX = Math.cos(time * 0.3) * 0.15;
+            } else {
+              targetRotationY = mouseX * 0.5;
+              targetRotationX = mouseY * 0.5;
+            }
+            
+            card.rotation.y += (targetRotationY - card.rotation.y) * 0.05;
+            card.rotation.x += (targetRotationX - card.rotation.x) * 0.05;
+            
+            // Subtle floating animation
+            card.position.y = Math.sin(time * 0.8) * 0.1;
+            
+            renderer.render(scene, camera);
+          }
+          
+          animate();
+          
+          // Handle resize
+          window.addEventListener('resize', () => {
+            const rw = Math.max(container.offsetWidth || 400, 320);
+            const rh = Math.max(container.offsetHeight || 320, 320);
+            camera.aspect = rw / rh;
+            camera.updateProjectionMatrix();
+            renderer.setSize(rw, rh);
+          });
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init3DCard);
+        } else {
+          init3DCard();
+        }
+      </script>
+
+      <div id="scene-money" class="scene-container scene-hidden absolute inset-0 flex items-center justify-center overflow-hidden">
+         <video id="money-bg-video" autoplay loop muted playsinline class="w-full h-full object-cover">
+            <source src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/Coin%20Auth%20Page.mp4" type="video/mp4">
+         </video>
+      </div>
+
+    </aside>
+  </div>
+
+  <script nonce="ALGOHIVE">
+    // --- SLIDER CONTROLLER ---
+    window.goToSlide = function(index) {
+        const track = document.getElementById('auth-track');
+        const toggle = document.getElementById('appSwitcher');
+        const visual = document.getElementById('visual-panel');
+        const sceneHive = document.getElementById('scene-hive');
+        const sceneMoney = document.getElementById('scene-money');
+        
+        if (track && toggle) {
+            const offset = index * 50; 
+            track.style.transform = 'translateX(-' + offset + '%)';
+            const mode = index === 0 ? 'hive' : 'money';
+            toggle.setAttribute('data-state', mode);
+            document.body.setAttribute('data-app', mode);
+            
+            // Visual Panel Background
+            if(visual) visual.setAttribute('data-mode', mode);
+            
+            // Scene Toggle
+            if(mode === 'money') {
+                sceneHive.classList.replace('scene-visible', 'scene-hidden');
+                sceneMoney.classList.replace('scene-hidden', 'scene-visible');
+                // Ensure video plays when revealed
+                const vid = document.getElementById('money-bg-video');
+                if(vid) vid.play().catch(e => console.log(e));
+            } else {
+                sceneMoney.classList.replace('scene-visible', 'scene-hidden');
+                sceneHive.classList.replace('scene-hidden', 'scene-visible');
+            }
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Attach click handlers safely
+        const btnHive = document.getElementById('btn-hive-trigger');
+        const btnMoney = document.getElementById('btn-money-trigger');
+
+        if(btnHive) btnHive.addEventListener('click', () => window.goToSlide(0));
+        if(btnMoney) btnMoney.addEventListener('click', () => window.goToSlide(1));
+    });
+  </script>
+
+  <script type="text/babel" nonce="ALGOHIVE">
+    const { useEffect, useRef, useState } = React;
+    const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
+
+    const defaultSphereImages = [
+      { id: "apple", src: "https://logo.clearbit.com/apple.com" },
+      { id: "microsoft", src: "https://logo.clearbit.com/microsoft.com" },
+      { id: "google", src: "https://logo.clearbit.com/google.com" },
+      { id: "amazon", src: "https://logo.clearbit.com/amazon.com" },
+      { id: "nvidia", src: "https://logo.clearbit.com/nvidia.com" },
+      { id: "meta", src: "https://logo.clearbit.com/meta.com" },
+      { id: "visa", src: "https://logo.clearbit.com/visa.com" },
+      { id: "netflix", src: "https://logo.clearbit.com/netflix.com" },
+      { id: "bitcoin", src: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
+      { id: "ethereum", src: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
+      { id: "solana", src: "https://cryptologos.cc/logos/solana-sol-logo.png" }
+    ];
+
+    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const TRADING_LOGOS_KEY = "ah_trading_universe_logos";
+
+    const normalizeLogos = (rows) => {
+      const seen = new Set();
+      return rows.map((row) => ({ id: (row.symbol || `logo-${row.id}`).toLowerCase(), src: row.logo })).filter((row) => typeof row.src === 'string' && row.src.trim().startsWith('http')).filter(({ src }) => { if (seen.has(src)) return false; seen.add(src); return true; });
+    };
+
+    const fetchCachedLogos = () => {
+      try {
+        const cached = sessionStorage.getItem(TRADING_LOGOS_KEY);
+        if (!cached) return null;
+        const parsed = JSON.parse(cached);
+        const cachedLogos = normalizeLogos(parsed?.source === 'trading_universe' && Array.isArray(parsed.logos) ? parsed.logos : []);
+        return cachedLogos.length ? cachedLogos : null;
+      } catch (err) { console.warn("Unable to read cached logos", err); return null; }
+    };
+
+    async function fetchTradingLogos() {
+      const cached = fetchCachedLogos();
+      if (cached) return cached;
+      if (!supabase) return defaultSphereImages;
+      const { data, error } = await supabase.from('trading_universe').select('id, symbol, logo').not('logo', 'is', null).neq('logo', '').limit(60);
+      if (error || !data?.length) return defaultSphereImages;
+      const logos = normalizeLogos(data);
+      if (logos.length) { try { sessionStorage.setItem(TRADING_LOGOS_KEY, JSON.stringify({ source: 'trading_universe', logos })); } catch (err) {} }
+      return logos.length ? logos : defaultSphereImages;
+    }
+
+    const Sphere = ({ images, size = 620 }) => {
+      const [rot, setRot] = useState({ x: 15, y: 0 });
+      const [vel, setVel] = useState({ x: 0, y: 0 });
+      const [dragging, setDragging] = useState(false);
+      const [points, setPoints] = useState([]);
+      const last = useRef({ x: 0, y: 0 });
+      const radius = size * 0.45; const baseSize = size * 0.14;
+
+      useEffect(() => {
+        const pts = []; const count = images.length; const phi = Math.PI * (3 - Math.sqrt(5));
+        for (let i = 0; i < count; i++) {
+          const y = 1 - (i / (count - 1)) * 2; const r = Math.sqrt(1 - y * y); const theta = phi * i;
+          pts.push({ x: Math.cos(theta) * r * radius, y: y * radius, z: Math.sin(theta) * r * radius });
+        }
+        setPoints(pts);
+      }, [images.length, radius]);
+
+      useEffect(() => {
+        let id;
+        const loop = () => { if (!dragging) { setVel(v => ({ x: v.x * 0.97, y: v.y * 0.97 })); setRot(r => ({ x: r.x + vel.x, y: r.y + vel.y + 0.1 })); } id = requestAnimationFrame(loop); };
+        id = requestAnimationFrame(loop); return () => cancelAnimationFrame(id);
+      }, [dragging, vel.x, vel.y]);
+
+      const start = (e) => { setDragging(true); setVel({x:0,y:0}); const x=e.clientX||e.touches?.[0]?.clientX||0; const y=e.clientY||e.touches?.[0]?.clientY||0; last.current={x,y}; };
+      const move = (e) => { if(!dragging) return; const x=e.clientX||e.touches?.[0]?.clientX||0; const y=e.clientY||e.touches?.[0]?.clientY||0; const dx=x-last.current.x; const dy=y-last.current.y; setRot(r=>({x:r.x-dy*0.45,y:r.y+dx*0.45})); setVel({x:-dy*0.35,y:dx*0.35}); last.current={x,y}; };
+      const end = () => setDragging(false);
+
+      const project = (p) => {
+        let {x,y,z}=p; const rx=(rot.x*Math.PI)/180; const ry=(rot.y*Math.PI)/180;
+        const tx=x*Math.cos(ry)+z*Math.sin(ry); z=-x*Math.sin(ry)+z*Math.cos(ry); x=tx;
+        const ty=y*Math.cos(rx)-z*Math.sin(rx); z=y*Math.sin(rx)+z*Math.cos(rx); y=ty;
+        const scale=1+z/(radius*3); const visible=z>-radius*0.7;
+        return {x,y,scale:Math.max(0.45,scale),visible,opacity:visible?Math.max(0.5,(z+radius)/(radius*1.5)):0,zIndex:Math.round(z)};
+      };
+
+      return (
+        <div className={`relative ${dragging ? "cursor-grabbing" : "cursor-grab"} select-none`} style={{width:size,height:size}} onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={end} onTouchStart={start} onTouchMove={move} onTouchEnd={end}>
+          {points.map((p, i) => {
+            const proj = project(p); if(!proj.visible) return null; const s=baseSize*proj.scale;
+            return <div key={images[i].id} className="absolute" style={{width:s,height:s,left:size/2+proj.x,top:size/2+proj.y,transform:"translate(-50%, -50%)",opacity:proj.opacity,zIndex:1000+proj.zIndex}}>
+                <div className="w-full h-full rounded-full overflow-hidden shadow-2xl bg-white p-4">
+                  <img src={images[i].src} className="w-full h-full object-contain" draggable={false} loading="lazy" alt={images[i].id} />
+                </div>
+            </div>;
+          })}
+        </div>
+      );
+    };
+
+    const SphereWrapper = () => {
+      const [size, setSize] = useState(window.innerWidth >= 1536 ? 720 : 620);
+      const [images, setImages] = useState(defaultSphereImages);
+      useEffect(() => { let m=true; fetchTradingLogos().then(l => {if(m && l.length) setImages(l)}); return () => m=false; }, []);
+      return <Sphere images={images} size={size} />;
+    };
+
+    const root = document.getElementById("authSphereRoot");
+    if (root) ReactDOM.createRoot(root).render(<SphereWrapper />);
+  </script>
+
+  <script type="module" nonce="ALGOHIVE">
+    import { signIn, signUp } from "/js/auth.js";
+    import { supabase } from "/js/supabase.js";
+
+    let demoSupportsAvatar = true;
+
+    const REQUIRED_FIELDS = [
+      "first_name", "last_name", "phone", "dob", "id_number", "nationality",
+      "country_residence", "employment_status", "occupation", "employer",
+      "income_bracket", "source_of_funds", "net_worth_range", "experience_level",
+      "risk_tolerance", "objectives"
+    ];
+    const REQUIRE_KYC = false;
+
+    function resolveKycBoolean(row){
+      const v = row?.kyc_status;
+      if (typeof v === "boolean") return v;
+      if (typeof v === "string") return ["verified","approved","done","passed","kyc_done"].includes(v.toLowerCase());
+      return false;
+    }
+
+    function computeProfileComplete(row){
+      const core = REQUIRED_FIELDS.every(k => String(row?.[k] ?? "").trim().length > 0);
+      return REQUIRE_KYC ? (core && resolveKycBoolean(row)) : core;
+    }
+
+    function gateBannerMessage(profileComplete, kycDone) {
+      if (!profileComplete && !kycDone) return "Please finish Additional Info and complete KYC first.";
+      if (!profileComplete) return "Please finish Additional Info first.";
+      if (!kycDone) return "Please complete KYC first.";
+      return "";
+    }
+
+    async function fetchLiveProfileBasics(user) {
+      if (!user) return {};
+      const { data, error } = await supabase.from("profiles").select("first_name, last_name, phone, avatar_url").eq("id", user.id).maybeSingle();
+      if (error && error.code !== "PGRST116") throw error;
+      return data || {};
+    }
+
+    async function fetchDemoProfileBasics(user) {
+      if (!user) return null;
+      try {
+        const { data, error } = await supabase.from("demo_profiles").select("id, first_name, last_name, phone, avatar_url, risk_appetite").eq("id", user.id).maybeSingle();
+        if (error) throw error;
+        return data;
+      } catch (err) { return null; }
+    }
+
+    async function ensureDemoProfile(accountTypeValue, liveProfile = {}) {
+      if (accountTypeValue !== "paper") return null;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const meta = user.user_metadata || {};
+      const payload = {
+        id: user.id,
+        account_mode: "paper",
+        first_name: meta.first_name || liveProfile?.first_name || "Demo",
+        last_name: meta.last_name || liveProfile?.last_name || "User",
+        phone: meta.phone || liveProfile?.phone || null,
+        risk_appetite: meta.risk_appetite || "balanced",
+        balance: 10000,
+        allocated: 0
+      };
+
+      const { data, error } = await supabase.from("demo_profiles").insert(payload).select("*").maybeSingle();
+      if (error && error.code !== "23505") console.warn("Demo profile ensure error", error); // Ignore duplicate key error
+      return data || payload;
+    }
+
+    function hasDemoBasics(profile = {}) {
+      return ["first_name", "last_name", "phone"].every(k => profile?.[k] && profile[k].trim().length > 0);
+    }
+
+    async function hasLiveBrokerageAccount(user) {
+      if (!user) return false;
+      const { data } = await supabase.from("alpaca_accounts").select("id").eq("user_id", user.id).maybeSingle();
+      return !!data;
+    }
+
+    async function routePostAuth(preferred = "/home.html", accountTypeValue = "live") {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return; 
+
+        try { 
+            sessionStorage.setItem("ah_account_type", accountTypeValue);
+            await supabase.auth.updateUser({ data: { account_type: accountTypeValue } });
+        } catch (err) { console.warn("Meta update failed", err); }
+
+        const destination = accountTypeValue === "paper" ? "/demo/dashboard.html" : (preferred || "/home.html");
+
+        if (accountTypeValue === "paper") {
+            const liveProfile = await fetchLiveProfileBasics(session.user);
+            let demoProfile = await fetchDemoProfileBasics(session.user);
+
+            if (!demoProfile) {
+                await ensureDemoProfile("paper", liveProfile);
+                demoProfile = await fetchDemoProfileBasics(session.user);
+            }
+
+            if (!hasDemoBasics({ ...liveProfile, ...demoProfile })) {
+                window.location.href = "/demo/onboarding.html";
+                return;
+            }
+            window.location.href = destination;
+            return;
+        }
+
+        // Live Logic
+        let profileComplete = false;
+        let kycDone = false;
+        
+        try {
+            const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+            
+            // AlgoMoney Specific Check (If destination is money home)
+            if (destination.includes('/money/')) {
+                 // Use the new column we added to DB, or fallback to manual check
+                 profileComplete = data?.algomoney_profile_complete ?? computeProfileComplete(data);
+            } else {
+                 // Standard Hive Check
+                 profileComplete = computeProfileComplete(data);
+            }
+            
+            kycDone = resolveKycBoolean(data);
+        } catch (e) {}
+
+        if (!profileComplete || !kycDone) {
+            sessionStorage.setItem("ah_gate_reason", gateBannerMessage(profileComplete, kycDone));
+            
+            // --- FIX: DETECT REDIRECT TARGET ---
+            if (destination.includes('/money/')) {
+                window.location.href = "/money-onboarding.html"; // Go to Money Onboarding
+            } else {
+                window.location.href = "/onboarding.html";       // Go to Hive Onboarding
+            }
+            return;
+        }
+
+        window.location.href = destination;
+    }
+
+    function showMsg(id, text, type="error") {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.className = `mb-5 max-w-md rounded-lg border px-3 py-2 text-sm text-left ${type==='error'?'bg-rose-50 text-rose-700 border-rose-200':'bg-emerald-50 text-emerald-700 border-emerald-200'}`;
+        el.textContent = text;
+        el.classList.remove("hidden");
+    }
+
+    // --- SHARED UI LOGIC ---
+    function setupFormToggles(prefix) {
+        const switchUp = document.getElementById(`${prefix}-switch-to-signup`);
+        const switchIn = document.getElementById(`${prefix}-switch-to-signin`);
+        const pIn = document.getElementById(`${prefix}-panel-in`);
+        const pUp = document.getElementById(`${prefix}-panel-up`);
+        const hIn = document.getElementById(`${prefix}-heading-in`);
+        const hUp = document.getElementById(`${prefix}-heading-up`);
+        const forgotWrap = document.getElementById(`${prefix}-forgot-wrap`);
+
+        if(switchUp) switchUp.onclick = () => { 
+            pIn.classList.add('hidden'); hIn.classList.add('hidden'); 
+            pUp.classList.remove('hidden'); hUp.classList.remove('hidden'); 
+            if(forgotWrap) forgotWrap.classList.add('hidden');
+        };
+        if(switchIn) switchIn.onclick = () => { 
+            pUp.classList.add('hidden'); hUp.classList.add('hidden'); 
+            pIn.classList.remove('hidden'); hIn.classList.remove('hidden'); 
+            if(forgotWrap) forgotWrap.classList.add('hidden');
+        };
+    }
+    setupFormToggles('hive');
+    setupFormToggles('money');
+
+    // --- ACCOUNT PILLS (Hive only now) ---
+    const pills = document.querySelectorAll('.account-pill');
+    pills.forEach(p => {
+        p.onclick = () => {
+            pills.forEach(x => x.classList.remove('account-pill--active'));
+            p.classList.add('account-pill--active');
+            localStorage.setItem("ah_account_type", p.dataset.account);
+            updateLiveNote(p.dataset.account);
+        };
+    });
+
+    function updateLiveNote(type) {
+        const note = document.getElementById("hive-live-note");
+        const status = document.getElementById("hive-live-status");
+        // FIX: specifically target submit button so we don't overwrite forgot-pass button text
+        const btn = document.querySelector("#hive-login-form button[type='submit']");
+        
+        if (note) note.classList.toggle("hidden", type !== "live");
+        if (status) {
+            status.classList.toggle("hidden", type !== "live");
+            status.textContent = type === "live" ? "currently under maintenance" : "";
+        }
+        if (btn) {
+            btn.disabled = (type === "live");
+            btn.textContent = type === "live" ? "Unavailable (maintenance)" : "Log in";
+        }
+    }
+    // Init state
+    const savedType = localStorage.getItem("ah_account_type") || "live";
+    const activePill = document.querySelector(`.account-pill[data-account="${savedType}"]`);
+    if(activePill) activePill.classList.add('account-pill--active');
+    updateLiveNote(savedType);
+
+
+    // --- GENERIC AUTH HANDLERS ---
+    // UPDATED: Added 'redirectUrl' parameter
+    function setupAuthLogic(prefix, fixedAccountType = null, redirectUrl = "/home.html") {
+        // Validation Logic
+        const pass = document.getElementById(`${prefix}-signup-password`);
+        const confirm = document.getElementById(`${prefix}-signup-confirm`);
+        const hint = document.getElementById(`${prefix}-confirm-hint`);
+        const agree = document.getElementById(`${prefix}-agree`);
+        const upBtn = document.getElementById(`${prefix}-signup-btn`);
+
+        if (pass && confirm && upBtn) {
+            const validate = () => {
+                const pVal = pass.value;
+                const cVal = confirm.value;
+                const match = pVal === cVal;
+                
+                if(!cVal) {
+                   confirm.setCustomValidity("");
+                   hint.classList.add("hidden");
+                   return true;
+                }
+                confirm.setCustomValidity(match ? "" : "Mismatch");
+                hint.classList.toggle("hidden", match);
+                return match;
+            };
+
+            const toggle = () => {
+                validate();
+                upBtn.disabled = !agree.checked || !pass.value || !confirm.value || (pass.value !== confirm.value);
+            };
+
+            pass.addEventListener("input", toggle);
+            confirm.addEventListener("input", toggle);
+            agree.addEventListener("change", toggle);
+        }
+
+        // Login Submit
+        const loginForm = document.getElementById(`${prefix}-login-form`);
+        if (loginForm) {
+            loginForm.onsubmit = async (e) => {
+                e.preventDefault();
+                // FIX: specifically target submit button
+                const btn = loginForm.querySelector("button[type='submit']");
+                const ogText = btn.textContent;
+                btn.disabled = true; btn.textContent = "Logging in...";
+                
+                try {
+                    const { user, error } = await signIn(loginForm.email.value.trim(), loginForm.password.value);
+                    if (error) throw error;
+                    
+                    showMsg(`${prefix}-msg`, "Success. Redirecting...", "success");
+                    // Determine account type: Fixed (Money=live) or Dynamic (Hive=pill)
+                    const accType = fixedAccountType || localStorage.getItem("ah_account_type") || "live";
+                    // UPDATED: Use the passed redirectUrl instead of hardcoded string
+                    await routePostAuth(redirectUrl, accType);
+                } catch (err) {
+                    showMsg(`${prefix}-msg`, err.message || "Login failed.");
+                    btn.disabled = false; btn.textContent = ogText;
+                }
+            };
+        }
+
+        // Signup Submit
+        const signupForm = document.getElementById(`${prefix}-signup-form`);
+        if (signupForm) {
+            signupForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById(`${prefix}-signup-btn`);
+                btn.disabled = true; btn.textContent = "Creating...";
+                
+                try {
+                    const accType = fixedAccountType || localStorage.getItem("ah_account_type") || "live";
+                    const { data, error } = await signUp(signupForm.email.value.trim(), signupForm.password.value, { account_type: accType });
+                    
+                    if (error) throw error;
+                    
+                    if (!data.session) {
+                         showMsg(`${prefix}-msg`, "Account created. Please confirm your email.", "success");
+                         btn.textContent = "Check email";
+                    } else {
+                         showMsg(`${prefix}-msg`, "Success. Redirecting...", "success");
+                         // UPDATED: Use the passed redirectUrl
+                         await routePostAuth(redirectUrl, accType);
+                    }
+                } catch (err) {
+                    const m = err.message.toLowerCase();
+                    if (m.includes("already registered")) {
+                        showMsg(`${prefix}-msg`, "Account exists. Please log in.", "error");
+                    } else {
+                        showMsg(`${prefix}-msg`, err.message);
+                    }
+                    btn.disabled = false; btn.textContent = "Try again";
+                }
+            };
+        }
+
+        // Forgot Password
+        const fBtn = document.getElementById(`${prefix}-forgot-btn`);
+        const fWrap = document.getElementById(`${prefix}-forgot-wrap`);
+        const fCancel = document.getElementById(`${prefix}-forgot-cancel`);
+        const fForm = document.getElementById(`${prefix}-forgot-form`);
+
+        if (fBtn && fWrap) {
+            fBtn.onclick = () => {
+                // Show Login Panel if hidden - ADDED hidden class toggle to prevent overlapping
+                document.getElementById(`${prefix}-panel-in`).classList.add('hidden');
+                document.getElementById(`${prefix}-heading-in`).classList.remove('hidden');
+                document.getElementById(`${prefix}-panel-up`).classList.add('hidden');
+                document.getElementById(`${prefix}-heading-up`).classList.add('hidden');
+                
+                // Prefill
+                const emailVal = loginForm?.email?.value;
+                if(emailVal && fForm) fForm.email.value = emailVal;
+                
+                fWrap.classList.remove('hidden');
+            };
+
+            if(fCancel) {
+                 fCancel.onclick = () => {
+                    fWrap.classList.add('hidden');
+                    document.getElementById(`${prefix}-panel-in`).classList.remove('hidden');
+                 }
+            }
+
+            if(fForm) {
+                fForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    const sBtn = fForm.querySelector("button[type=submit]");
+                    const org = sBtn.textContent;
+                    sBtn.disabled = true; sBtn.textContent = "Sending...";
+                    
+                    try {
+                        const { error } = await supabase.auth.resetPasswordForEmail(fForm.email.value.trim(), { redirectTo: "https://thealgohive.com/reset" });
+                        if(error) throw error;
+                        showMsg(`${prefix}-msg`, "Reset link sent (if account exists).", "success");
+                        fWrap.classList.add('hidden');
+                    } catch(err) {
+                        showMsg(`${prefix}-msg`, err.message);
+                    } finally {
+                        sBtn.disabled = false; sBtn.textContent = org;
+                    }
+                };
+            }
+        }
+    }
+
+    // Initialize Logic
+    setupAuthLogic('hive', null, '/home.html');   // Hive uses local storage toggle, defaults to /home.html
+    setupAuthLogic('money', 'live', '/money/home.html'); // Money is always live, redirects to /money/home.html
+
+    // Money Video Speed
+    const v = document.getElementById("money-bg-video");
+    if(v) v.playbackRate = 1;
+
+  </script>
+</body>
+</html>

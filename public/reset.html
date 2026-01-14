@@ -212,7 +212,24 @@
   </div>
 
   <script type="module" nonce="ALGOHIVE">
-    import { supabase } from "/js/supabase.js";
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "https://aazofjsssobejhkyyiqv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhem9manNzc29iZWpoa3l5aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxMTI1NDUsImV4cCI6MjA3MzY4ODU0NX0.guYlxaV5RwTlTVFoUhpER0KWEIGPay8svLsxMwyRUyM";
+
+    // IMPORTANT: Use detectSessionInUrl: false to prevent Supabase from auto-processing
+    // and redirecting. We'll handle the recovery tokens manually.
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { 
+        persistSession: true, 
+        autoRefreshToken: true, 
+        detectSessionInUrl: false  // Prevent auto-processing of URL tokens
+      }
+    });
+
+    // Capture tokens from URL IMMEDIATELY before anything else runs
+    const capturedHash = window.location.hash;
+    const capturedSearch = window.location.search;
 
     const preloader = document.getElementById("preloader");
     window.addEventListener("load", () => {
@@ -390,13 +407,18 @@
     async function ensureRecoverySession() {
       // First check for existing session
       let { data: { session } } = await supabase.auth.getSession();
-      if (session) return session;
+      if (session) {
+        console.log("Found existing session");
+        return session;
+      }
 
-      // Try to extract tokens from URL hash (Supabase format)
-      const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+      // Try to extract tokens from CAPTURED URL hash (before any modifications)
+      const hash = new URLSearchParams(capturedHash.replace(/^#/, ""));
       const type = hash.get("type");
       const access_token = hash.get("access_token");
       const refresh_token = hash.get("refresh_token");
+
+      console.log("Recovery attempt - type:", type, "has_access_token:", !!access_token, "has_refresh_token:", !!refresh_token);
 
       if (type === "recovery" && access_token && refresh_token) {
         const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
@@ -404,11 +426,12 @@
           console.error("setSession error:", error);
           return null;
         }
+        console.log("Session set successfully from hash tokens");
         return data.session;
       }
 
-      // Also check URL query params (some Supabase versions use this)
-      const params = new URLSearchParams(location.search);
+      // Also check CAPTURED URL query params (some Supabase versions use this)
+      const params = new URLSearchParams(capturedSearch);
       const queryType = params.get("type");
       const queryAccessToken = params.get("access_token");
       const queryRefreshToken = params.get("refresh_token");
@@ -422,14 +445,17 @@
           console.error("setSession error:", error);
           return null;
         }
+        console.log("Session set successfully from query tokens");
         return data.session;
       }
 
+      console.log("No recovery tokens found in URL");
       return null;
     }
 
-    // Listen for auth state changes (in case Supabase auto-detects the recovery)
+    // Listen for auth state changes
     supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         if (session) {
           hideMsg();
@@ -438,8 +464,15 @@
       }
     });
 
+    // Initialize
     const session = await ensureRecoverySession();
-    if (!session) {
+    if (session) {
+      // Clear the URL hash for cleaner appearance (but we already have the session)
+      if (window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+      form.classList.remove("hidden");
+    } else {
       showMsg("Recovery link invalid or expired. Please request a new password reset link.", "error");
       form.classList.add("hidden");
     }

@@ -693,19 +693,23 @@
     let currentUser = null;
     let displayName = "—";
 
+    let cachedFirstName = '';
+    let cachedLastName = '';
+
     function setAvatar(src) {
       if (!profileAvatar) return;
       if (src) {
         profileAvatar.src = src;
         return;
       }
-      // Generate initial avatar
-      const initial = (displayName.match(/[A-Za-z]/)?.[0] || "?").toUpperCase();
+      const f = (cachedFirstName || '')[0] || '';
+      const l = (cachedLastName || '')[0] || '';
+      const initials = (f + l).toUpperCase() || displayName.charAt(0).toUpperCase() || 'U';
       const svg = encodeURIComponent(
         `<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'>
-           <rect width='100%' height='100%' rx='12' ry='12' fill='#0f172a'/>
+           <rect width='100%' height='100%' rx='36' ry='36' fill='#0f172a'/>
            <text x='50%' y='54%' text-anchor='middle' dominant-baseline='middle'
-                 font-family='Inter, Arial, sans-serif' font-size='32' fill='#fff'>${initial}</text>
+                 font-family='Inter, Arial, sans-serif' font-size='22' font-weight='600' fill='#fff'>${initials}</text>
          </svg>`
       );
       profileAvatar.src = `data:image/svg+xml;utf8,${svg}`;
@@ -738,9 +742,28 @@
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
            currentUser = session.user;
-           // Determine Display Name logic (Metadata Name -> Email -> fallback)
-           const metaName = currentUser.user_metadata?.first_name 
-             ? `${currentUser.user_metadata.first_name} ${currentUser.user_metadata.last_name || ''}`.trim()
+           
+           // Try to fetch profile from database for first/last name
+           try {
+             const { data: profile } = await supabase
+               .from('profiles')
+               .select('first_name, last_name, avatar_url')
+               .eq('id', currentUser.id)
+               .maybeSingle();
+             if (profile) {
+               cachedFirstName = profile.first_name || '';
+               cachedLastName = profile.last_name || '';
+             }
+           } catch (e) {
+             console.warn('Profile fetch failed', e);
+           }
+           
+           // Fallback to user metadata
+           if (!cachedFirstName) cachedFirstName = currentUser.user_metadata?.first_name || '';
+           if (!cachedLastName) cachedLastName = currentUser.user_metadata?.last_name || '';
+           
+           const metaName = cachedFirstName 
+             ? `${cachedFirstName} ${cachedLastName}`.trim()
              : currentUser.user_metadata?.full_name;
              
            displayName = metaName || currentUser.email || "Demo User";

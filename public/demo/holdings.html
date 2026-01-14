@@ -617,6 +617,9 @@
       return num > 1 ? num / 100 : num;
     }
 
+    let cachedFirstName = '';
+    let cachedLastName = '';
+
     function setAvatar(src) {
       if (!profileAvatar) return;
       if (src) {
@@ -625,12 +628,14 @@
         return;
       }
 
-      const initial = (displayName.match(/[A-Za-z]/)?.[0] || '?').toUpperCase();
+      const f = (cachedFirstName || '')[0] || '';
+      const l = (cachedLastName || '')[0] || '';
+      const initials = (f + l).toUpperCase() || displayName.charAt(0).toUpperCase() || 'U';
       const svg = encodeURIComponent(
         `<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'>
-           <rect width='100%' height='100%' rx='12' ry='12' fill='#0f172a'/>
+           <rect width='100%' height='100%' rx='36' ry='36' fill='#0f172a'/>
            <text x='50%' y='54%' text-anchor='middle' dominant-baseline='middle'
-                 font-family='Inter, Arial, sans-serif' font-size='32' fill='#fff'>${initial}</text>
+                 font-family='Inter, Arial, sans-serif' font-size='22' font-weight='600' fill='#fff'>${initials}</text>
          </svg>`
       );
       profileAvatar.src = `data:image/svg+xml;utf8,${svg}`;
@@ -640,6 +645,8 @@
     function syncProfileChrome(user, profile = {}) {
       const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || profile?.full_name || user?.email || 'Demo User';
       displayName = fullName;
+      cachedFirstName = profile?.first_name || user?.user_metadata?.first_name || fullName.split(' ')[0] || '';
+      cachedLastName = profile?.last_name || user?.user_metadata?.last_name || fullName.split(' ')[1] || '';
       if (profileName) profileName.textContent = fullName;
       if (profileMenuName) profileMenuName.textContent = fullName;
       if (profileEmail) profileEmail.textContent = user?.email || fullName;

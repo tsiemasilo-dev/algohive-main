@@ -2728,7 +2728,58 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => { init(); });
+
+    // Profile dropdown modal wiring
+    (function() {
+      const profileBtn = document.getElementById('profile-btn');
+      const profileModal = document.getElementById('profile-modal');
+      const pmLogout = document.getElementById('pm-logout');
+      const pmEmail = document.getElementById('pm-email');
+      const profileModalBackdrop = profileModal?.querySelector('.bg-black\\/40');
+
+      const openModal = () => {
+        profileModal?.classList.remove('hidden');
+        // Hydrate email from current user if available
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user?.email && pmEmail) pmEmail.textContent = user.email;
+        }).catch(() => {});
+      };
+      const closeModal = () => profileModal?.classList.add('hidden');
+
+      profileBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openModal(); });
+      profileModalBackdrop?.addEventListener('click', closeModal);
+      window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !profileModal?.classList.contains('hidden')) closeModal(); });
+
+      pmLogout?.addEventListener('click', async () => {
+        try {
+          await supabase.auth.signOut();
+          location.replace('/auth.html?tab=in');
+        } catch {
+          console.warn('Logout failed');
+        }
+      });
+    })();
   </script>
+
+  <div id="profile-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="absolute right-6 top-20 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-4 py-3 border-b border-slate-200">
+        <div class="text-sm font-semibold text-slate-900">Account</div>
+        <div id="pm-email" class="text-xs text-slate-500 truncate">user@example.com</div>
+      </div>
+      <div class="p-2">
+        <a id="pm-profile" href="/demo/settings.html#basic" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50">
+          <i class="fa-regular fa-user text-slate-500 w-4"></i>
+          <span>Profile settings</span>
+        </a>
+        <button id="pm-logout" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-rose-700">
+          <i class="fa-solid fa-right-from-bracket w-4"></i>
+          <span>Log out</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

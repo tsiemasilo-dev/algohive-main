@@ -2,9 +2,8 @@
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up • AlgoHive</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <title>Sign Up • MINT</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script nonce="ALGOHIVE">
     tailwind.config = {
@@ -31,22 +30,30 @@
   <style>
     :root {
       --background: 0 0% 100%;
-      --foreground: 100 30% 10%;
-      --muted: 90 20% 96%;
-      --muted-foreground: 90 15% 45%;
-      --primary: 90 40% 35%;
-      --border: 90 20% 85%;
-      --input: hsl(90 20% 96%);
+      --foreground: 270 30% 12%;
+      --muted: 270 25% 96%;
+      --muted-foreground: 270 15% 45%;
+      --primary: 270 55% 45%;
+      --border: 270 25% 85%;
+      --input: hsl(270 25% 96%);
+    }
+
+    @font-face {
+      font-family: "Future Earth Medium";
+      src: local("Future Earth Medium"),
+        local("FutureEarth-Medium"),
+        url("/assets/fonts/future-earth.ttf") format("truetype");
+      font-display: swap;
     }
 
     .dark {
-      --background: 90 15% 8%;
-      --foreground: 90 20% 95%;
-      --muted: 90 10% 15%;
-      --muted-foreground: 90 10% 60%;
-      --primary: 85 35% 60%;
-      --border: 90 15% 20%;
-      --input: hsl(90 10% 15%);
+      --background: 270 18% 9%;
+      --foreground: 270 20% 95%;
+      --muted: 270 12% 15%;
+      --muted-foreground: 270 12% 60%;
+      --primary: 270 50% 62%;
+      --border: 270 18% 20%;
+      --input: hsl(270 12% 15%);
     }
 
     html {
@@ -80,21 +87,21 @@
 
     /* Enhanced glass effect */
     .glass {
-      background: linear-gradient(135deg, rgba(107,142,35,0.12) 0%, rgba(143,188,143,0.28) 50%, rgba(107,142,35,0.12) 100%);
+      background: linear-gradient(135deg, rgba(150,102,220,0.12) 0%, rgba(191,152,238,0.28) 50%, rgba(150,102,220,0.12) 100%);
       backdrop-filter: blur(16px) saturate(180%);
       -webkit-backdrop-filter: blur(16px) saturate(180%);
       box-shadow:
         inset 0 1px 1px rgba(255,255,255,0.25),
         inset 0 -1px 1px rgba(0,0,0,0.08),
         0 8px 32px rgba(0,0,0,0.12);
-      border: 1px solid rgba(143,188,143,0.35);
+      border: 1px solid rgba(191,152,238,0.35);
       border-radius: 9999px;
       transition: all 0.4s cubic-bezier(0.25,1,0.5,1);
     }
 
     .glass:hover,
     .glass:focus-within {
-      background: linear-gradient(135deg, rgba(107,142,35,0.18) 0%, rgba(143,188,143,0.38) 50%, rgba(107,142,35,0.18) 100%);
+      background: linear-gradient(135deg, rgba(150,102,220,0.18) 0%, rgba(191,152,238,0.38) 50%, rgba(150,102,220,0.18) 100%);
       box-shadow:
         inset 0 1px 2px rgba(255,255,255,0.35),
         inset 0 -1px 2px rgba(0,0,0,0.1),
@@ -103,8 +110,8 @@
     }
 
     .dark .glass {
-      background: linear-gradient(135deg, rgba(107,142,35,0.22) 0%, rgba(143,188,143,0.42) 50%, rgba(107,142,35,0.22) 100%);
-      border: 1px solid rgba(143,188,143,0.28);
+      background: linear-gradient(135deg, rgba(150,102,220,0.22) 0%, rgba(191,152,238,0.42) 50%, rgba(150,102,220,0.22) 100%);
+      border: 1px solid rgba(191,152,238,0.28);
       box-shadow:
         inset 0 1px 1px rgba(0,0,0,0.5),
         inset 0 -1px 1px rgba(0,0,0,0.6),
@@ -113,7 +120,7 @@
 
     .dark .glass:hover,
     .dark .glass:focus-within {
-      background: linear-gradient(135deg, rgba(107,142,35,0.28) 0%, rgba(143,188,143,0.50) 50%, rgba(107,142,35,0.28) 100%);
+      background: linear-gradient(135deg, rgba(150,102,220,0.28) 0%, rgba(191,152,238,0.50) 50%, rgba(150,102,220,0.28) 100%);
       box-shadow:
         inset 0 1px 2px rgba(0,0,0,0.6),
         inset 0 -1px 2px rgba(0,0,0,0.7),
@@ -135,18 +142,77 @@
     .glass-input {
       display: flex;
       align-items: center;
-      padding: 5px 6px;
+      padding: clamp(4px, 1.5vw, 6px);
+      gap: clamp(0.35rem, 2vw, 0.65rem);
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
       transition: all 0.4s cubic-bezier(0.25,1,0.5,1);
+      background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(210,190,255,0.25) 55%, rgba(255,255,255,0.2) 100%);
+      border: 1px solid rgba(210,185,255,0.5);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.7),
+        inset 0 -1px 2px rgba(150,102,220,0.25),
+        0 12px 35px rgba(91,33,182,0.18);
+      border-radius: 9999px;
+      backdrop-filter: blur(18px) saturate(170%);
+      -webkit-backdrop-filter: blur(18px) saturate(170%);
     }
 
     .glass-input input {
-      background: transparent;
-      border: none;
+      background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(210,190,255,0.18));
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 9999px;
       outline: none;
       flex: 1;
       color: inherit;
-      font-size: 1.05rem;
-      padding: 0.9rem 1.25rem;
+      font-size: clamp(1rem, 2.6vw, 1.05rem);
+      padding: clamp(0.75rem, 2.6vw, 0.95rem) clamp(1rem, 4vw, 1.25rem);
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.85),
+        inset 0 -2px 4px rgba(120,72,210,0.2);
+      transition: padding 0.35s ease, transform 0.35s ease;
+    }
+
+    .glass-input.has-value input {
+      transform: scale(0.985);
+    }
+
+    .glass-input:focus-within {
+      background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(210,190,255,0.32) 55%, rgba(255,255,255,0.28) 100%);
+      border-color: rgba(191,152,238,0.7);
+      box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.85),
+        inset 0 -2px 6px rgba(150,102,220,0.35),
+        0 16px 40px rgba(91,33,182,0.25);
+    }
+
+    .dark .glass-input {
+      background: linear-gradient(135deg, rgba(120,85,190,0.35) 0%, rgba(70,40,120,0.45) 60%, rgba(90,60,150,0.35) 100%);
+      border-color: rgba(191,152,238,0.4);
+      box-shadow:
+        inset 0 1px 1px rgba(0,0,0,0.45),
+        inset 0 -1px 2px rgba(0,0,0,0.55),
+        0 12px 35px rgba(0,0,0,0.45);
+    }
+
+    .dark .glass-input input {
+      background: linear-gradient(135deg, rgba(120,85,190,0.45), rgba(80,50,140,0.25));
+      border-color: rgba(191,152,238,0.45);
+      box-shadow:
+        inset 0 1px 1px rgba(0,0,0,0.4),
+        inset 0 -2px 4px rgba(0,0,0,0.55);
+    }
+
+    .dark .glass-input:focus-within {
+      background: linear-gradient(135deg, rgba(140,100,210,0.45) 0%, rgba(90,60,150,0.55) 60%, rgba(120,90,200,0.45) 100%);
+      border-color: rgba(191,152,238,0.6);
+      box-shadow:
+        inset 0 1px 2px rgba(0,0,0,0.5),
+        inset 0 -2px 6px rgba(0,0,0,0.65),
+        0 16px 40px rgba(0,0,0,0.55);
     }
 
     .glass-input input::placeholder {
@@ -154,16 +220,70 @@
     }
 
     .glass-btn {
-      background: linear-gradient(135deg, rgba(107,142,35,0.18), rgba(143,188,143,0.38), rgba(107,142,35,0.18));
+      background: linear-gradient(135deg, rgba(150,102,220,0.18), rgba(191,152,238,0.38), rgba(150,102,220,0.18));
       backdrop-filter: blur(12px);
       border-radius: 9999px;
-      padding: 0.8rem;
-      transition: all 0.3s ease;
+      font-size: clamp(0.85rem, 2.4vw, 0.95rem);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: clamp(2.75rem, 8vw, 3.1rem);
+      width: 0;
+      padding: 0;
+      margin-right: 0;
+      opacity: 0;
+      transform: scale(0.7);
+      pointer-events: none;
+      overflow: hidden;
+      transition: opacity 0.35s ease, transform 0.35s ease, width 0.35s ease, margin 0.35s ease;
+    }
+
+    .glass-input.has-value .glass-btn {
+      width: clamp(3.4rem, 18vw, 4.5rem);
+      padding: 0 clamp(0.65rem, 3vw, 1rem);
+      margin-right: clamp(0.2rem, 1.8vw, 0.6rem);
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
     }
 
     .glass-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 8px 24px rgba(107,142,35,0.3);
+      transform: scale(1.06);
+      box-shadow: 0 8px 24px rgba(150,102,220,0.3);
+    }
+
+    .glass-btn svg {
+      width: clamp(1rem, 3vw, 1.35rem);
+      height: clamp(1rem, 3vw, 1.35rem);
+    }
+
+    .otp-input {
+      width: clamp(2.4rem, 10vw, 3rem);
+      height: clamp(2.8rem, 12vw, 3.4rem);
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(210,190,255,0.18));
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 16px;
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.85),
+        inset 0 -2px 4px rgba(120,72,210,0.2);
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .otp-input:focus {
+      border-color: rgba(191,152,238,0.7);
+      box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.85),
+        inset 0 -2px 6px rgba(150,102,220,0.35),
+        0 10px 24px rgba(91,33,182,0.18);
     }
 
     .step { display: none; }
@@ -172,11 +292,58 @@
     #modal {
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
+
+    .mint-brand {
+      font-family: "Future Earth Medium", system-ui, sans-serif;
+      letter-spacing: 0.08em;
+      background: linear-gradient(90deg, #000000 0%, #5b21b6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .toast {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 60;
+      max-width: min(90vw, 380px);
+      background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.5) 55%, rgba(255,255,255,0.68) 100%);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.85),
+        inset 0 -1px 2px rgba(255,255,255,0.35),
+        0 20px 45px rgba(0,0,0,0.18);
+      border-radius: 18px;
+      backdrop-filter: blur(18px) saturate(190%);
+      -webkit-backdrop-filter: blur(18px) saturate(190%);
+      color: hsl(var(--foreground));
+      padding: 0.9rem 1.2rem;
+      transform: translateY(-12px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .toast-message {
+      font-size: 0.95rem;
+      color: rgb(185 28 28);
+      margin-top: 0.25rem;
+    }
+
   </style>
 </head>
 <body class="relative flex min-h-screen flex-col">
 
-  <!-- Olive-green blobs -->
+  <!-- Purple money blobs -->
   <div class="blob-bg">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -184,7 +351,7 @@
   </div>
 
   <style>
-    /* Olive-green themed floating blobs */
+    /* Purple money themed floating blobs */
     .blob-bg {
       position: absolute;
       inset: 0;
@@ -196,15 +363,15 @@
     .blob {
       position: absolute;
       border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.45;
+      filter: blur(170px);
+      opacity: 0.18;
       animation: float 28s infinite ease-in-out;
     }
 
     .blob-1 {
       width: 520px;
       height: 420px;
-      background: #6b8e23;
+      background: radial-gradient(circle at 30% 30%, rgba(235, 221, 249, 0.9), rgba(209, 184, 244, 0.6), rgba(188, 157, 238, 0.3));
       top: -10%;
       left: -15%;
       animation-delay: 0s;
@@ -213,7 +380,7 @@
     .blob-2 {
       width: 640px;
       height: 560px;
-      background: #8fbc8f;
+      background: radial-gradient(circle at 70% 30%, rgba(238, 225, 252, 0.9), rgba(214, 193, 247, 0.6), rgba(190, 163, 241, 0.3));
       bottom: -15%;
       right: -20%;
       animation-delay: 9s;
@@ -222,7 +389,7 @@
     .blob-3 {
       width: 460px;
       height: 380px;
-      background: #9acd32;
+      background: radial-gradient(circle at 50% 60%, rgba(232, 217, 248, 0.9), rgba(206, 180, 242, 0.6), rgba(186, 154, 236, 0.3));
       top: 40%;
       left: 50%;
       animation-delay: 16s;
@@ -235,50 +402,48 @@
   </style>
 
   <!-- Top-left logo -->
-  <div class="relative z-20 flex items-center gap-3 px-6 pt-6 animate-on-load delay-1">
-    <img src="https://static.wixstatic.com/media/ac771e_af06d86a7a1f4abd87e52e45f3bcbd96~mv2.png" alt="AlgoHive logo" class="h-10 w-auto drop-shadow-md"/>
-    <h1 class="text-xl font-bold tracking-tight">AlgoHive</h1>
+  <div class="relative z-20 flex items-center gap-4 px-6 pt-6 animate-on-load delay-1">
+    <img src="https://aazofjsssobejhkyyiqv.supabase.co/storage/v1/object/public/AlgoHive/ICON%20AHM.svg" alt="AlgoMoney logo" class="h-4 w-auto drop-shadow-md"/>
+    <h1 class="mint-brand text-xl font-bold tracking-[0.12em]">MINT</h1>
   </div>
 
   <!-- Main content -->
   <div class="flex flex-1 items-center justify-center px-6 pt-32 pb-16 relative z-10">
     <div class="w-full max-w-md space-y-12">
 
-      <div class="text-center space-y-5">
-        <h2 class="text-5xl sm:text-6xl font-light tracking-tight animate-on-load delay-2">
-          Get started
-        </h2>
-        <p class="text-lg text-muted-foreground animate-on-load delay-3">
-          Create your AlgoHive account
-        </p>
-      </div>
-
-      <form id="signup-form" class="space-y-10">
-
-        <div id="step-email" class="step active space-y-8">
-          <div class="glass glass-input shadow-xl animate-on-load delay-4">
-            <svg class="w-6 h-6 ml-5 text-foreground/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-            <input type="email" id="email" placeholder="Your email" required autocomplete="email" class="flex-1 bg-transparent outline-none"/>
-            <button type="button" id="to-password" class="glass-btn mr-2">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-          <p class="text-sm text-muted-foreground animate-on-load delay-5">
-            Already have an account?
-            <a href="/auth" class="font-semibold text-foreground underline-offset-4 hover:underline">Login</a>
+        <div id="hero-copy" class="text-center space-y-5">
+          <h2 id="hero-heading" class="text-5xl sm:text-6xl font-light tracking-tight animate-on-load delay-2">
+            Get started
+          </h2>
+          <p id="hero-subheading" class="text-lg text-muted-foreground animate-on-load delay-3">
+            Create your <span class="mint-brand">MINT</span> account
           </p>
         </div>
 
-        <div id="step-password" class="step space-y-8">
+        <form id="signup-form" class="space-y-10" novalidate>
+
+        <div id="step-email" class="step active space-y-8">
           <div class="glass glass-input shadow-xl animate-on-load delay-4">
-            <svg class="w-6 h-6 ml-5 text-foreground/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-            <input type="password" id="password" placeholder="Password" required minlength="6" class="flex-1 bg-transparent outline-none"/>
-            <button type="button" id="to-confirm" class="glass-btn mr-2">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            <input type="email" id="email" placeholder="Your email" required autocomplete="email" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-first-name" class="glass-btn mr-2" aria-label="Continue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+          <p class="text-center text-sm text-muted-foreground animate-on-load delay-5">
+            Already have an account?
+            <button type="button" id="show-login" class="font-semibold text-foreground underline-offset-4 hover:underline">Login</button>
+          </p>
+        </div>
+
+        <div id="step-first-name" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <input type="text" id="first-name" placeholder="First name" required autocomplete="given-name" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-last-name" class="glass-btn mr-2" aria-label="Continue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
             </button>
           </div>
           <button type="button" id="back-to-email" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
@@ -286,14 +451,70 @@
           </button>
         </div>
 
+        <div id="step-last-name" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <input type="text" id="last-name" placeholder="Last name" required autocomplete="family-name" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-password" class="glass-btn mr-2" aria-label="Continue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+          <button type="button" id="back-to-first-name" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
+            ← Back
+          </button>
+        </div>
+
+        <div id="step-login-email" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <input type="email" id="login-email" placeholder="Email" required autocomplete="email" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-login-password" class="glass-btn mr-2" aria-label="Continue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+          <p class="text-center text-sm text-muted-foreground animate-on-load delay-5">
+            Need an account?
+            <button type="button" id="back-to-signup" class="font-semibold text-foreground underline-offset-4 hover:underline">Sign up</button>
+          </p>
+        </div>
+
+        <div id="step-login-password" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <input type="password" id="login-password" placeholder="Password" required minlength="6" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="login-submit" class="glass-btn mr-2" aria-label="Sign in">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          </div>
+          <button type="button" id="back-to-login-email" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
+            ← Back
+          </button>
+        </div>
+
+        <div id="step-password" class="step space-y-8">
+          <div class="glass glass-input shadow-xl animate-on-load delay-4">
+            <input type="password" id="password" placeholder="Password" required minlength="6" class="flex-1 bg-transparent outline-none"/>
+            <button type="button" id="to-confirm" class="glass-btn mr-2" aria-label="Continue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+          <button type="button" id="back-to-last-name" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
+            ← Back
+          </button>
+        </div>
+
         <div id="step-confirm" class="step space-y-8">
           <div class="glass glass-input shadow-xl animate-on-load delay-4">
-            <svg class="w-6 h-6 ml-5 text-foreground/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
             <input type="password" id="confirm" placeholder="Confirm password" required class="flex-1 bg-transparent outline-none"/>
-            <button type="submit" class="glass-btn mr-2">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <button type="button" id="to-otp" class="glass-btn mr-2" aria-label="Continue">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
             </button>
           </div>
           <button type="button" id="back-to-password" class="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition animate-on-load delay-5">
@@ -301,21 +522,43 @@
           </button>
         </div>
 
-      </form>
+        <div id="step-otp" class="step space-y-8">
+          <div class="text-center space-y-3 animate-on-load delay-4">
+            <h3 class="text-2xl font-semibold tracking-tight">Confirm your email</h3>
+            <p class="text-sm text-muted-foreground">
+              Enter the 6-digit code sent to
+              <span id="otp-email" class="font-semibold text-foreground"></span>
+            </p>
+            <button type="button" id="edit-email" class="text-sm text-foreground underline underline-offset-4 transition">
+              Edit Email
+            </button>
+          </div>
+          <div class="flex justify-center gap-3">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="otp-input" data-otp="0"/>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" data-otp="1"/>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" data-otp="2"/>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" data-otp="3"/>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" data-otp="4"/>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-input" data-otp="5"/>
+          </div>
+        </div>
 
-      <div class="text-center text-xs text-muted-foreground space-y-2 pt-6 animate-on-load delay-5">
-        <p>By continuing, you agree to our
-          <a href="#" class="underline hover:text-foreground transition">Terms of Service</a> and
-          <a href="#" class="underline hover:text-foreground transition">Privacy Policy</a>
-        </p>
+        </form>
+
+        <div class="text-center text-xs text-muted-foreground space-y-2 pt-6 animate-on-load delay-5">
+          <p>By continuing, you agree to our
+            <a href="#" class="underline hover:text-foreground transition">Terms of Service</a> and
+            <a href="#" class="underline hover:text-foreground transition">Privacy Policy</a>
+          </p>
+        </div>
+
       </div>
-
     </div>
   </div>
 
   <div class="relative z-10 px-6 pb-12">
     <div class="text-center text-xs text-muted-foreground/80 max-w-5xl mx-auto leading-relaxed animate-on-load delay-5">
-      AlgoHive (Pty) Ltd is an authorised Financial Services Provider (FSP 55118) regulated by the Financial Sector Conduct Authority and a registered Credit Provider (NCRCP22892) under the National Credit Act. All investment activity carries risk, including the possible loss of capital and liquidity constraints. Any information provided here is educational in nature, does not constitute personalised financial advice, and should not be relied on as a recommendation to buy or sell securities. Please consider whether investing is appropriate for your circumstances and consult an independent adviser where necessary.
+      <span class="mint-brand">MINT</span> (Pty) Ltd is a Financial Services Provider (FSP 55118) and a Registered Credit Provider (NCRCP22892). <span class="mint-brand">MINT</span> Reg no: 2024/644796/07
     </div>
   </div>
 
@@ -329,66 +572,223 @@
     </div>
   </div>
 
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div id="toast-message" class="toast-message"></div>
+  </div>
+
   <script nonce="ALGOHIVE">
     let currentStep = 'email';
     const form = document.getElementById('signup-form');
     const modal = document.getElementById('modal');
     const modalContent = document.getElementById('modal-content');
+    const heroHeading = document.getElementById('hero-heading');
+    const heroSubheading = document.getElementById('hero-subheading');
+    const heroCopy = document.getElementById('hero-copy');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const heroDefault = heroHeading.textContent.trim();
+    const heroSubDefault = heroSubheading.innerHTML;
+    let toastTimeout;
 
     const steps = {
       email: document.getElementById('step-email'),
+      firstName: document.getElementById('step-first-name'),
+      lastName: document.getElementById('step-last-name'),
+      loginEmail: document.getElementById('step-login-email'),
+      loginPassword: document.getElementById('step-login-password'),
       password: document.getElementById('step-password'),
-      confirm: document.getElementById('step-confirm')
+      confirm: document.getElementById('step-confirm'),
+      otp: document.getElementById('step-otp')
     };
 
     function showStep(stepName) {
       currentStep = stepName;
       Object.values(steps).forEach(s => s.classList.remove('active'));
       steps[stepName].classList.add('active');
+      heroHeading.textContent = stepName.startsWith('login') ? 'Welcome back' : heroDefault;
+      heroSubheading.innerHTML = stepName.startsWith('login')
+        ? 'Log in to your <span class="mint-brand">MINT</span> account'
+        : heroSubDefault;
+      heroCopy.classList.toggle('hidden', stepName === 'otp');
     }
 
-    document.getElementById('to-password').onclick = () => {
+    function updateGlassInputState(input) {
+      const wrapper = input.closest('.glass-input');
+      if (!wrapper) return;
+      wrapper.classList.toggle('has-value', input.value.trim().length > 0);
+    }
+
+    function syncAllInputStates() {
+      document.querySelectorAll('.glass-input input').forEach((input) => {
+        updateGlassInputState(input);
+      });
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimeout);
+      toastMessage.textContent = message;
+      toast.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    document.querySelectorAll('.glass-input input').forEach((input) => {
+      updateGlassInputState(input);
+      ['input', 'change', 'focus', 'blur'].forEach((eventName) => {
+        input.addEventListener(eventName, () => updateGlassInputState(input));
+      });
+    });
+    syncAllInputStates();
+
+    const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+
+    function checkOtpValue() {
+      const otpValues = otpInputs.map((input) => input.value.trim()).join('');
+      if (otpValues.length !== 6) return;
+      if (otpValues !== '000000') {
+        showToast('Incorrect OTP');
+        otpInputs.forEach((input) => {
+          input.value = '';
+        });
+        otpInputs[0]?.focus();
+        return;
+      }
+      modal.classList.remove('hidden');
+      showSuccess();
+    }
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', (event) => {
+        const target = event.target;
+        target.value = target.value.replace(/\D/g, '').slice(-1);
+        if (target.value && otpInputs[index + 1]) {
+          otpInputs[index + 1].focus();
+        }
+        checkOtpValue();
+      });
+
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Backspace' && !input.value && otpInputs[index - 1]) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+
+    document.getElementById('step-otp').addEventListener('paste', (event) => {
+      const text = event.clipboardData?.getData('text')?.replace(/\D/g, '') ?? '';
+      if (!text) return;
+      otpInputs.forEach((input, index) => {
+        input.value = text[index] ?? '';
+      });
+      otpInputs[Math.min(text.length, otpInputs.length) - 1]?.focus();
+      checkOtpValue();
+    });
+
+    document.getElementById('to-first-name').onclick = () => {
       const email = document.getElementById('email').value.trim();
-      if (email && email.includes('@') && email.includes('.')) showStep('password');
+      if (email && email.includes('@') && email.includes('.')) {
+        showStep('firstName');
+        return;
+      }
+      showToast('Enter a valid email address to continue.');
+    };
+
+    document.getElementById('show-login').onclick = () => showStep('loginEmail');
+    document.getElementById('back-to-signup').onclick = () => showStep('email');
+    document.getElementById('back-to-login-email').onclick = () => showStep('loginEmail');
+
+    document.getElementById('to-last-name').onclick = () => {
+      const firstName = document.getElementById('first-name').value.trim();
+      if (firstName.length > 0) {
+        showStep('lastName');
+        return;
+      }
+      showToast('Add your first name to continue.');
+    };
+
+    document.getElementById('to-password').onclick = () => {
+      const lastName = document.getElementById('last-name').value.trim();
+      if (lastName.length > 0) {
+        showStep('password');
+        return;
+      }
+      showToast('Add your last name to continue.');
+    };
+
+    document.getElementById('to-login-password').onclick = () => {
+      const email = document.getElementById('login-email').value.trim();
+      if (email && email.includes('@') && email.includes('.')) {
+        showStep('loginPassword');
+        return;
+      }
+      showToast('Enter the email you signed up with.');
+    };
+
+    document.getElementById('login-submit').onclick = () => {
+      const email = document.getElementById('login-email').value.trim();
+      const pw = document.getElementById('login-password').value;
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        showToast('Enter a valid email address.');
+        return;
+      }
+      if (pw.length < 6) {
+        showToast('Your password must be at least 6 characters.');
+        return;
+      }
+
+      showModal('loading');
+      modalContent.innerHTML = `
+        <div class="flex flex-col items-center gap-8 py-12">
+          <div class="w-14 h-14 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-lg font-medium">Signing you in...</p>
+        </div>
+      `;
+
+      setTimeout(() => {
+        showSuccess();
+      }, 1500);
     };
 
     document.getElementById('to-confirm').onclick = () => {
       const pw = document.getElementById('password').value;
-      if (pw.length >= 6) showStep('confirm');
+      if (pw.length >= 6) {
+        showStep('confirm');
+        return;
+      }
+      showToast('Use at least 6 characters for your password.');
     };
 
     document.getElementById('back-to-email').onclick = () => showStep('email');
+    document.getElementById('back-to-first-name').onclick = () => showStep('firstName');
+    document.getElementById('back-to-last-name').onclick = () => showStep('lastName');
     document.getElementById('back-to-password').onclick = () => showStep('password');
+    document.getElementById('edit-email').onclick = () => showStep('email');
+
+    document.getElementById('to-otp').onclick = () => {
+      const pw = document.getElementById('password').value;
+      const confirmPw = document.getElementById('confirm').value;
+      if (pw.length < 6) {
+        showToast('Use at least 6 characters for your password.');
+        return;
+      }
+      if (pw !== confirmPw) {
+        showToast("Passwords don't match.");
+        return;
+      }
+      const emailValue = document.getElementById('email').value.trim();
+      document.getElementById('otp-email').textContent = emailValue || 'your email';
+      showStep('otp');
+      const firstOtp = document.querySelector('.otp-input');
+      firstOtp?.focus();
+    };
 
     form.onsubmit = (e) => {
       e.preventDefault();
-      const pw = document.getElementById('password').value;
-      const confirmPw = document.getElementById('confirm').value;
-
-      if (pw !== confirmPw) {
-        showModal('error', "Passwords don't match");
+      if (currentStep === 'confirm') {
+        document.getElementById('to-otp').click();
         return false;
       }
-
-      showModal('loading');
-
-      const messages = ["Creating your account...", "Setting things up...", "Almost there..."];
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < messages.length) {
-          modalContent.innerHTML = `
-            <div class="flex flex-col items-center gap-8 py-12">
-              <div class="w-14 h-14 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin"></div>
-              <p class="text-lg font-medium">${messages[i]}</p>
-            </div>
-          `;
-          i++;
-        } else {
-          clearInterval(interval);
-          showSuccess();
-        }
-      }, 1400);
-
       return false;
     };
 
@@ -410,7 +810,7 @@
       modalContent.innerHTML = `
         <div class="flex flex-col items-center gap-8 py-14">
           <div class="text-7xl animate-bounce">🎉</div>
-          <h3 class="text-2xl font-bold tracking-tight">Welcome to AlgoHive!</h3>
+          <h3 class="text-2xl font-bold tracking-tight">Welcome to <span class="mint-brand">MINT</span>!</h3>
         </div>
       `;
       confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 } });

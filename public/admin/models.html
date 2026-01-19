@@ -158,6 +158,10 @@
 
   <script type="module" nonce="ALGOHIVE">
     import { supabase } from "/js/supabase.js";
+    import { checkAdminAccess } from "/js/admin-auth.js";
+
+    const session = await checkAdminAccess();
+    if (!session) throw new Error('Not authorized');
 
     const statTotal = document.getElementById('stat-total');
     const statAum = document.getElementById('stat-aum');
@@ -167,18 +171,6 @@
     const modelGrid = document.getElementById('model-grid');
     const emptyState = document.getElementById('empty');
     const legend = document.getElementById('legend');
-
-    const redirectToAuth = () => {
-      const next = encodeURIComponent(location.pathname + location.search + location.hash);
-      location.replace(`/auth.html?tab=in&redirect=${next}`);
-    };
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      redirectToAuth();
-      throw new Error('redirecting');
-    }
-    supabase.auth.onAuthStateChange((_ev, sess) => { if (!sess) redirectToAuth(); });
 
     const riskThemes = {
       "Conservative": { badge: 'bg-emerald-50 text-emerald-700 border border-emerald-100', chip: 'risk-low' },

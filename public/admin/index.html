@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlgoHive Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --line: #e2e8f0;
+      --ink: #0f172a;
+      --olive: #556B2F;
+    }
+    html, body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .sidebar { background: #fff; border-right: 1px solid var(--line); }
+    .sidebar a { transition: all 0.15s ease; }
+    .sidebar a:hover { background: #f1f5f9; }
+    .sidebar a.active { background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+    .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="min-h-screen flex">
+  <aside class="sidebar w-64 min-h-screen flex flex-col py-6 fixed left-0 top-0">
+    <div class="px-6 mb-8">
+      <div class="flex items-center gap-3">
+        <span class="h-10 w-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold shadow-sm">A</span>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-500">Admin</p>
+          <h1 class="text-lg font-bold">AlgoHive</h1>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="flex-1 px-3 space-y-1">
+      <a href="/admin/index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium active">
+        <i class="fa-solid fa-gauge-high w-5"></i>
+        Dashboard
+      </a>
+      <a href="/admin/users.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-users w-5"></i>
+        Users
+      </a>
+      <a href="/admin/models.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600">
+        <i class="fa-solid fa-chart-pie w-5"></i>
+        Strategies
+      </a>
+    </nav>
+    
+    <div class="px-3 mt-auto">
+      <div class="border-t border-slate-200 pt-4">
+        <div id="adminUser" class="flex items-center gap-3 px-3 py-2">
+          <div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center">
+            <i class="fa-solid fa-user text-slate-500 text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p id="adminEmail" class="text-sm font-medium truncate">Loading...</p>
+            <p class="text-xs text-slate-500">Administrator</p>
+          </div>
+        </div>
+        <button id="logoutBtn" class="w-full mt-2 flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50">
+          <i class="fa-solid fa-right-from-bracket w-5"></i>
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 ml-64 p-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold">Dashboard</h1>
+      <p class="text-slate-500 mt-1">Welcome back! Here's an overview of your platform.</p>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="card stat-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+            <i class="fa-solid fa-users text-blue-600 text-xl"></i>
+          </div>
+          <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+            <i class="fa-solid fa-arrow-up mr-1"></i>Live
+          </span>
+        </div>
+        <p class="text-sm text-slate-500">Total Users</p>
+        <h3 id="statUsers" class="text-3xl font-bold mt-1">—</h3>
+      </div>
+
+      <div class="card stat-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+            <i class="fa-solid fa-user-check text-emerald-600 text-xl"></i>
+          </div>
+          <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+            <i class="fa-solid fa-clock mr-1"></i>Pending
+          </span>
+        </div>
+        <p class="text-sm text-slate-500">KYC Verified</p>
+        <h3 id="statVerified" class="text-3xl font-bold mt-1">—</h3>
+      </div>
+
+      <div class="card stat-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center">
+            <i class="fa-solid fa-chart-pie text-purple-600 text-xl"></i>
+          </div>
+        </div>
+        <p class="text-sm text-slate-500">Active Strategies</p>
+        <h3 id="statStrategies" class="text-3xl font-bold mt-1">—</h3>
+      </div>
+
+      <div class="card stat-card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
+            <i class="fa-solid fa-coins text-amber-600 text-xl"></i>
+          </div>
+        </div>
+        <p class="text-sm text-slate-500">Total AUM</p>
+        <h3 id="statAum" class="text-3xl font-bold mt-1">—</h3>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section class="card p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">Recent Users</h2>
+          <a href="/admin/users.html" class="text-sm text-amber-600 hover:text-amber-700 font-medium">
+            View All <i class="fa-solid fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+        <div id="recentUsers" class="space-y-4">
+          <div class="text-center py-8 text-slate-400">
+            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+            <p class="mt-2 text-sm">Loading users...</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">Top Strategies</h2>
+          <a href="/admin/models.html" class="text-sm text-amber-600 hover:text-amber-700 font-medium">
+            View All <i class="fa-solid fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+        <div id="topStrategies" class="space-y-4">
+          <div class="text-center py-8 text-slate-400">
+            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+            <p class="mt-2 text-sm">Loading strategies...</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    import { supabase } from "/js/supabase.js";
+    import { checkAdminAccess } from "/js/admin-auth.js";
+
+    const session = await checkAdminAccess();
+    if (!session) throw new Error('Not authorized');
+
+    document.getElementById('adminEmail').textContent = session.user.email;
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      location.replace('/auth.html');
+    });
+
+    const fmtCurrency = (value, currency = 'USD') => {
+      if (value == null || isNaN(value)) return '—';
+      return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency, 
+        maximumFractionDigits: 0 
+      }).format(value);
+    };
+
+    async function loadStats() {
+      const [usersRes, strategiesRes, demoRes] = await Promise.all([
+        supabase.from('profiles').select('id, verification_status', { count: 'exact' }),
+        supabase.from('strategies').select('id, name, aum, risk_level'),
+        supabase.from('demo_profiles').select('id', { count: 'exact' })
+      ]);
+
+      const totalUsers = (usersRes.count || 0) + (demoRes.count || 0);
+      const verifiedUsers = (usersRes.data || []).filter(u => u.verification_status === 'verified').length;
+      const strategies = strategiesRes.data || [];
+      const totalAum = strategies.reduce((sum, s) => sum + (s.aum || 0), 0);
+
+      document.getElementById('statUsers').textContent = totalUsers.toLocaleString();
+      document.getElementById('statVerified').textContent = verifiedUsers.toLocaleString();
+      document.getElementById('statStrategies').textContent = strategies.length;
+      document.getElementById('statAum').textContent = fmtCurrency(totalAum);
+    }
+
+    async function loadRecentUsers() {
+      const container = document.getElementById('recentUsers');
+      
+      const { data: demoUsers, error } = await supabase
+        .from('demo_profiles')
+        .select('id, first_name, last_name, created_at, balance')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error || !demoUsers?.length) {
+        container.innerHTML = '<p class="text-center text-slate-400 py-4">No recent users found.</p>';
+        return;
+      }
+
+      container.innerHTML = demoUsers.map(user => `
+        <div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition">
+          <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
+            <span class="text-sm font-semibold text-slate-600">${(user.first_name?.[0] || '?').toUpperCase()}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium truncate">${user.first_name || ''} ${user.last_name || ''}</p>
+            <p class="text-xs text-slate-500">${new Date(user.created_at).toLocaleDateString()}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold">${fmtCurrency(user.balance)}</p>
+            <p class="text-xs text-slate-500">Balance</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadTopStrategies() {
+      const container = document.getElementById('topStrategies');
+      
+      const { data: strategies, error } = await supabase
+        .from('strategies')
+        .select('id, name, aum, risk_level')
+        .order('aum', { ascending: false })
+        .limit(5);
+
+      if (error || !strategies?.length) {
+        container.innerHTML = '<p class="text-center text-slate-400 py-4">No strategies found.</p>';
+        return;
+      }
+
+      const riskColors = {
+        'Conservative': 'bg-emerald-100 text-emerald-700',
+        'Balanced': 'bg-amber-100 text-amber-700',
+        'Aggressive': 'bg-red-100 text-red-700'
+      };
+
+      container.innerHTML = strategies.map(s => `
+        <div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition">
+          <div class="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
+            <i class="fa-solid fa-chart-line text-purple-600"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium truncate">${s.name}</p>
+            <span class="text-xs px-2 py-0.5 rounded-full ${riskColors[s.risk_level] || 'bg-slate-100 text-slate-600'}">${s.risk_level || 'N/A'}</span>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold">${fmtCurrency(s.aum)}</p>
+            <p class="text-xs text-slate-500">AUM</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    loadStats();
+    loadRecentUsers();
+    loadTopStrategies();
+  </script>
+</body>
+</html>

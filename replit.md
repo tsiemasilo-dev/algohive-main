@@ -61,7 +61,7 @@ The admin dashboard is accessible at `/admin/index.html` and provides:
 
 ### Admin Access Control
 Access is controlled via email whitelist in `public/js/admin-auth.js`:
-- Current admin: `tsie.masilo@algohive.com`
+- Current admin: `tsie.masilo@thealgohive.com`
 - To add more admins, update the `ADMIN_EMAILS` array in that file
 - Non-admin users are redirected to `/home.html`
 

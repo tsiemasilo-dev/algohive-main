@@ -1,7 +1,7 @@
 import { supabase } from "./supabase.js";
 
 const ADMIN_EMAILS = [
-  "tsie.masilo@algohive.com"
+  "tsie.masilo@thealgohive.com"
 ];
 
 export async function checkAdminAccess() {

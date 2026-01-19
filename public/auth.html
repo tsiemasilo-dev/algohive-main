@@ -802,9 +802,17 @@
       return !!data;
     }
 
+    const ADMIN_EMAILS = ["tsie.masilo@thealgohive.com"];
+
     async function routePostAuth(preferred = "/home.html", accountTypeValue = "live") {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return; 
+
+        const userEmail = session.user?.email?.toLowerCase();
+        if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
+            window.location.href = "/admin/index.html";
+            return;
+        }
 
         try { 
             sessionStorage.setItem("ah_account_type", accountTypeValue);

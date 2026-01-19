@@ -53,6 +53,20 @@ When existing users log in with a password that doesn't meet current requirement
 
 This is handled client-side without sending password reset emails - the user is already authenticated so we can update their password directly via Supabase's `auth.updateUser()`.
 
+## Admin Dashboard
+The admin dashboard is accessible at `/admin/index.html` and provides:
+- **Overview Dashboard** - Total users, KYC verified count, active strategies, total AUM
+- **User Management** (`/admin/users.html`) - View all users with search/filter by account type
+- **Strategy Management** (`/admin/models.html`) - View and create investment strategies
+
+### Admin Access Control
+Access is controlled via email whitelist in `public/js/admin-auth.js`:
+- Current admin: `tsie.masilo@algohive.com`
+- To add more admins, update the `ADMIN_EMAILS` array in that file
+- Non-admin users are redirected to `/home.html`
+
+**Note**: This is client-side access control. For production, consider implementing Supabase RLS policies for server-side security.
+
 ## UI Consistency
 - Profile avatars use 2-letter initials (first name + last name initials) with consistent dark circular styling
 - Markets dropdown shows "US Stocks" (active) and "South African Stocks — Coming Soon" (disabled)
